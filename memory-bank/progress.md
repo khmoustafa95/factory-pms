@@ -30,6 +30,7 @@
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
+- [ ] Security: restrict signup role metadata; enforce `is_active` on login
 - [ ] FT-05 Kanban / Gantt / progress UI
 - [ ] FT-06 Comments
 - [ ] FT-07 Escalation / blocked
@@ -40,6 +41,11 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 13)
+
+- Migration `20260722110000_security_auth_hardening.sql`: `is_auth_active()`, hardened `handle_new_user`, RLS blocks inactive users
+- `AuthContext` signs out inactive/missing profiles; localized login errors; `enable_signup = false`
 
 ### 2026-07-22 (session 11)
 

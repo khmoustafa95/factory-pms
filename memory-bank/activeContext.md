@@ -2,11 +2,11 @@
 
 ## Current focus
 
-**UX polish** — localized validation, mobile cards, code-splitting, tests. Next: apply migration to live project and end-to-end QA.
+**Security hardening** — signup role escalation fixed, inactive accounts blocked at auth + RLS. Next: merge seed PR, apply migrations to live Supabase.
 
 ## Recent changes
 
-- [2026-07-22] UX polish: Zod validation i18n, AdaptiveList mobile cards, route lazy-loading, Kanban/Gantt mobile, Vitest tests, a11y skip link
+- [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
 - [2026-07-22] Responsive list pages: `AdaptiveList` on Factories, Accounts, Escalations, Projects — mobile card view + desktop table via `ResponsiveTable` wrapper inside `AdaptiveList`
 - [2026-07-22] i18n: form dialogs (project, reject, factory, account, phase, task) use `useTranslation` + semantic theme colors
