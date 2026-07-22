@@ -6,6 +6,7 @@ import { AccountsPage } from '@/pages/AccountsPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { FactoriesPage } from '@/pages/FactoriesPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { ProjectDetailPage } from '@/pages/ProjectDetailPage'
 import { ProjectsPage } from '@/pages/ProjectsPage'
 
 export default function App() {
@@ -27,6 +28,7 @@ export default function App() {
             }
           >
             <Route path="projects" element={<ProjectsPage />} />
+            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
           </Route>
           <Route element={<RoleRoute allowedRoles={['company_director']} />}>
             <Route path="factories" element={<FactoriesPage />} />

@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
-import { Check, Plus, Send, X } from 'lucide-react'
+import { Check, Layers, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
@@ -30,6 +31,7 @@ import {
   canSubmitProject,
 } from '@/lib/project-status'
 import type { ProjectRejectValues } from '@/lib/validations/approval'
+import { canViewWbs } from '@/lib/wbs'
 import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import type { ProjectFormValues } from '@/lib/validations/project'
 import type { Project } from '@/types/database'
@@ -288,7 +290,18 @@ export function ProjectsPage() {
                   <TableRow key={project.id}>
                     <TableCell>
                       <div className="space-y-1">
-                        <p className="font-medium">{project.title}</p>
+                        <p className="font-medium">
+                          {canViewWbs(project.status) ? (
+                            <Link
+                              className="hover:underline"
+                              to={`/projects/${project.id}`}
+                            >
+                              {project.title}
+                            </Link>
+                          ) : (
+                            project.title
+                          )}
+                        </p>
                         {project.description ? (
                           <p className="line-clamp-1 text-sm text-slate-500">
                             {project.description}
@@ -329,6 +342,14 @@ export function ProjectsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {canViewWbs(project.status) ? (
+                          <Button asChild size="sm" variant="outline">
+                            <Link to={`/projects/${project.id}`}>
+                              <Layers className="size-4" />
+                              WBS
+                            </Link>
+                          </Button>
+                        ) : null}
                         {isDirector && canReviewProject(project.status) ? (
                           <>
                             <Button
