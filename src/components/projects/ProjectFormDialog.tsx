@@ -1,0 +1,236 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
+import { useFactoryProjectManagers } from '@/hooks/useProjects'
+import {
+  projectFormSchema,
+  type ProjectFormValues,
+} from '@/lib/validations/project'
+import type { Project } from '@/types/database'
+
+interface ProjectFormDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  project?: Project | null
+  factoryId: string | null | undefined
+  onSaveDraft: (values: ProjectFormValues) => Promise<void>
+  onSubmitProposal: (values: ProjectFormValues) => Promise<void>
+  isSubmitting: boolean
+}
+
+export function ProjectFormDialog({
+  open,
+  onOpenChange,
+  project,
+  factoryId,
+  onSaveDraft,
+  onSubmitProposal,
+  isSubmitting,
+}: ProjectFormDialogProps) {
+  const { data: projectManagers = [] } = useFactoryProjectManagers(factoryId)
+
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      budget: '',
+      currency: 'SAR',
+      proposed_start_date: undefined,
+      proposed_end_date: undefined,
+      assigned_pm_id: null,
+    },
+  })
+
+  const selectedPmId = useWatch({
+    control: form.control,
+    name: 'assigned_pm_id',
+  })
+
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    form.reset({
+      title: project?.title ?? '',
+      description: project?.description ?? '',
+      budget: project?.budget != null ? String(project.budget) : '',
+      currency: project?.currency ?? 'SAR',
+      proposed_start_date: project?.proposed_start_date ?? undefined,
+      proposed_end_date: project?.proposed_end_date ?? undefined,
+      assigned_pm_id: project?.assigned_pm_id ?? null,
+    })
+  }, [form, open, project])
+
+  const saveDraft = form.handleSubmit(async (values) => {
+    await onSaveDraft(values)
+    onOpenChange(false)
+  })
+
+  const submitProposal = form.handleSubmit(async (values) => {
+    await onSubmitProposal(values)
+    onOpenChange(false)
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {project ? 'Edit project proposal' : 'New project proposal'}
+          </DialogTitle>
+          <DialogDescription>
+            Capture scope, budget, and timeline for director approval.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="project-title">Title</Label>
+            <Input id="project-title" {...form.register('title')} />
+            {form.formState.errors.title ? (
+              <p className="text-sm text-red-600">
+                {form.formState.errors.title.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="project-description">Description</Label>
+            <Textarea
+              id="project-description"
+              rows={4}
+              {...form.register('description')}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="project-budget">Budget</Label>
+              <Input
+                id="project-budget"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                {...form.register('budget')}
+              />
+              {form.formState.errors.budget ? (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.budget.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="project-currency">Currency</Label>
+              <Input
+                id="project-currency"
+                className="uppercase"
+                maxLength={3}
+                {...form.register('currency')}
+              />
+              {form.formState.errors.currency ? (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.currency.message}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="project-start">Proposed start</Label>
+              <Input
+                id="project-start"
+                type="date"
+                {...form.register('proposed_start_date')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="project-end">Proposed end</Label>
+              <Input
+                id="project-end"
+                type="date"
+                {...form.register('proposed_end_date')}
+              />
+              {form.formState.errors.proposed_end_date ? (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.proposed_end_date.message}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Assigned project manager</Label>
+            <Select
+              value={selectedPmId ?? 'none'}
+              onValueChange={(value) =>
+                form.setValue('assigned_pm_id', value === 'none' ? null : value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Optional" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Unassigned</SelectItem>
+                {projectManagers.map((manager) => (
+                  <SelectItem key={manager.id} value={manager.id}>
+                    {manager.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isSubmitting}
+              onClick={() => void saveDraft()}
+            >
+              {isSubmitting ? 'Saving…' : 'Save draft'}
+            </Button>
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => void submitProposal()}
+            >
+              {isSubmitting ? 'Submitting…' : 'Submit proposal'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
