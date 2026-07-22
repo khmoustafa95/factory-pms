@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { PageTransition } from '@/components/motion'
 import { AppBrand } from '@/components/AppBrand'
 import { LocaleToggle } from '@/components/LocaleToggle'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -175,7 +176,9 @@ export function AppLayout() {
         aria-label={t('a11y.mainContent')}
         className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10"
       >
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
     </div>
   )

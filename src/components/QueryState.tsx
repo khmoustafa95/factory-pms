@@ -26,9 +26,9 @@ function QueryStateSkeleton({ className }: { className?: string }) {
       aria-busy="true"
       aria-live="polite"
     >
-      <div className="h-4 w-2/5 animate-pulse rounded bg-muted" />
-      <div className="h-24 animate-pulse rounded-lg bg-muted" />
-      <div className="h-24 animate-pulse rounded-lg bg-muted" />
+      <div className="motion-shimmer h-4 w-2/5 rounded" />
+      <div className="motion-shimmer h-24 rounded-lg" />
+      <div className="motion-shimmer h-24 rounded-lg" />
     </div>
   )
 }
@@ -80,5 +80,5 @@ export function QueryState({
     )
   }
 
-  return <>{children}</>
+  return <div className="motion-fade-in">{children}</div>
 }

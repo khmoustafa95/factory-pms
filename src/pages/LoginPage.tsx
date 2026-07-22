@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { FadeIn } from '@/components/motion'
 import { LocaleToggle } from '@/components/LocaleToggle'
 import { AppBrand } from '@/components/AppBrand'
 import { StatusMessage } from '@/components/StatusMessage'
@@ -77,64 +78,69 @@ export function LoginPage() {
         <ThemeToggle />
       </div>
 
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <div className="flex justify-center">
-            <AppBrand />
-          </div>
-          <div className="space-y-1 text-center">
-            <CardTitle>{t('auth.signInTitle')}</CardTitle>
-            <CardDescription>{branding.signInDescription}</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {!isConfigured ? (
-            <StatusMessage variant="warning">
-              {t('auth.supabaseNotConfigured')}
-            </StatusMessage>
-          ) : null}
-
-          <form key={locale} className="space-y-4" onSubmit={onSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('common.email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                {...form.register('email')}
-              />
-              {form.formState.errors.email ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.email.message}
-                </p>
-              ) : null}
+      <FadeIn>
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-4">
+            <div className="flex justify-center">
+              <AppBrand />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('auth.password')}</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                {...form.register('password')}
-              />
-              {form.formState.errors.password ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.password.message}
-                </p>
-              ) : null}
+            <div className="space-y-1 text-center">
+              <CardTitle>{t('auth.signInTitle')}</CardTitle>
+              <CardDescription>{branding.signInDescription}</CardDescription>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {!isConfigured ? (
+              <StatusMessage variant="warning">
+                {t('auth.supabaseNotConfigured')}
+              </StatusMessage>
+            ) : null}
 
-            <Button className="w-full" disabled={!isConfigured || isSubmitting}>
-              {isSubmitting ? t('common.signingIn') : t('common.signIn')}
-            </Button>
-          </form>
+            <form key={locale} className="space-y-4" onSubmit={onSubmit}>
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('common.email')}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  {...form.register('email')}
+                />
+                {form.formState.errors.email ? (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.email.message}
+                  </p>
+                ) : null}
+              </div>
 
-          <p className="text-center text-sm text-muted-foreground">
-            {t('auth.needAccount')}
-          </p>
-        </CardContent>
-      </Card>
+              <div className="space-y-2">
+                <Label htmlFor="password">{t('auth.password')}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  {...form.register('password')}
+                />
+                {form.formState.errors.password ? (
+                  <p className="text-sm text-destructive">
+                    {form.formState.errors.password.message}
+                  </p>
+                ) : null}
+              </div>
+
+              <Button
+                className="w-full"
+                disabled={!isConfigured || isSubmitting}
+              >
+                {isSubmitting ? t('common.signingIn') : t('common.signIn')}
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-muted-foreground">
+              {t('auth.needAccount')}
+            </p>
+          </CardContent>
+        </Card>
+      </FadeIn>
     </div>
   )
 }

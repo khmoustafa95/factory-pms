@@ -23,7 +23,7 @@ export function AdaptiveList<T>({
     return (
       <p
         className={cn(
-          'rounded-lg border border-border bg-card py-10 text-center text-sm text-muted-foreground',
+          'motion-fade-in rounded-lg border border-border bg-card py-10 text-center text-sm text-muted-foreground',
           className,
         )}
       >
@@ -35,10 +35,11 @@ export function AdaptiveList<T>({
   return (
     <div className={className}>
       <div className="space-y-3 md:hidden">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <article
             key={getKey(item)}
-            className="rounded-lg border border-border bg-card p-4 shadow-sm"
+            className="motion-stagger-item rounded-lg border border-border bg-card p-4 shadow-sm"
+            style={{ animationDelay: `${index * 50}ms` }}
           >
             {renderMobileCard(item)}
           </article>

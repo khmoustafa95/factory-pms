@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Building2, ClipboardList, Users, AlertTriangle } from 'lucide-react'
+import { StaggerGroup } from '@/components/motion'
 import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
@@ -55,7 +56,7 @@ export function DashboardPage() {
         isRetrying={isFetching}
       >
         {stats ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>
@@ -97,11 +98,11 @@ export function DashboardPage() {
                 </Button>
               </CardContent>
             </Card>
-          </div>
+          </StaggerGroup>
         ) : null}
       </QueryState>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <StaggerGroup className="grid gap-4 md:grid-cols-3">
         {isCompanyDirector(profile?.role) ? (
           <>
             <Card>
@@ -177,7 +178,7 @@ export function DashboardPage() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </StaggerGroup>
     </section>
   )
 }

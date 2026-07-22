@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
+import { StaggerGroup } from '@/components/motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -90,8 +91,9 @@ export function TaskKanbanBoard({
 
   return (
     <>
-      <div
+      <StaggerGroup
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4"
+        staggerMs={80}
         role="list"
         aria-label={t('projectDetail.tabs.kanban')}
       >
@@ -181,7 +183,7 @@ export function TaskKanbanBoard({
             </CardContent>
           </Card>
         ))}
-      </div>
+      </StaggerGroup>
 
       <Dialog
         open={Boolean(blockedTask)}
