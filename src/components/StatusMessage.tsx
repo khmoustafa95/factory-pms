@@ -21,6 +21,7 @@ export function StatusMessage({
 }: StatusMessageProps) {
   return (
     <p
+      role="status"
       className={cn(
         'rounded-md border px-3 py-2 text-sm',
         variantClasses[variant],

@@ -1,7 +1,10 @@
 import type { TranslationDictionary, TranslationParams } from '@/i18n/types'
+import type { ar } from '@/i18n/locales/ar'
+
+type TranslatorDictionary = TranslationDictionary | typeof ar
 
 function getNestedValue(
-  dictionary: TranslationDictionary,
+  dictionary: TranslatorDictionary,
   key: string,
 ): string | undefined {
   const parts = key.split('.')
@@ -28,7 +31,7 @@ function interpolate(template: string, params?: TranslationParams): string {
   })
 }
 
-export function createTranslator(dictionary: TranslationDictionary) {
+export function createTranslator(dictionary: TranslatorDictionary) {
   return (key: string, params?: TranslationParams): string => {
     const value = getNestedValue(dictionary, key)
     if (value === undefined) {

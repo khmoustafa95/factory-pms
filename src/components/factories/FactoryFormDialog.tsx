@@ -14,8 +14,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { Factory } from '@/types/database'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  factoryFormSchema,
+  createFactoryFormSchema,
   type FactoryFormValues,
 } from '@/lib/validations/factory'
 
@@ -34,7 +35,8 @@ export function FactoryFormDialog({
   onSubmit,
   isSubmitting,
 }: FactoryFormDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
+  const factoryFormSchema = useValidationSchema(createFactoryFormSchema)
 
   const form = useForm<FactoryFormValues>({
     resolver: zodResolver(factoryFormSchema),
@@ -76,7 +78,7 @@ export function FactoryFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="factory-name">{t('common.name')}</Label>
             <Input id="factory-name" {...form.register('name')} />

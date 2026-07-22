@@ -64,6 +64,12 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+      >
+        {t('a11y.skipToContent')}
+      </a>
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/80">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-6">
@@ -72,7 +78,7 @@ export function AppLayout() {
               variant="outline"
               size="icon-sm"
               className="md:hidden"
-              aria-label={t('common.menu')}
+              aria-label={t('a11y.openMenu')}
               onClick={() => setMobileNavOpen(true)}
             >
               <Menu className="size-4" />
@@ -166,7 +172,12 @@ export function AppLayout() {
         </DialogContent>
       </Dialog>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        aria-label={t('a11y.mainContent')}
+        className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10"
+      >
         <Outlet />
       </main>
     </div>

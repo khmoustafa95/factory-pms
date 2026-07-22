@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { AdaptiveList } from '@/components/AdaptiveList'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
 import { PageHeader } from '@/components/PageHeader'
-import { ResponsiveTable } from '@/components/ResponsiveTable'
 import { StatusMessage } from '@/components/StatusMessage'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -87,7 +87,44 @@ export function FactoriesPage() {
       ) : null}
 
       {!isLoading && !error ? (
-        <ResponsiveTable>
+        <AdaptiveList
+          items={factories}
+          emptyMessage={t('factories.empty')}
+          getKey={(factory) => factory.id}
+          renderMobileCard={(factory) => (
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-medium">{factory.name}</p>
+                <Badge variant={factory.is_active ? 'default' : 'secondary'}>
+                  {factory.is_active
+                    ? t('common.active')
+                    : t('common.inactive')}
+                </Badge>
+              </div>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>
+                  <span className="font-medium text-foreground">
+                    {t('common.code')}:{' '}
+                  </span>
+                  {factory.code}
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">
+                    {t('common.location')}:{' '}
+                  </span>
+                  {factory.location ?? notAvailable}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openEdit(factory)}
+              >
+                {t('common.edit')}
+              </Button>
+            </div>
+          )}
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -101,47 +138,34 @@ export function FactoriesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {factories.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="py-10 text-center text-muted-foreground"
-                  >
-                    {t('factories.empty')}
+              {factories.map((factory) => (
+                <TableRow key={factory.id}>
+                  <TableCell className="font-medium">{factory.name}</TableCell>
+                  <TableCell>{factory.code}</TableCell>
+                  <TableCell>{factory.location ?? notAvailable}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={factory.is_active ? 'default' : 'secondary'}
+                    >
+                      {factory.is_active
+                        ? t('common.active')
+                        : t('common.inactive')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEdit(factory)}
+                    >
+                      {t('common.edit')}
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                factories.map((factory) => (
-                  <TableRow key={factory.id}>
-                    <TableCell className="font-medium">
-                      {factory.name}
-                    </TableCell>
-                    <TableCell>{factory.code}</TableCell>
-                    <TableCell>{factory.location ?? notAvailable}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={factory.is_active ? 'default' : 'secondary'}
-                      >
-                        {factory.is_active
-                          ? t('common.active')
-                          : t('common.inactive')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openEdit(factory)}
-                      >
-                        {t('common.edit')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
-        </ResponsiveTable>
+        </AdaptiveList>
       ) : null}
 
       <FactoryFormDialog

@@ -22,7 +22,11 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { getPhaseStatusLabel } from '@/lib/i18n-format'
-import { phaseFormSchema, type PhaseFormValues } from '@/lib/validations/phase'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
+import {
+  createPhaseFormSchema,
+  type PhaseFormValues,
+} from '@/lib/validations/phase'
 import type { Phase, PhaseStatus } from '@/types/database'
 
 const PHASE_STATUS_OPTIONS = [
@@ -48,7 +52,8 @@ export function PhaseFormDialog({
   onSubmit,
   isSubmitting,
 }: PhaseFormDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
+  const phaseFormSchema = useValidationSchema(createPhaseFormSchema)
 
   const form = useForm<PhaseFormValues>({
     resolver: zodResolver(phaseFormSchema),
@@ -105,7 +110,7 @@ export function PhaseFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
             <Input id="phase-name" {...form.register('name')} />

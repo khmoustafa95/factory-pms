@@ -36,8 +36,12 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="icon-sm" aria-label={t('common.theme')}>
-        <Sun className="size-4" />
+      <Button
+        variant="outline"
+        size="icon-sm"
+        aria-label={t('a11y.changeTheme')}
+      >
+        <Sun className="size-4" aria-hidden />
       </Button>
     )
   }
@@ -49,8 +53,13 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon-sm" aria-label={t('common.theme')}>
-          <Icon className="size-4" />
+        <Button
+          variant="outline"
+          size="icon-sm"
+          aria-label={t('a11y.changeTheme')}
+          aria-haspopup="menu"
+        >
+          <Icon className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">
@@ -58,15 +67,15 @@ export function ThemeToggle() {
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={currentTheme} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="light">
-            <Sun className="size-4" />
+            <Sun className="size-4" aria-hidden />
             {t('common.light')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
-            <Moon className="size-4" />
+            <Moon className="size-4" aria-hidden />
             {t('common.dark')}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">
-            <Monitor className="size-4" />
+            <Monitor className="size-4" aria-hidden />
             {t('common.system')}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>

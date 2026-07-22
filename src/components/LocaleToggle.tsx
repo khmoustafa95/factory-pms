@@ -21,9 +21,10 @@ export function LocaleToggle() {
         <Button
           variant="outline"
           size="icon-sm"
-          aria-label={t('common.language')}
+          aria-label={t('a11y.changeLanguage')}
+          aria-haspopup="menu"
         >
-          <Languages className="size-4" />
+          <Languages className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-40">

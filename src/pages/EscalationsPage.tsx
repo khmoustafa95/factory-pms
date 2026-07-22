@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { AdaptiveList } from '@/components/AdaptiveList'
 import { PageHeader } from '@/components/PageHeader'
-import { ResponsiveTable } from '@/components/ResponsiveTable'
 import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,8 +30,9 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import { useCreateComment } from '@/hooks/useComments'
 import { useEscalations } from '@/hooks/useEscalations'
 import { formatLocalizedDateTime } from '@/lib/i18n-format'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  escalationFormSchema,
+  createEscalationFormSchema,
   formatEscalationBody,
   type EscalationFormValues,
 } from '@/lib/validations/comment'
@@ -44,6 +45,7 @@ export function EscalationsPage() {
   const [selectedTask, setSelectedTask] = useState<EscalationItem | null>(null)
   const createComment = useCreateComment('task', selectedTask?.id)
   const notAvailable = t('common.notAvailable')
+  const escalationFormSchema = useValidationSchema(createEscalationFormSchema)
 
   const form = useForm<EscalationFormValues>({
     resolver: zodResolver(escalationFormSchema),
@@ -99,7 +101,45 @@ export function EscalationsPage() {
       ) : null}
 
       {!isLoading && !error ? (
-        <ResponsiveTable>
+        <AdaptiveList
+          items={escalations}
+          emptyMessage={t('escalations.empty')}
+          getKey={(task) => task.id}
+          renderMobileCard={(task) => (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <p className="font-medium">{task.title}</p>
+                <p className="text-sm text-muted-foreground">
+                  {task.phases?.name ?? t('common.phase')}
+                </p>
+              </div>
+              <p className="text-sm">
+                <span className="font-medium text-muted-foreground">
+                  {t('escalations.project')}:{' '}
+                </span>
+                {task.projects ? (
+                  <Link
+                    className="font-medium hover:underline"
+                    to={`/projects/${task.projects.id}`}
+                  >
+                    {task.projects.title}
+                  </Link>
+                ) : (
+                  notAvailable
+                )}
+              </p>
+              <p className="text-sm text-destructive">
+                <span className="font-medium">
+                  {t('escalations.blockedReason')}:{' '}
+                </span>
+                {task.blocked_reason ?? notAvailable}
+              </p>
+              <Button size="sm" onClick={() => openEscalate(task)}>
+                {t('common.escalate')}
+              </Button>
+            </div>
+          )}
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -114,60 +154,49 @@ export function EscalationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {escalations.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="py-10 text-center text-muted-foreground"
-                  >
-                    {t('escalations.empty')}
+              {escalations.map((task) => (
+                <TableRow key={task.id}>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <p className="font-medium">{task.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {task.phases?.name ?? t('common.phase')}
+                      </p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {task.projects ? (
+                      <Link
+                        className="font-medium hover:underline"
+                        to={`/projects/${task.projects.id}`}
+                      >
+                        {task.projects.title}
+                      </Link>
+                    ) : (
+                      notAvailable
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {task.projects?.factories
+                      ? `${task.projects.factories.name} (${task.projects.factories.code})`
+                      : notAvailable}
+                  </TableCell>
+                  <TableCell className="max-w-xs text-sm text-destructive">
+                    {task.blocked_reason ?? notAvailable}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                    {formatLocalizedDateTime(task.updated_at, locale)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" onClick={() => openEscalate(task)}>
+                      {t('common.escalate')}
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                escalations.map((task) => (
-                  <TableRow key={task.id}>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p className="font-medium">{task.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {task.phases?.name ?? t('common.phase')}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {task.projects ? (
-                        <Link
-                          className="font-medium hover:underline"
-                          to={`/projects/${task.projects.id}`}
-                        >
-                          {task.projects.title}
-                        </Link>
-                      ) : (
-                        notAvailable
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {task.projects?.factories
-                        ? `${task.projects.factories.name} (${task.projects.factories.code})`
-                        : notAvailable}
-                    </TableCell>
-                    <TableCell className="max-w-xs text-sm text-destructive">
-                      {task.blocked_reason ?? notAvailable}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                      {formatLocalizedDateTime(task.updated_at, locale)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" onClick={() => openEscalate(task)}>
-                        {t('common.escalate')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
-        </ResponsiveTable>
+        </AdaptiveList>
       ) : null}
 
       <Dialog
@@ -189,7 +218,7 @@ export function EscalationsPage() {
                 : null}
             </DialogDescription>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={submitEscalation}>
+          <form key={locale} className="space-y-4" onSubmit={submitEscalation}>
             <Textarea rows={4} {...form.register('message')} />
             {form.formState.errors.message ? (
               <p className="text-sm text-destructive">

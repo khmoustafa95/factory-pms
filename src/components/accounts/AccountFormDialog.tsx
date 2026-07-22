@@ -22,8 +22,9 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactories } from '@/hooks/useFactories'
 import { getRoleLabel } from '@/lib/i18n-format'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  accountFormSchema,
+  createAccountFormSchema,
   type AccountFormValues,
 } from '@/lib/validations/account'
 import type { UserRole } from '@/types/database'
@@ -56,8 +57,9 @@ export function AccountFormDialog({
   onSubmit,
   isSubmitting,
 }: AccountFormDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { data: factories = [] } = useFactories()
+  const accountFormSchema = useValidationSchema(createAccountFormSchema)
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
@@ -107,7 +109,7 @@ export function AccountFormDialog({
           <DialogDescription>{account?.email}</DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="account-name">{t('accounts.fullName')}</Label>
             <Input id="account-name" {...form.register('full_name')} />

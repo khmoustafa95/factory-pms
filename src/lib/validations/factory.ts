@@ -1,15 +1,20 @@
 import { z } from 'zod'
+import type { ValidationTranslator } from '@/lib/validations/types'
 
-export const factoryFormSchema = z.object({
-  name: z.string().trim().min(2, 'Name must be at least 2 characters'),
-  code: z
-    .string()
-    .trim()
-    .min(2, 'Code must be at least 2 characters')
-    .max(12, 'Code must be at most 12 characters')
-    .regex(/^[A-Z0-9_-]+$/, 'Code must be uppercase letters, numbers, _ or -'),
-  location: z.string().trim().optional(),
-  is_active: z.boolean(),
-})
+export function createFactoryFormSchema(t: ValidationTranslator) {
+  return z.object({
+    name: z.string().trim().min(2, t('validation.nameMin')),
+    code: z
+      .string()
+      .trim()
+      .min(2, t('validation.codeMin'))
+      .max(12, t('validation.codeMax'))
+      .regex(/^[A-Z0-9_-]+$/, t('validation.codeFormat')),
+    location: z.string().trim().optional(),
+    is_active: z.boolean(),
+  })
+}
 
-export type FactoryFormValues = z.infer<typeof factoryFormSchema>
+export type FactoryFormValues = z.infer<
+  ReturnType<typeof createFactoryFormSchema>
+>

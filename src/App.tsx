@@ -1,44 +1,80 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/components/AppLayout'
+import { RouteFallback } from '@/components/RouteFallback'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { RoleRoute } from '@/components/auth/RoleRoute'
-import { AccountsPage } from '@/pages/AccountsPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { FactoriesPage } from '@/pages/FactoriesPage'
-import { LoginPage } from '@/pages/LoginPage'
-import { ProjectDetailPage } from '@/pages/ProjectDetailPage'
-import { EscalationsPage } from '@/pages/EscalationsPage'
-import { ProjectsPage } from '@/pages/ProjectsPage'
+
+const DashboardPage = lazy(() =>
+  import('@/pages/DashboardPage').then((module) => ({
+    default: module.DashboardPage,
+  })),
+)
+const ProjectsPage = lazy(() =>
+  import('@/pages/ProjectsPage').then((module) => ({
+    default: module.ProjectsPage,
+  })),
+)
+const ProjectDetailPage = lazy(() =>
+  import('@/pages/ProjectDetailPage').then((module) => ({
+    default: module.ProjectDetailPage,
+  })),
+)
+const EscalationsPage = lazy(() =>
+  import('@/pages/EscalationsPage').then((module) => ({
+    default: module.EscalationsPage,
+  })),
+)
+const FactoriesPage = lazy(() =>
+  import('@/pages/FactoriesPage').then((module) => ({
+    default: module.FactoriesPage,
+  })),
+)
+const AccountsPage = lazy(() =>
+  import('@/pages/AccountsPage').then((module) => ({
+    default: module.AccountsPage,
+  })),
+)
+const LoginPage = lazy(() =>
+  import('@/pages/LoginPage').then((module) => ({
+    default: module.LoginPage,
+  })),
+)
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<ProtectedRoute />}>
-        <Route element={<AppLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route
-            element={
-              <RoleRoute
-                allowedRoles={[
-                  'company_director',
-                  'factory_manager',
-                  'project_manager',
-                ]}
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AppLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route
+              element={
+                <RoleRoute
+                  allowedRoles={[
+                    'company_director',
+                    'factory_manager',
+                    'project_manager',
+                  ]}
+                />
+              }
+            >
+              <Route path="projects" element={<ProjectsPage />} />
+              <Route
+                path="projects/:projectId"
+                element={<ProjectDetailPage />}
               />
-            }
-          >
-            <Route path="projects" element={<ProjectsPage />} />
-            <Route path="projects/:projectId" element={<ProjectDetailPage />} />
-            <Route path="escalations" element={<EscalationsPage />} />
-          </Route>
-          <Route element={<RoleRoute allowedRoles={['company_director']} />}>
-            <Route path="factories" element={<FactoriesPage />} />
-            <Route path="accounts" element={<AccountsPage />} />
+              <Route path="escalations" element={<EscalationsPage />} />
+            </Route>
+            <Route element={<RoleRoute allowedRoles={['company_director']} />}>
+              <Route path="factories" element={<FactoriesPage />} />
+              <Route path="accounts" element={<AccountsPage />} />
+            </Route>
           </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   )
 }

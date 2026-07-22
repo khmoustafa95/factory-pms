@@ -13,8 +13,9 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  projectRejectSchema,
+  createProjectRejectSchema,
   type ProjectRejectValues,
 } from '@/lib/validations/approval'
 
@@ -33,7 +34,8 @@ export function ProjectRejectDialog({
   onSubmit,
   isSubmitting,
 }: ProjectRejectDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
+  const projectRejectSchema = useValidationSchema(createProjectRejectSchema)
 
   const form = useForm<ProjectRejectValues>({
     resolver: zodResolver(projectRejectSchema),
@@ -67,7 +69,7 @@ export function ProjectRejectDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="rejection-reason">
               {t('projects.rejectionReason')}

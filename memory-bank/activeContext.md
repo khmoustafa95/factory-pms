@@ -2,12 +2,13 @@
 
 ## Current focus
 
-**i18n + theme + responsive UX** — Arabic/English, dark/light/system theme, mobile-first layout. Next: apply migration to live project and end-to-end QA.
+**UX polish** — localized validation, mobile cards, code-splitting, tests. Next: apply migration to live project and end-to-end QA.
 
 ## Recent changes
 
+- [2026-07-22] UX polish: Zod validation i18n, AdaptiveList mobile cards, route lazy-loading, Kanban/Gantt mobile, Vitest tests, a11y skip link
 - [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
-- [2026-07-22] i18n: list pages (Dashboard, Projects, Factories, Accounts, Escalations) — `PageHeader`, `StatusMessage`, `ResponsiveTable`, `formatLocalized*`, semantic theme colors
+- [2026-07-22] Responsive list pages: `AdaptiveList` on Factories, Accounts, Escalations, Projects — mobile card view + desktop table via `ResponsiveTable` wrapper inside `AdaptiveList`
 - [2026-07-22] i18n: form dialogs (project, reject, factory, account, phase, task) use `useTranslation` + semantic theme colors
 - [2026-07-22] Env scripts: `.env.development` / `.env.staging` / `.env.production`, npm scripts per stage, `supabase init` + local CLI helpers
 - [2026-07-22] FT-05: Kanban board, timeline/Gantt-style view, progress overview, dashboard KPIs
@@ -28,4 +29,4 @@
 ## Open questions
 
 - Hosting target (Vercel vs Netlify)
-- Validation message i18n (Zod schemas still English)
+- Validation message i18n — done via schema factories + `validation.*` locale keys

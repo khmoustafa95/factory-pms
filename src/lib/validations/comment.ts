@@ -1,19 +1,25 @@
 import { z } from 'zod'
+import type { ValidationTranslator } from '@/lib/validations/types'
 
-export const commentFormSchema = z.object({
-  body: z.string().trim().min(1, 'Comment cannot be empty'),
-})
+export function createCommentFormSchema(t: ValidationTranslator) {
+  return z.object({
+    body: z.string().trim().min(1, t('validation.commentRequired')),
+  })
+}
 
-export type CommentFormValues = z.infer<typeof commentFormSchema>
+export type CommentFormValues = z.infer<
+  ReturnType<typeof createCommentFormSchema>
+>
 
-export const escalationFormSchema = z.object({
-  message: z
-    .string()
-    .trim()
-    .min(3, 'Escalation message must be at least 3 characters'),
-})
+export function createEscalationFormSchema(t: ValidationTranslator) {
+  return z.object({
+    message: z.string().trim().min(3, t('validation.escalationMin')),
+  })
+}
 
-export type EscalationFormValues = z.infer<typeof escalationFormSchema>
+export type EscalationFormValues = z.infer<
+  ReturnType<typeof createEscalationFormSchema>
+>
 
 export const ESCALATION_PREFIX = '[ESCALATION]'
 
