@@ -30,6 +30,7 @@
 - [x] Security: restrict signup role metadata; enforce `is_active` on login
 - [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
 - [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
+- [x] DB performance: progress trigger + `get_dashboard_stats` / `get_project_activity` RPCs
 
 ## Backlog
 
