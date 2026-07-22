@@ -1,10 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
-import {
-  buildIlikePattern,
-  getPaginationRange,
-  type PaginatedResult,
-} from '@/lib/list-query'
+import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { FactoriesPageParams } from '@/lib/list-query-params'
 import { applyActiveStatusFilter } from '@/lib/list-filters'
 import { queryKeys } from '@/lib/query-keys'
@@ -34,9 +30,8 @@ export function useFactories() {
 export function useFactoriesPage(params: FactoriesPageParams) {
   return useQuery({
     queryKey: queryKeys.factoriesPage(params),
-    queryFn: async (): Promise<PaginatedResult<Factory>> => {
+    queryFn: async () => {
       const supabase = getSupabase()
-      const { from, to } = getPaginationRange(params.page, params.pageSize)
       const searchPattern = buildIlikePattern(params.search)
 
       let query = supabase
@@ -52,18 +47,11 @@ export function useFactoriesPage(params: FactoriesPageParams) {
 
       query = applyActiveStatusFilter(query, params.status)
 
-      const { data, error, count } = await query.range(from, to)
-
-      if (error) {
-        throw error
-      }
-
-      return {
-        items: data ?? [],
-        total: count ?? 0,
+      return fetchPaginatedList<Factory>({
         page: params.page,
         pageSize: params.pageSize,
-      }
+        query,
+      })
     },
   })
 }

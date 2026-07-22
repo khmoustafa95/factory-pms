@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
-import { mapJoinRows } from '@/lib/supabase-joins'
+import { joinMappers } from '@/lib/supabase-joins'
+import type { TaskListItem } from '@/types/joins'
+import { TASK_LIST_SELECT } from '@/types/joins'
 import { toTaskPayload, type TaskFormValues } from '@/lib/validations/task'
-import type { Task, TaskStatus } from '@/types/database'
+import type { TaskStatus } from '@/types/database'
 
-export type TaskListItem = Task & {
-  assignee: { full_name: string } | null
-}
+export type { TaskListItem } from '@/types/joins'
 
 async function invalidateTaskQueries(
   queryClient: ReturnType<typeof useQueryClient>,
@@ -33,12 +33,7 @@ export function useTasks(projectId: string | undefined) {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('tasks')
-        .select(
-          `
-          *,
-          assignee:profiles!assignee_id (full_name)
-        `,
-        )
+        .select(TASK_LIST_SELECT)
         .eq('project_id', projectId!)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true })
@@ -47,7 +42,7 @@ export function useTasks(projectId: string | undefined) {
         throw error
       }
 
-      return mapJoinRows<TaskListItem>(data)
+      return joinMappers.taskListItem(data)
     },
   })
 }

@@ -1,13 +1,56 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   buildIlikePattern,
   escapeIlikePattern,
+  fetchPaginatedList,
   getPaginationRange,
   getShowingRange,
   getTotalPages,
 } from '@/lib/list-query'
 
-describe('list-query', () => {
+describe('fetchPaginatedList', () => {
+  it('maps items and returns pagination metadata', async () => {
+    const range = vi.fn().mockResolvedValue({
+      data: [{ id: '1' }, { id: '2' }],
+      error: null,
+      count: 12,
+    })
+
+    const result = await fetchPaginatedList({
+      page: 2,
+      pageSize: 10,
+      query: { range },
+      mapItems: (data) => data as Array<{ id: string }>,
+    })
+
+    const { from, to } = getPaginationRange(2, 10)
+    expect(range).toHaveBeenCalledWith(from, to)
+    expect(result).toEqual({
+      items: [{ id: '1' }, { id: '2' }],
+      total: 12,
+      page: 2,
+      pageSize: 10,
+    })
+  })
+
+  it('throws when the query fails', async () => {
+    const range = vi.fn().mockResolvedValue({
+      data: null,
+      error: new Error('query failed'),
+      count: null,
+    })
+
+    await expect(
+      fetchPaginatedList({
+        page: 1,
+        pageSize: 10,
+        query: { range },
+      }),
+    ).rejects.toThrow('query failed')
+  })
+})
+
+describe('list-query helpers', () => {
   it('escapes ilike wildcards', () => {
     expect(escapeIlikePattern('100%_done')).toBe('100\\%\\_done')
   })

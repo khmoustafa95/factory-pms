@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 import { FormCheckboxField } from '@/components/FormCheckboxField'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -15,12 +14,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useTranslation } from '@/contexts/LocaleContext'
-import type { Factory } from '@/types/database'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createFactoryFormSchema,
   type FactoryFormValues,
 } from '@/lib/validations/factory'
+import type { Factory } from '@/types/database'
 
 interface FactoryFormDialogProps {
   open: boolean
@@ -28,6 +28,13 @@ interface FactoryFormDialogProps {
   factory?: Factory | null
   onSubmit: (values: FactoryFormValues) => Promise<void>
   isSubmitting: boolean
+}
+
+const FACTORY_FORM_DEFAULTS: FactoryFormValues = {
+  name: '',
+  code: '',
+  location: '',
+  is_active: true,
 }
 
 export function FactoryFormDialog({
@@ -40,35 +47,21 @@ export function FactoryFormDialog({
   const { t, locale } = useTranslation()
   const factoryFormSchema = useValidationSchema(createFactoryFormSchema)
 
-  const form = useForm<FactoryFormValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(factoryFormSchema),
-    defaultValues: {
-      name: '',
-      code: '',
-      location: '',
-      is_active: true,
-    },
-  })
-
-  const isActive = useWatch({ control: form.control, name: 'is_active' })
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({
+    defaultValues: FACTORY_FORM_DEFAULTS,
+    getValues: () => ({
       name: factory?.name ?? '',
       code: factory?.code ?? '',
       location: factory?.location ?? '',
       is_active: factory?.is_active ?? true,
-    })
-  }, [factory, form, open])
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
+    }),
+    resetDependencies: [factory],
   })
+
+  const isActive = useWatch({ control: form.control, name: 'is_active' })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,6 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +12,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createProjectRejectSchema,
@@ -28,6 +27,10 @@ interface ProjectRejectDialogProps {
   isSubmitting: boolean
 }
 
+const REJECT_FORM_DEFAULTS: ProjectRejectValues = {
+  rejection_reason: '',
+}
+
 export function ProjectRejectDialog({
   open,
   onOpenChange,
@@ -38,25 +41,14 @@ export function ProjectRejectDialog({
   const { t, locale } = useTranslation()
   const projectRejectSchema = useValidationSchema(createProjectRejectSchema)
 
-  const form = useForm<ProjectRejectValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(projectRejectSchema),
-    defaultValues: {
-      rejection_reason: '',
-    },
+    defaultValues: REJECT_FORM_DEFAULTS,
+    getValues: () => ({ rejection_reason: '' }),
   })
 
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({ rejection_reason: '' })
-  }, [form, open])
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
-  })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

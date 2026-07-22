@@ -1,31 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
-import {
-  buildIlikePattern,
-  getPaginationRange,
-  type PaginatedResult,
-} from '@/lib/list-query'
+import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { AccountsPageParams } from '@/lib/list-query-params'
-import { queryKeys } from '@/lib/query-keys'
-import type { Profile } from '@/types/database'
-import type { AccountFormValues } from '@/lib/validations/account'
 import { applyActiveStatusFilter } from '@/lib/list-filters'
+import { queryKeys } from '@/lib/query-keys'
+import { joinMappers } from '@/lib/supabase-joins'
+import type { ProfileWithFactory } from '@/types/joins'
+import { PROFILE_WITH_FACTORY_SELECT } from '@/types/joins'
+import type { AccountFormValues } from '@/lib/validations/account'
 
-export type ProfileWithFactory = Profile & {
-  factories: { name: string; code: string } | null
-}
+export type { ProfileWithFactory } from '@/types/joins'
 
 export function useAccountsPage(params: AccountsPageParams) {
   return useQuery({
     queryKey: queryKeys.accountsPage(params),
-    queryFn: async (): Promise<PaginatedResult<ProfileWithFactory>> => {
+    queryFn: async () => {
       const supabase = getSupabase()
-      const { from, to } = getPaginationRange(params.page, params.pageSize)
       const searchPattern = buildIlikePattern(params.search)
 
       let query = supabase
         .from('profiles')
-        .select('*, factories(name, code)', { count: 'exact' })
+        .select(PROFILE_WITH_FACTORY_SELECT, { count: 'exact' })
         .order('full_name', { ascending: true })
 
       if (searchPattern) {
@@ -44,18 +39,12 @@ export function useAccountsPage(params: AccountsPageParams) {
 
       query = applyActiveStatusFilter(query, params.status)
 
-      const { data, error, count } = await query.range(from, to)
-
-      if (error) {
-        throw error
-      }
-
-      return {
-        items: (data ?? []) as ProfileWithFactory[],
-        total: count ?? 0,
+      return fetchPaginatedList<ProfileWithFactory>({
         page: params.page,
         pageSize: params.pageSize,
-      }
+        query,
+        mapItems: joinMappers.profileWithFactory,
+      })
     },
   })
 }

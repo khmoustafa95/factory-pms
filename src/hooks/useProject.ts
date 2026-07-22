@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
-import { mapJoinRow } from '@/lib/supabase-joins'
-import type { Project } from '@/types/database'
+import { joinMappers } from '@/lib/supabase-joins'
+import type { ProjectDetail } from '@/types/joins'
+import { PROJECT_DETAIL_SELECT } from '@/types/joins'
 
-export type ProjectDetail = Project & {
-  factories: { name: string; code: string } | null
-  assigned_pm: { full_name: string } | null
-}
+export type { ProjectDetail } from '@/types/joins'
 
 export function useProject(projectId: string | undefined) {
   return useQuery({
@@ -17,13 +15,7 @@ export function useProject(projectId: string | undefined) {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('projects')
-        .select(
-          `
-          *,
-          factories (name, code),
-          assigned_pm:profiles!assigned_pm_id (full_name)
-        `,
-        )
+        .select(PROJECT_DETAIL_SELECT)
         .eq('id', projectId!)
         .single()
 
@@ -31,7 +23,12 @@ export function useProject(projectId: string | undefined) {
         throw error
       }
 
-      return mapJoinRow<ProjectDetail>(data)!
+      const project = joinMappers.projectDetail(data)
+      if (!project) {
+        throw new Error('Project not found')
+      }
+
+      return project
     },
   })
 }

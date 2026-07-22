@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 import { FormCheckboxField } from '@/components/FormCheckboxField'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactories } from '@/hooks/useFactories'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
@@ -36,6 +37,13 @@ const USER_ROLES = [
   'factory_manager',
   'project_manager',
 ] as const satisfies readonly UserRole[]
+
+const ACCOUNT_FORM_DEFAULTS: AccountFormValues = {
+  full_name: '',
+  role: 'project_manager',
+  factory_id: null,
+  is_active: true,
+}
 
 interface AccountFormDialogProps {
   open: boolean
@@ -63,14 +71,17 @@ export function AccountFormDialog({
   const { data: factories = [] } = useFactories()
   const accountFormSchema = useValidationSchema(createAccountFormSchema)
 
-  const form = useForm<AccountFormValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(accountFormSchema),
-    defaultValues: {
-      full_name: '',
-      role: 'project_manager',
-      factory_id: null,
-      is_active: true,
-    },
+    defaultValues: ACCOUNT_FORM_DEFAULTS,
+    getValues: () => ({
+      full_name: account?.full_name ?? '',
+      role: account?.role ?? 'project_manager',
+      factory_id: account?.factory_id ?? null,
+      is_active: account?.is_active ?? true,
+    }),
+    resetDependencies: [account],
   })
 
   const selectedRole = useWatch({ control: form.control, name: 'role' })
@@ -78,21 +89,7 @@ export function AccountFormDialog({
     control: form.control,
     name: 'factory_id',
   })
-
   const isActive = useWatch({ control: form.control, name: 'is_active' })
-
-  useEffect(() => {
-    if (!open || !account) {
-      return
-    }
-
-    form.reset({
-      full_name: account.full_name,
-      role: account.role,
-      factory_id: account.factory_id,
-      is_active: account.is_active,
-    })
-  }, [account, form, open])
 
   useEffect(() => {
     if (selectedRole === 'company_director') {
@@ -100,10 +97,7 @@ export function AccountFormDialog({
     }
   }, [form, selectedRole])
 
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
-  })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

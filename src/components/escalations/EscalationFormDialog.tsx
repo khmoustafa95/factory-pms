@@ -1,6 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createEscalationFormSchema,
@@ -28,6 +27,10 @@ interface EscalationFormDialogProps {
   isSubmitting: boolean
 }
 
+const ESCALATION_FORM_DEFAULTS: EscalationFormValues = {
+  message: '',
+}
+
 export function EscalationFormDialog({
   open,
   onOpenChange,
@@ -39,23 +42,15 @@ export function EscalationFormDialog({
   const { t, locale } = useTranslation()
   const escalationFormSchema = useValidationSchema(createEscalationFormSchema)
 
-  const form = useForm<EscalationFormValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(escalationFormSchema),
-    defaultValues: { message: '' },
+    defaultValues: ESCALATION_FORM_DEFAULTS,
+    getValues: () => ({ message: initialMessage }),
+    resetDependencies: [initialMessage],
   })
 
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({ message: initialMessage })
-  }, [form, initialMessage, open])
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
-  })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

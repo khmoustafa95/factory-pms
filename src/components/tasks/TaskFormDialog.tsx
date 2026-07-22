@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { getTaskStatusLabel } from '@/lib/i18n-format'
 import {
@@ -47,6 +47,15 @@ interface TaskFormDialogProps {
   isSubmitting: boolean
 }
 
+const TASK_FORM_DEFAULTS: TaskFormValues = {
+  title: '',
+  description: '',
+  status: 'todo',
+  blocked_reason: '',
+  due_date: '',
+  assignee_id: null,
+}
+
 export function TaskFormDialog({
   open,
   onOpenChange,
@@ -60,16 +69,19 @@ export function TaskFormDialog({
   const { data: assignees = [] } = useFactoryProjectManagers(factoryId)
   const taskFormSchema = useValidationSchema(createTaskFormSchema)
 
-  const form = useForm<TaskFormValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(taskFormSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      status: 'todo',
-      blocked_reason: '',
-      due_date: '',
-      assignee_id: null,
-    },
+    defaultValues: TASK_FORM_DEFAULTS,
+    getValues: () => ({
+      title: task?.title ?? '',
+      description: task?.description ?? '',
+      status: task?.status ?? 'todo',
+      blocked_reason: task?.blocked_reason ?? '',
+      due_date: task?.due_date ?? '',
+      assignee_id: task?.assignee_id ?? null,
+    }),
+    resetDependencies: [task],
   })
 
   const selectedStatus = useWatch({ control: form.control, name: 'status' })
@@ -78,25 +90,7 @@ export function TaskFormDialog({
     name: 'assignee_id',
   })
 
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({
-      title: task?.title ?? '',
-      description: task?.description ?? '',
-      status: task?.status ?? 'todo',
-      blocked_reason: task?.blocked_reason ?? '',
-      due_date: task?.due_date ?? '',
-      assignee_id: task?.assignee_id ?? null,
-    })
-  }, [form, open, task])
-
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
-  })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
