@@ -24,6 +24,8 @@ export const ar = {
     no: 'لا',
     back: 'رجوع',
     notAvailable: '—',
+    retry: 'إعادة المحاولة',
+    retrying: 'جاري إعادة المحاولة…',
     user: 'مستخدم',
     phase: 'مرحلة',
     factory: 'مصنع',
@@ -133,6 +135,8 @@ export const ar = {
     projectsManagerDescription: 'تقديم مقترحات المشاريع لاعتماد مدير الشركة.',
     projectsDirectorDescription: 'اعتماد أو رفض المقترحات المقدمة.',
     projectsPmDescription: 'متابعة المشاريع المعينة لك.',
+    loading: 'جاري تحميل لوحة التحكم…',
+    loadFailed: 'فشل تحميل إحصائيات لوحة التحكم',
   },
   projects: {
     title: 'المشاريع',
@@ -250,6 +254,7 @@ export const ar = {
     post: 'نشر تعليق',
     posting: 'جاري النشر…',
     empty: 'لا يوجد نشاط بعد. كن أول من يعلّق.',
+    loadFailed: 'فشل تحميل النشاط',
     commentAdded: 'تمت إضافة التعليق',
     commentFailed: 'تعذر إضافة التعليق',
     onProject: 'على المشروع',
@@ -302,6 +307,8 @@ export const ar = {
   },
   errors: {
     generic: 'حدث خطأ ما',
+    boundaryTitle: 'حدث خطأ غير متوقع',
+    boundaryDescription: 'حدث خطأ غير متوقع. حاول إعادة تحميل الصفحة.',
   },
   validation: {
     nameMin: 'يجب أن يكون الاسم حرفين على الأقل',

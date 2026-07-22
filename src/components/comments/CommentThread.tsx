@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import {
@@ -70,7 +71,13 @@ export function CommentThread({
 }: CommentThreadProps) {
   const { user } = useAuth()
   const { t, locale } = useTranslation()
-  const { data: comments = [], isLoading } = useComments(entityType, entityId)
+  const {
+    data: comments = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useComments(entityType, entityId)
   const createComment = useCreateComment(entityType, entityId)
   useCommentsRealtime(entityType, entityId)
   const commentFormSchema = useValidationSchema(createCommentFormSchema)
@@ -100,19 +107,24 @@ export function CommentThread({
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
-      ) : null}
-
-      {comments.length === 0 && !isLoading ? (
-        <p className="text-sm text-muted-foreground">{t('activity.empty')}</p>
-      ) : (
-        <div className="space-y-2">
-          {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
-          ))}
-        </div>
-      )}
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        loadingMessage={t('common.loading')}
+        errorMessage={t('activity.loadFailed')}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      >
+        {comments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('activity.empty')}</p>
+        ) : (
+          <div className="space-y-2">
+            {comments.map((comment) => (
+              <CommentItem key={comment.id} comment={comment} />
+            ))}
+          </div>
+        )}
+      </QueryState>
 
       {canComment ? (
         <form key={locale} className="space-y-2" onSubmit={onSubmit}>

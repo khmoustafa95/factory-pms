@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { PageHeader } from '@/components/PageHeader'
-import { StatusMessage } from '@/components/StatusMessage'
+import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -40,7 +40,13 @@ import type { EscalationItem } from '@/hooks/useEscalations'
 
 export function EscalationsPage() {
   const { t, locale } = useTranslation()
-  const { data: escalations = [], isLoading, error } = useEscalations()
+  const {
+    data: escalations = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useEscalations()
   const { user } = useAuth()
   const [selectedTask, setSelectedTask] = useState<EscalationItem | null>(null)
   const createComment = useCreateComment('task', selectedTask?.id)
@@ -90,17 +96,14 @@ export function EscalationsPage() {
         description={t('escalations.description')}
       />
 
-      {isLoading ? (
-        <StatusMessage>{t('escalations.loading')}</StatusMessage>
-      ) : null}
-
-      {error ? (
-        <StatusMessage variant="error">
-          {error instanceof Error ? error.message : t('escalations.loadFailed')}
-        </StatusMessage>
-      ) : null}
-
-      {!isLoading && !error ? (
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        loadingMessage={t('escalations.loading')}
+        errorMessage={t('escalations.loadFailed')}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      >
         <AdaptiveList
           items={escalations}
           emptyMessage={t('escalations.empty')}
@@ -197,7 +200,7 @@ export function EscalationsPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
-      ) : null}
+      </QueryState>
 
       <Dialog
         open={Boolean(selectedTask)}

@@ -10,7 +10,7 @@ import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
 import { ProjectProgressOverview } from '@/components/progress/ProjectProgressOverview'
 import { TaskFormDialog } from '@/components/tasks/TaskFormDialog'
-import { StatusMessage } from '@/components/StatusMessage'
+import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
@@ -45,10 +45,37 @@ export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { profile } = useAuth()
   const { t } = useTranslation()
-  const { data: project, isLoading, error } = useProject(projectId)
-  const { data: phases = [] } = usePhases(projectId)
-  const { data: tasks = [] } = useTasks(projectId)
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    error: projectError,
+    refetch: refetchProject,
+    isFetching: isProjectFetching,
+  } = useProject(projectId)
+  const {
+    data: phases = [],
+    isLoading: isPhasesLoading,
+    error: phasesError,
+    refetch: refetchPhases,
+    isFetching: isPhasesFetching,
+  } = usePhases(projectId)
+  const {
+    data: tasks = [],
+    isLoading: isTasksLoading,
+    error: tasksError,
+    refetch: refetchTasks,
+    isFetching: isTasksFetching,
+  } = useTasks(projectId)
   useProjectRealtime(projectId)
+
+  const isWbsLoading = isPhasesLoading || isTasksLoading
+  const wbsError = phasesError ?? tasksError
+  const isWbsFetching = isPhasesFetching || isTasksFetching
+
+  const refetchWbs = () => {
+    void refetchPhases()
+    void refetchTasks()
+  }
 
   const createPhase = useCreatePhase(projectId)
   const updatePhase = useUpdatePhase(projectId)
@@ -83,7 +110,7 @@ export function ProjectDetailPage() {
   const remainingWeight = Math.max(0, 100 - totalWeight)
   const canManage = project ? canManageWbs(project, profile) : false
 
-  if (!isLoading && project && !canViewWbs(project.status)) {
+  if (!isProjectLoading && project && !canViewWbs(project.status)) {
     return <Navigate to="/projects" replace />
   }
 
@@ -189,120 +216,126 @@ export function ProjectDetailPage() {
           </Link>
         </Button>
 
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">
-            {t('projectDetail.loading')}
-          </p>
-        ) : null}
-
-        {error ? (
-          <StatusMessage variant="error">
-            {error instanceof Error
-              ? error.message
-              : t('projectDetail.loadFailed')}
-          </StatusMessage>
-        ) : null}
-
-        {project ? (
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-3xl font-semibold tracking-tight">
-                {project.title}
-              </h1>
-              <ProjectStatusBadge status={project.status} />
-              <span className="text-sm text-muted-foreground">
-                {t('projectDetail.progressLabel', {
-                  value: formatProgress(Number(project.progress_percent)),
-                })}
-              </span>
-            </div>
-            {project.description ? (
-              <p className="max-w-3xl text-muted-foreground">
-                {project.description}
-              </p>
-            ) : null}
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {project.factories ? (
-                <span>
-                  {t('projectDetail.factoryLabel', {
-                    name: project.factories.name,
-                    code: project.factories.code,
+        <QueryState
+          isLoading={isProjectLoading}
+          error={projectError}
+          loadingMessage={t('projectDetail.loading')}
+          errorMessage={t('projectDetail.loadFailed')}
+          onRetry={() => void refetchProject()}
+          isRetrying={isProjectFetching}
+        >
+          {project ? (
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-semibold tracking-tight">
+                  {project.title}
+                </h1>
+                <ProjectStatusBadge status={project.status} />
+                <span className="text-sm text-muted-foreground">
+                  {t('projectDetail.progressLabel', {
+                    value: formatProgress(Number(project.progress_percent)),
                   })}
                 </span>
+              </div>
+              {project.description ? (
+                <p className="max-w-3xl text-muted-foreground">
+                  {project.description}
+                </p>
               ) : null}
-              {project.assigned_pm ? (
-                <span>
-                  {t('projectDetail.pmLabel', {
-                    name: project.assigned_pm.full_name,
-                  })}
-                </span>
-              ) : null}
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                {project.factories ? (
+                  <span>
+                    {t('projectDetail.factoryLabel', {
+                      name: project.factories.name,
+                      code: project.factories.code,
+                    })}
+                  </span>
+                ) : null}
+                {project.assigned_pm ? (
+                  <span>
+                    {t('projectDetail.pmLabel', {
+                      name: project.assigned_pm.full_name,
+                    })}
+                  </span>
+                ) : null}
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </QueryState>
       </div>
 
       {project && projectId ? (
-        <Tabs defaultValue="overview">
-          <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="overview">
-              {t('projectDetail.tabs.overview')}
-            </TabsTrigger>
-            <TabsTrigger value="wbs">{t('projectDetail.tabs.wbs')}</TabsTrigger>
-            <TabsTrigger value="kanban">
-              {t('projectDetail.tabs.kanban')}
-            </TabsTrigger>
-            <TabsTrigger value="timeline">
-              {t('projectDetail.tabs.timeline')}
-            </TabsTrigger>
-            <TabsTrigger value="activity">
-              {t('projectDetail.tabs.activity')}
-            </TabsTrigger>
-          </TabsList>
+        <QueryState
+          isLoading={isWbsLoading}
+          error={wbsError}
+          loadingMessage={t('common.loading')}
+          errorMessage={t('projectDetail.loadFailed')}
+          onRetry={refetchWbs}
+          isRetrying={isWbsFetching}
+        >
+          <Tabs defaultValue="overview">
+            <TabsList className="w-full justify-start overflow-x-auto">
+              <TabsTrigger value="overview">
+                {t('projectDetail.tabs.overview')}
+              </TabsTrigger>
+              <TabsTrigger value="wbs">
+                {t('projectDetail.tabs.wbs')}
+              </TabsTrigger>
+              <TabsTrigger value="kanban">
+                {t('projectDetail.tabs.kanban')}
+              </TabsTrigger>
+              <TabsTrigger value="timeline">
+                {t('projectDetail.tabs.timeline')}
+              </TabsTrigger>
+              <TabsTrigger value="activity">
+                {t('projectDetail.tabs.activity')}
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="overview" className="mt-4">
-            <ProjectProgressOverview phases={phases} tasks={tasks} />
-          </TabsContent>
+            <TabsContent value="overview" className="mt-4">
+              <ProjectProgressOverview phases={phases} tasks={tasks} />
+            </TabsContent>
 
-          <TabsContent value="wbs" className="mt-4">
-            <ProjectWbsTab
-              phases={phases}
-              tasksByPhase={tasksByPhase}
-              canManage={canManage}
-              remainingWeight={remainingWeight}
-              totalWeight={totalWeight}
-              weightsValid={weightsValid}
-              onCreatePhase={openCreatePhase}
-              onEditPhase={openEditPhase}
-              onDeletePhase={handleDeletePhase}
-              onCreateTask={openCreateTask}
-              onEditTask={openEditTask}
-              onDeleteTask={handleDeleteTask}
-            />
-          </TabsContent>
+            <TabsContent value="wbs" className="mt-4">
+              <ProjectWbsTab
+                phases={phases}
+                tasksByPhase={tasksByPhase}
+                canManage={canManage}
+                remainingWeight={remainingWeight}
+                totalWeight={totalWeight}
+                weightsValid={weightsValid}
+                onCreatePhase={openCreatePhase}
+                onEditPhase={openEditPhase}
+                onDeletePhase={handleDeletePhase}
+                onCreateTask={openCreateTask}
+                onEditTask={openEditTask}
+                onDeleteTask={handleDeleteTask}
+              />
+            </TabsContent>
 
-          <TabsContent value="kanban" className="mt-4">
-            <TaskKanbanBoard
-              projectId={projectId}
-              phases={phases}
-              tasks={tasks}
-              canManage={canManage}
-            />
-          </TabsContent>
+            <TabsContent value="kanban" className="mt-4">
+              <TaskKanbanBoard
+                projectId={projectId}
+                phases={phases}
+                tasks={tasks}
+                canManage={canManage}
+              />
+            </TabsContent>
 
-          <TabsContent value="timeline" className="mt-4">
-            <ProjectTimeline project={project} phases={phases} />
-          </TabsContent>
+            <TabsContent value="timeline" className="mt-4">
+              <ProjectTimeline project={project} phases={phases} />
+            </TabsContent>
 
-          <TabsContent value="activity" className="mt-4">
-            <ProjectActivityTab
-              projectId={projectId}
-              phaseIds={phaseIds}
-              taskIds={taskIds}
-              canComment={canManage || Boolean(profile)}
-            />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="activity" className="mt-4">
+              <ProjectActivityTab
+                projectId={projectId}
+                phaseIds={phaseIds}
+                taskIds={taskIds}
+                canComment={canManage || Boolean(profile)}
+              />
+            </TabsContent>
+          </Tabs>
+        </QueryState>
       ) : null}
 
       {project && canManage ? (

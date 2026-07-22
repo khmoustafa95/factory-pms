@@ -4,6 +4,7 @@ interface StatusMessageProps {
   children: React.ReactNode
   variant?: 'error' | 'warning' | 'info'
   className?: string
+  role?: 'status' | 'alert'
 }
 
 const variantClasses = {
@@ -18,10 +19,13 @@ export function StatusMessage({
   children,
   variant = 'info',
   className,
+  role,
 }: StatusMessageProps) {
+  const resolvedRole = role ?? (variant === 'error' ? 'alert' : 'status')
+
   return (
     <p
-      role="status"
+      role={resolvedRole}
       className={cn(
         'rounded-md border px-3 py-2 text-sm',
         variantClasses[variant],
