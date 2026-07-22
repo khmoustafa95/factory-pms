@@ -13,26 +13,51 @@ React + TypeScript SPA for project system management, with Supabase client wirin
 
 ```bash
 npm install
-cp .env.example .env.local
 ```
 
-Fill `.env.local` with your Supabase project values:
+### Local Supabase (recommended for development)
 
-```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```bash
+npm run supabase:start   # start local stack + apply migrations
+npm run dev:local        # Vite dev server → http://127.0.0.1:54321
+```
+
+Or one command: `npm run start:local`
+
+Local Studio: http://127.0.0.1:54323
+
+### Staging / production
+
+1. Copy `.env.staging` or `.env.production` to `.env.<mode>.local` (gitignored).
+2. Fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from the Supabase dashboard.
+
+```bash
+npm run dev:staging          # dev against staging
+npm run build:staging        # build for staging
+npm run build:production     # build for production (same as npm run build)
 ```
 
 ## Scripts
 
-| Command             | Description                             |
-| ------------------- | --------------------------------------- |
-| `npm run dev`       | Start the Vite dev server               |
-| `npm run build`     | Typecheck and production build          |
-| `npm run preview`   | Preview the production build            |
-| `npm run typecheck` | Run TypeScript project references check |
-| `npm run lint`      | Run ESLint                              |
-| `npm run format`    | Format with Prettier                    |
+| Command                     | Description                                        |
+| --------------------------- | -------------------------------------------------- |
+| `npm run dev` / `dev:local` | Dev server (local Supabase via `.env.development`) |
+| `npm run dev:staging`       | Dev server against staging                         |
+| `npm run start:local`       | `supabase start` then dev server                   |
+| `npm run build`             | Production build                                   |
+| `npm run build:staging`     | Staging build                                      |
+| `npm run build:production`  | Production build (alias)                           |
+| `npm run preview`           | Preview production build                           |
+| `npm run preview:staging`   | Preview staging build                              |
+| `npm run supabase:start`    | Start local Supabase                               |
+| `npm run supabase:stop`     | Stop local Supabase                                |
+| `npm run supabase:status`   | Show local URLs and keys                           |
+| `npm run supabase:reset`    | Reset local DB (migrations + seed)                 |
+| `npm run supabase:types`    | Regenerate `src/types/database.ts` from local DB   |
+| `npm run typecheck`         | TypeScript check                                   |
+| `npm run lint`              | ESLint                                             |
+| `npm run verify`            | Typecheck + lint                                   |
+| `npm run format`            | Prettier write                                     |
 
 Pre-commit runs ESLint and Prettier on staged files via Husky + lint-staged.
 

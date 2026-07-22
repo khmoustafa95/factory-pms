@@ -18,14 +18,20 @@ Use the `@/` path alias for imports from `src/`.
 
 ## Commands
 
-| Command             | Purpose                      |
-| ------------------- | ---------------------------- |
-| `npm run dev`       | Dev server                   |
-| `npm run build`     | Typecheck + production build |
-| `npm run typecheck` | TypeScript only              |
-| `npm run lint`      | ESLint                       |
-| `npm run verify`    | Typecheck + lint             |
-| `npm run format`    | Prettier write               |
+| Command                     | Purpose                                          |
+| --------------------------- | ------------------------------------------------ |
+| `npm run dev` / `dev:local` | Dev server (`.env.development` / local Supabase) |
+| `npm run dev:staging`       | Dev server (`.env.staging`)                      |
+| `npm run start:local`       | `supabase start` + dev server                    |
+| `npm run build`             | Typecheck + production build                     |
+| `npm run build:staging`     | Typecheck + staging build                        |
+| `npm run supabase:start`    | Start local Supabase stack                       |
+| `npm run supabase:reset`    | Reset local DB (migrations + seed)               |
+| `npm run supabase:types`    | Regenerate `database.ts` from local schema       |
+| `npm run typecheck`         | TypeScript only                                  |
+| `npm run lint`              | ESLint                                           |
+| `npm run verify`            | Typecheck + lint                                 |
+| `npm run format`            | Prettier write                                   |
 
 ## Stack notes
 
@@ -35,7 +41,8 @@ Use the `@/` path alias for imports from `src/`.
 
 ## Environment
 
-- Copy `.env.example` → `.env.local` and fill Supabase values.
+- Vite modes: `development` (local Supabase), `staging`, `production` — see `.env.development`, `.env.staging`, `.env.production`.
+- Put real staging/production secrets in `.env.staging.local` / `.env.production.local` (gitignored).
 - Never commit `.env`, `.env.local`, or secrets.
 - Frontend uses `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY` only (never the service-role key).
 
@@ -49,6 +56,6 @@ Use the `@/` path alias for imports from `src/`.
 
 ## Cursor Cloud specific instructions
 
-- This is a frontend-only SPA; there is no local backend/DB to run. Supabase is a remote SaaS and is optional — the app boots and renders without it, showing "Supabase: not configured".
-- Run the dev server with `npm run dev` (Vite, serves on `http://localhost:5173`). Standard scripts (`build`, `typecheck`, `lint`, `verify`, `format`) are in the Commands table above.
-- Vite reads `.env.local` only at server startup. After creating or changing `.env.local` (e.g. adding `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`), restart `npm run dev` — HMR does not pick up env changes. `.env.local` is gitignored.
+- Local Supabase: `npm run supabase:start` then `npm run dev:local` (or `npm run start:local`). Without Supabase, the app boots but shows "Supabase: not configured".
+- Run the dev server with `npm run dev` (Vite, `http://localhost:5173`). Standard scripts (`build`, `typecheck`, `lint`, `verify`, `format`) are in the Commands table above.
+- Vite reads env files at server startup only. After changing `.env.*`, restart the dev server — HMR does not pick up env changes.

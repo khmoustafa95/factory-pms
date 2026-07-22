@@ -18,7 +18,7 @@
 - [x] FT-01 Factories & accounts (director CRUD + account role assignment)
 - [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
 - [x] FT-03 Approval workflow (director approve/reject with reason)
-- [x] FT-04 Phases & tasks WBS (phase weights, tasks, blocked reason)
+- [x] Env scripts: Vite modes (local/staging/production) + Supabase local CLI scripts
 
 ## Backlog
 
@@ -33,6 +33,12 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 6)
+
+- Vite env modes: `.env.development` (local Supabase), `.env.staging`, `.env.production`
+- npm scripts: `dev:local`, `dev:staging`, `build:staging`, `start:local`, `supabase:*`
+- `supabase init` + `seed.sql` placeholder
 
 ### 2026-07-22 (session 5)
 

@@ -10,4 +10,4 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 - 2026-07-22 — Adopted TanStack Query + shadcn/ui (radix-nova) + RHF/zod/date-fns as the app dependency baseline from the Notion PRD tech stack.
 - 2026-07-22 — Hand-authored `database.ts` types from migration SQL (regenerate via `supabase gen types` once project is linked).
 - 2026-07-22 — FT-01 account provisioning via Supabase Auth dashboard + director edits `profiles` (no service-role signup from SPA).
-- 2026-07-22 — FT-05 uses lightweight custom Kanban/timeline (no external chart lib). FT-06/07 use existing `comments` table; escalations are `[ESCALATION]`-prefixed comments on blocked tasks.
+- 2026-07-22 — Vite `--mode` for env stages (`development` = local Supabase, `staging`, `production`) — committed placeholder env files; secrets in `*.local` (gitignored). Local defaults use standard `supabase start` URL/key.
