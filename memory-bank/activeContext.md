@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**All PRD features (FT-01 → FT-07)** implemented in code. Next: apply Supabase migration to a live project and end-to-end QA.
+**Environment scripts** — Vite modes for local / staging / production Supabase. Next: apply migration to live project and end-to-end QA.
 
 ## Recent changes
 
+- [2026-07-22] Env scripts: `.env.development` / `.env.staging` / `.env.production`, npm scripts per stage, `supabase init` + local CLI helpers
 - [2026-07-22] FT-05: Kanban board, timeline/Gantt-style view, progress overview, dashboard KPIs
 - [2026-07-22] FT-06: Comments on project/phase/task + activity feed with realtime invalidation
 - [2026-07-22] FT-07: Escalations page for blocked tasks with leadership notification via comments
@@ -15,10 +16,10 @@
 
 ## Next steps (concrete)
 
-1. Create Supabase project and fill `.env.local`
-2. Run migration SQL in Supabase (or `supabase db push` when CLI linked)
+1. `npm run supabase:start` + `npm run dev:local` for local stack (requires Docker)
+2. Fill `.env.staging.local` / `.env.production.local` with remote Supabase keys
 3. Create users and assign roles; walk through full workflow end-to-end
-4. Optional: regenerate `database.ts` via `supabase gen types`
+4. Optional: `npm run supabase:types` after local DB is up
 5. Optional: Arabic UI copy pass
 
 ## Open questions

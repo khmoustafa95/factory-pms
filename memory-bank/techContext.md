@@ -17,26 +17,37 @@
 
 ## Scripts
 
-| Command             | Purpose                      |
-| ------------------- | ---------------------------- |
-| `npm run dev`       | Dev server                   |
-| `npm run build`     | Typecheck + production build |
-| `npm run typecheck` | `tsc -b`                     |
-| `npm run lint`      | ESLint                       |
-| `npm run verify`    | Typecheck + lint             |
-| `npm run format`    | Prettier write               |
-| `npm run preview`   | Preview production build     |
+| Command                     | Purpose                         |
+| --------------------------- | ------------------------------- |
+| `npm run dev` / `dev:local` | Dev server (`.env.development`) |
+| `npm run dev:staging`       | Dev server (`.env.staging`)     |
+| `npm run start:local`       | `supabase start` + dev          |
+| `npm run build`             | Production build                |
+| `npm run build:staging`     | Staging build                   |
+| `npm run supabase:*`        | Local Supabase CLI helpers      |
+| `npm run typecheck`         | `tsc -b`                        |
+| `npm run lint`              | ESLint                          |
+| `npm run verify`            | Typecheck + lint                |
+| `npm run format`            | Prettier write                  |
+| `npm run preview`           | Preview production build        |
 
 ## Environment
 
-Copy `.env.example` → `.env.local`:
+Vite loads env by `--mode`:
+
+| Mode          | File                                                 | Use                                  |
+| ------------- | ---------------------------------------------------- | ------------------------------------ |
+| `development` | `.env.development`                                   | Local Supabase (`npm run dev:local`) |
+| `staging`     | `.env.staging` + optional `.env.staging.local`       | Staging project                      |
+| `production`  | `.env.production` + optional `.env.production.local` | Production build                     |
 
 ```env
+VITE_APP_ENV=local|staging|production
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-Never commit secrets or use the service-role key in the SPA.
+Never commit secrets or use the service-role key in the SPA. Put real staging/production keys in `*.local` files (gitignored).
 
 ## Still planned
 

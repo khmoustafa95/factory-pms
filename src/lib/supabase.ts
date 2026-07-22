@@ -11,7 +11,7 @@ export function isSupabaseConfigured(): boolean {
 function createSupabaseClient(): SupabaseClient<Database> {
   if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error(
-      'Supabase is not configured. Copy .env.example to .env.local and set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.',
+      'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in the env file for your mode (.env.development, .env.staging, or .env.production).',
     )
   }
 
