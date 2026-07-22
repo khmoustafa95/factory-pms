@@ -1,8 +1,9 @@
 import { format } from 'date-fns'
-import { Plus, Send } from 'lucide-react'
+import { Check, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
+import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,13 +16,20 @@ import {
 } from '@/components/ui/table'
 import { useAuth } from '@/contexts/AuthContext'
 import {
+  useApproveProject,
   useCreateProject,
   useProjects,
+  useRejectProject,
   useSubmitProject,
   useUpdateProject,
   type ProjectListItem,
 } from '@/hooks/useProjects'
-import { canEditProject, canSubmitProject } from '@/lib/project-status'
+import {
+  canEditProject,
+  canReviewProject,
+  canSubmitProject,
+} from '@/lib/project-status'
+import type { ProjectRejectValues } from '@/lib/validations/approval'
 import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import type { ProjectFormValues } from '@/lib/validations/project'
 import type { Project } from '@/types/database'
@@ -52,8 +60,13 @@ export function ProjectsPage() {
   const createProject = useCreateProject()
   const updateProject = useUpdateProject()
   const submitProject = useSubmitProject()
+  const approveProject = useApproveProject()
+  const rejectProject = useRejectProject()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [rejectingProject, setRejectingProject] =
+    useState<ProjectListItem | null>(null)
 
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
@@ -160,10 +173,57 @@ export function ProjectsPage() {
     }
   }
 
+  const handleApprove = async (project: ProjectListItem) => {
+    const userId = user?.id
+
+    if (!userId) {
+      return
+    }
+
+    try {
+      await approveProject.mutateAsync({ id: project.id, userId })
+      toast.success('Proposal approved')
+    } catch (submitError) {
+      const message =
+        submitError instanceof Error
+          ? submitError.message
+          : 'Unable to approve proposal'
+      toast.error(message)
+    }
+  }
+
+  const openReject = (project: ProjectListItem) => {
+    setRejectingProject(project)
+    setRejectDialogOpen(true)
+  }
+
+  const handleReject = async (values: ProjectRejectValues) => {
+    if (!rejectingProject) {
+      return
+    }
+
+    try {
+      await rejectProject.mutateAsync({
+        id: rejectingProject.id,
+        rejectionReason: values.rejection_reason,
+      })
+      toast.success('Proposal rejected')
+    } catch (submitError) {
+      const message =
+        submitError instanceof Error
+          ? submitError.message
+          : 'Unable to reject proposal'
+      toast.error(message)
+      throw submitError
+    }
+  }
+
   const isSaving =
     createProject.isPending ||
     updateProject.isPending ||
     submitProject.isPending
+
+  const isReviewing = approveProject.isPending || rejectProject.isPending
 
   return (
     <section className="space-y-6">
@@ -174,7 +234,7 @@ export function ProjectsPage() {
             {canManageProposals
               ? 'Create project proposals and submit them for company director approval.'
               : isDirector
-                ? 'Review project proposals across all factories. Approval actions arrive in FT-03.'
+                ? 'Review submitted proposals and approve or reject them with feedback.'
                 : 'View projects assigned to you.'}
           </p>
         </div>
@@ -206,6 +266,7 @@ export function ProjectsPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Budget</TableHead>
                 <TableHead>Timeline</TableHead>
+                {isDirector ? <TableHead>Proposed by</TableHead> : null}
                 <TableHead>PM</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -214,7 +275,7 @@ export function ProjectsPage() {
               {projects.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={isDirector ? 7 : 6}
+                    colSpan={isDirector ? 8 : 6}
                     className="py-10 text-center text-slate-500"
                   >
                     {canManageProposals
@@ -231,6 +292,12 @@ export function ProjectsPage() {
                         {project.description ? (
                           <p className="line-clamp-1 text-sm text-slate-500">
                             {project.description}
+                          </p>
+                        ) : null}
+                        {project.status === 'rejected' &&
+                        project.rejection_reason ? (
+                          <p className="text-sm text-red-600">
+                            Rejected: {project.rejection_reason}
                           </p>
                         ) : null}
                       </div>
@@ -252,11 +319,37 @@ export function ProjectsPage() {
                       {formatDate(project.proposed_start_date)} →{' '}
                       {formatDate(project.proposed_end_date)}
                     </TableCell>
+                    {isDirector ? (
+                      <TableCell>
+                        {project.proposer?.full_name ?? '—'}
+                      </TableCell>
+                    ) : null}
                     <TableCell>
                       {project.assigned_pm?.full_name ?? '—'}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        {isDirector && canReviewProject(project.status) ? (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => void handleApprove(project)}
+                              disabled={isReviewing}
+                            >
+                              <Check className="size-4" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => openReject(project)}
+                              disabled={isReviewing}
+                            >
+                              <X className="size-4" />
+                              Reject
+                            </Button>
+                          </>
+                        ) : null}
                         {canManageProposals &&
                         canEditProject(project.status) ? (
                           <Button
@@ -297,6 +390,16 @@ export function ProjectsPage() {
           onSaveDraft={saveDraft}
           onSubmitProposal={submitProposal}
           isSubmitting={isSaving}
+        />
+      ) : null}
+
+      {isDirector ? (
+        <ProjectRejectDialog
+          open={rejectDialogOpen}
+          onOpenChange={setRejectDialogOpen}
+          projectTitle={rejectingProject?.title ?? null}
+          onSubmit={handleReject}
+          isSubmitting={rejectProject.isPending}
         />
       ) : null}
     </section>

@@ -164,3 +164,71 @@ export function useSubmitProject() {
     },
   })
 }
+
+export function useApproveProject() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          status: 'approved',
+          approved_by: userId,
+          approved_at: new Date().toISOString(),
+          rejection_reason: null,
+        })
+        .eq('id', id)
+        .eq('status', 'proposed')
+        .select('*')
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+    },
+  })
+}
+
+export function useRejectProject() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      rejectionReason,
+    }: {
+      id: string
+      rejectionReason: string
+    }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          status: 'rejected',
+          rejection_reason: rejectionReason.trim(),
+          approved_by: null,
+          approved_at: null,
+        })
+        .eq('id', id)
+        .eq('status', 'proposed')
+        .select('*')
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+    },
+  })
+}

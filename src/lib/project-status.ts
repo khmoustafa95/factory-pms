@@ -19,3 +19,7 @@ export function canEditProject(status: ProjectStatus): boolean {
 export function canSubmitProject(status: ProjectStatus): boolean {
   return status === 'draft' || status === 'rejected'
 }
+
+export function canReviewProject(status: ProjectStatus): boolean {
+  return status === 'proposed'
+}

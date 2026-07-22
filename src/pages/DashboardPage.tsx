@@ -80,7 +80,7 @@ export function DashboardPage() {
               {isManager
                 ? 'Submit project proposals for director approval.'
                 : isDirector
-                  ? 'Review proposals across all factories.'
+                  ? 'Approve or reject submitted proposals.'
                   : 'Track projects assigned to you.'}
             </CardDescription>
           </CardHeader>
