@@ -7,6 +7,7 @@ import {
 } from '@/lib/list-query'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
+import { mapJoinRows } from '@/lib/supabase-joins'
 import type { Profile, Project, ProjectStatus } from '@/types/database'
 import type { ProjectFormValues } from '@/lib/validations/project'
 import { toProjectPayload } from '@/lib/validations/project'
@@ -58,7 +59,7 @@ export function useProjectsPage(params: ProjectsPageParams) {
       }
 
       return {
-        items: (data ?? []) as unknown as ProjectListItem[],
+        items: mapJoinRows<ProjectListItem>(data),
         total: count ?? 0,
         page: params.page,
         pageSize: params.pageSize,

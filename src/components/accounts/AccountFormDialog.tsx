@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
+import { FormCheckboxField } from '@/components/FormCheckboxField'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -77,6 +78,8 @@ export function AccountFormDialog({
     control: form.control,
     name: 'factory_id',
   })
+
+  const isActive = useWatch({ control: form.control, name: 'is_active' })
 
   useEffect(() => {
     if (!open || !account) {
@@ -168,10 +171,12 @@ export function AccountFormDialog({
             </div>
           ) : null}
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...form.register('is_active')} />
-            {t('accounts.activeAccount')}
-          </label>
+          <FormCheckboxField
+            id="account-active"
+            label={t('accounts.activeAccount')}
+            checked={isActive}
+            onCheckedChange={(checked) => form.setValue('is_active', checked)}
+          />
 
           <DialogFooter>
             <Button

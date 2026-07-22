@@ -11,38 +11,37 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  createProjectRejectSchema,
-  type ProjectRejectValues,
-} from '@/lib/validations/approval'
+  createEscalationFormSchema,
+  type EscalationFormValues,
+} from '@/lib/validations/comment'
 
-interface ProjectRejectDialogProps {
+interface EscalationFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  projectTitle: string | null
-  onSubmit: (values: ProjectRejectValues) => Promise<void>
+  taskTitle: string | null
+  initialMessage?: string
+  onSubmit: (values: EscalationFormValues) => Promise<void>
   isSubmitting: boolean
 }
 
-export function ProjectRejectDialog({
+export function EscalationFormDialog({
   open,
   onOpenChange,
-  projectTitle,
+  taskTitle,
+  initialMessage = '',
   onSubmit,
   isSubmitting,
-}: ProjectRejectDialogProps) {
+}: EscalationFormDialogProps) {
   const { t, locale } = useTranslation()
-  const projectRejectSchema = useValidationSchema(createProjectRejectSchema)
+  const escalationFormSchema = useValidationSchema(createEscalationFormSchema)
 
-  const form = useForm<ProjectRejectValues>({
-    resolver: zodResolver(projectRejectSchema),
-    defaultValues: {
-      rejection_reason: '',
-    },
+  const form = useForm<EscalationFormValues>({
+    resolver: zodResolver(escalationFormSchema),
+    defaultValues: { message: '' },
   })
 
   useEffect(() => {
@@ -50,8 +49,8 @@ export function ProjectRejectDialog({
       return
     }
 
-    form.reset({ rejection_reason: '' })
-  }, [form, open])
+    form.reset({ message: initialMessage })
+  }, [form, initialMessage, open])
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await onSubmit(values)
@@ -62,26 +61,17 @@ export function ProjectRejectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('projects.rejectProposal')}</DialogTitle>
+          <DialogTitle>{t('escalations.escalateTitle')}</DialogTitle>
           <DialogDescription>
-            {projectTitle
-              ? `${t('projects.rejectDescription')} (${projectTitle})`
-              : t('projects.rejectDescription')}
+            {taskTitle
+              ? t('escalations.escalateDescription', { title: taskTitle })
+              : null}
           </DialogDescription>
         </DialogHeader>
 
         <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="rejection-reason">
-              {t('projects.rejectionReason')}
-            </Label>
-            <Textarea
-              id="rejection-reason"
-              rows={4}
-              {...form.register('rejection_reason')}
-            />
-            <FormFieldError error={form.formState.errors.rejection_reason} />
-          </div>
+          <Textarea rows={4} {...form.register('message')} />
+          <FormFieldError error={form.formState.errors.message} />
 
           <DialogFooter>
             <Button
@@ -91,10 +81,8 @@ export function ProjectRejectDialog({
             >
               {t('common.cancel')}
             </Button>
-            <Button type="submit" variant="destructive" disabled={isSubmitting}>
-              {isSubmitting
-                ? t('common.submitting')
-                : t('projects.rejectProposal')}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? t('common.sending') : t('common.sendEscalation')}
             </Button>
           </DialogFooter>
         </form>

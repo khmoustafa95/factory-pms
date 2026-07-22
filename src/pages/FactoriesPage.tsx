@@ -1,12 +1,10 @@
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { ActiveStatusBadge } from '@/components/ActiveStatusBadge'
-import { AdaptiveList } from '@/components/AdaptiveList'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
-import { ListPagination } from '@/components/ListPagination'
 import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
-import { QueryState } from '@/components/QueryState'
+import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -68,133 +66,122 @@ export function FactoriesPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <PageHeader
-        title={t('factories.title')}
-        description={t('factories.description')}
-        actions={
-          <Button onClick={openCreate}>
-            <Plus className="size-4" />
-            {t('common.addFactory')}
-          </Button>
-        }
-      />
-
-      <ListToolbar
-        search={listState.search}
-        onSearchChange={listState.setSearch}
-        searchPlaceholder={t('list.searchFactories')}
-        hasActiveFilters={listState.hasActiveFilters}
-        onClear={listState.clearAll}
-        filters={[
-          {
-            id: 'factory-status-filter',
-            label: t('common.status'),
-            value: listState.filters.status,
-            onChange: (value) => listState.setFilter('status', value),
-            options: getActiveInactiveFilterOptions(t),
-          },
-        ]}
-      />
-
-      <QueryState
-        isLoading={isLoading}
-        error={error}
-        loadingMessage={t('factories.loading')}
-        errorMessage={t('factories.loadFailed')}
-        onRetry={() => void refetch()}
-        isRetrying={isFetching}
-      >
-        <AdaptiveList
-          items={factories}
-          emptyMessage={
-            listState.hasActiveFilters
-              ? t('list.noResults')
-              : t('factories.empty')
+    <PaginatedListPage
+      header={
+        <PageHeader
+          title={t('factories.title')}
+          description={t('factories.description')}
+          actions={
+            <Button onClick={openCreate}>
+              <Plus className="size-4" />
+              {t('common.addFactory')}
+            </Button>
           }
-          getKey={(factory) => factory.id}
-          renderMobileCard={(factory) => (
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <p className="font-medium">{factory.name}</p>
-                <ActiveStatusBadge isActive={factory.is_active} />
-              </div>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p>
-                  <span className="font-medium text-foreground">
-                    {t('common.code')}:{' '}
-                  </span>
-                  {factory.code}
-                </p>
-                <p>
-                  <span className="font-medium text-foreground">
-                    {t('common.location')}:{' '}
-                  </span>
-                  {factory.location ?? notAvailable}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => openEdit(factory)}
-              >
-                {t('common.edit')}
-              </Button>
-            </div>
-          )}
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('common.name')}</TableHead>
-                <TableHead>{t('common.code')}</TableHead>
-                <TableHead>{t('common.location')}</TableHead>
-                <TableHead>{t('common.status')}</TableHead>
-                <TableHead className="text-right">
-                  {t('common.actions')}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {factories.map((factory) => (
-                <TableRow key={factory.id}>
-                  <TableCell className="font-medium">{factory.name}</TableCell>
-                  <TableCell>{factory.code}</TableCell>
-                  <TableCell>{factory.location ?? notAvailable}</TableCell>
-                  <TableCell>
-                    <ActiveStatusBadge isActive={factory.is_active} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEdit(factory)}
-                    >
-                      {t('common.edit')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </AdaptiveList>
-
-        <ListPagination
-          page={listState.page}
-          pageSize={listState.pageSize}
-          total={total}
-          onPageChange={listState.setPage}
-          onPageSizeChange={listState.setPageSize}
         />
-      </QueryState>
-
-      <FactoryFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        factory={editingFactory}
-        onSubmit={handleSubmit}
-        isSubmitting={createFactory.isPending || updateFactory.isPending}
-      />
-    </section>
+      }
+      toolbar={
+        <ListToolbar
+          search={listState.search}
+          onSearchChange={listState.setSearch}
+          searchPlaceholder={t('list.searchFactories')}
+          hasActiveFilters={listState.hasActiveFilters}
+          onClear={listState.clearAll}
+          filters={[
+            {
+              id: 'factory-status-filter',
+              label: t('common.status'),
+              value: listState.filters.status,
+              onChange: (value) => listState.setFilter('status', value),
+              options: getActiveInactiveFilterOptions(t),
+            },
+          ]}
+        />
+      }
+      items={factories}
+      total={total}
+      page={listState.page}
+      pageSize={listState.pageSize}
+      onPageChange={listState.setPage}
+      onPageSizeChange={listState.setPageSize}
+      emptyMessage={
+        listState.hasActiveFilters ? t('list.noResults') : t('factories.empty')
+      }
+      getKey={(factory) => factory.id}
+      renderMobileCard={(factory) => (
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-medium">{factory.name}</p>
+            <ActiveStatusBadge isActive={factory.is_active} />
+          </div>
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p>
+              <span className="font-medium text-foreground">
+                {t('common.code')}:{' '}
+              </span>
+              {factory.code}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">
+                {t('common.location')}:{' '}
+              </span>
+              {factory.location ?? notAvailable}
+            </p>
+          </div>
+          <Button size="sm" variant="outline" onClick={() => openEdit(factory)}>
+            {t('common.edit')}
+          </Button>
+        </div>
+      )}
+      query={{
+        isLoading,
+        error,
+        loadingMessage: t('factories.loading'),
+        errorMessage: t('factories.loadFailed'),
+        onRetry: () => void refetch(),
+        isRetrying: isFetching,
+      }}
+      footer={
+        <FactoryFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          factory={editingFactory}
+          onSubmit={handleSubmit}
+          isSubmitting={createFactory.isPending || updateFactory.isPending}
+        />
+      }
+    >
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('common.name')}</TableHead>
+            <TableHead>{t('common.code')}</TableHead>
+            <TableHead>{t('common.location')}</TableHead>
+            <TableHead>{t('common.status')}</TableHead>
+            <TableHead className="text-right">{t('common.actions')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {factories.map((factory) => (
+            <TableRow key={factory.id}>
+              <TableCell className="font-medium">{factory.name}</TableCell>
+              <TableCell>{factory.code}</TableCell>
+              <TableCell>{factory.location ?? notAvailable}</TableCell>
+              <TableCell>
+                <ActiveStatusBadge isActive={factory.is_active} />
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openEdit(factory)}
+                >
+                  {t('common.edit')}
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </PaginatedListPage>
   )
 }

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
+import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,6 +24,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { getTaskStatusLabel } from '@/lib/i18n-format'
+import {
+  formatNullableSelectValue,
+  NULL_SELECT_VALUE,
+  parseNullableSelectValue,
+} from '@/lib/form-utils'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
@@ -108,11 +114,7 @@ export function TaskFormDialog({
           <div className="space-y-2">
             <Label htmlFor="task-title">{t('wbs.taskTitle')}</Label>
             <Input id="task-title" {...form.register('title')} />
-            {form.formState.errors.title ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.title.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.title} />
           </div>
 
           <div className="space-y-2">
@@ -173,27 +175,25 @@ export function TaskFormDialog({
                 rows={3}
                 {...form.register('blocked_reason')}
               />
-              {form.formState.errors.blocked_reason ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.blocked_reason.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.blocked_reason} />
             </div>
           ) : null}
 
           <div className="space-y-2">
             <Label>{t('wbs.assignee')}</Label>
             <Select
-              value={selectedAssigneeId ?? 'none'}
+              value={formatNullableSelectValue(selectedAssigneeId)}
               onValueChange={(value) =>
-                form.setValue('assignee_id', value === 'none' ? null : value)
+                form.setValue('assignee_id', parseNullableSelectValue(value))
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder={t('common.optional')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">{t('common.unassigned')}</SelectItem>
+                <SelectItem value={NULL_SELECT_VALUE}>
+                  {t('common.unassigned')}
+                </SelectItem>
                 {assignees.map((assignee) => (
                   <SelectItem key={assignee.id} value={assignee.id}>
                     {assignee.full_name}

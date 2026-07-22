@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
+import { mapJoinRows } from '@/lib/supabase-joins'
 import type { Comment, EntityType } from '@/types/database'
 import type { CommentFormValues } from '@/lib/validations/comment'
 
@@ -33,7 +34,7 @@ export function useComments(
         throw error
       }
 
-      return data as unknown as CommentListItem[]
+      return mapJoinRows<CommentListItem>(data)
     },
   })
 }

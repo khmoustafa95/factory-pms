@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
+import { mapJoinRow } from '@/lib/supabase-joins'
 import type { Project } from '@/types/database'
 
 export type ProjectDetail = Project & {
@@ -30,7 +31,7 @@ export function useProject(projectId: string | undefined) {
         throw error
       }
 
-      return data as unknown as ProjectDetail
+      return mapJoinRow<ProjectDetail>(data)!
     },
   })
 }

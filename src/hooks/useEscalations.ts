@@ -7,6 +7,7 @@ import {
 } from '@/lib/list-query'
 import type { EscalationsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
+import { mapJoinRows } from '@/lib/supabase-joins'
 import type { Task } from '@/types/database'
 
 export type EscalationItem = Task & {
@@ -69,7 +70,7 @@ export function useEscalationsPage(params: EscalationsPageParams) {
       }
 
       return {
-        items: (data ?? []) as unknown as EscalationItem[],
+        items: mapJoinRows<EscalationItem>(data),
         total: count ?? 0,
         page: params.page,
         pageSize: params.pageSize,

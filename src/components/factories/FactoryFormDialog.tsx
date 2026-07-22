@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
+import { FormCheckboxField } from '@/components/FormCheckboxField'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,6 +49,8 @@ export function FactoryFormDialog({
       is_active: true,
     },
   })
+
+  const isActive = useWatch({ control: form.control, name: 'is_active' })
 
   useEffect(() => {
     if (!open) {
@@ -101,10 +104,12 @@ export function FactoryFormDialog({
             <Input id="factory-location" {...form.register('location')} />
           </div>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...form.register('is_active')} />
-            {t('factories.activeFactory')}
-          </label>
+          <FormCheckboxField
+            id="factory-active"
+            label={t('factories.activeFactory')}
+            checked={isActive}
+            onCheckedChange={(checked) => form.setValue('is_active', checked)}
+          />
 
           <DialogFooter>
             <Button

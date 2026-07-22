@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
+import { mapJoinRows } from '@/lib/supabase-joins'
 import { toTaskPayload, type TaskFormValues } from '@/lib/validations/task'
 import type { Task, TaskStatus } from '@/types/database'
 
@@ -46,7 +47,7 @@ export function useTasks(projectId: string | undefined) {
         throw error
       }
 
-      return data as unknown as TaskListItem[]
+      return mapJoinRows<TaskListItem>(data)
     },
   })
 }
