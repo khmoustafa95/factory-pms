@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Security + UX polish** — auth hardening merged (signup role escalation fixed, inactive accounts blocked); comprehensive seed data on master. Next: merge QueryState/Error Boundary PR, apply migrations to live Supabase.
+**Merged security + query UX** — auth hardening and QueryState/Error Boundary on one branch. Next: apply migrations to live Supabase, E2E tests.
 
 ## Recent changes
 
+- [2026-07-22] QueryState component: unified loading skeletons, localized errors, retry; AppErrorBoundary; refactored list pages, dashboard, project detail, comments, activity tab
 - [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)
 - [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
@@ -21,11 +22,10 @@
 
 ## Next steps (concrete)
 
-1. Merge `cursor/query-loading-error-states-1d71` (QueryState + Error Boundary)
-2. `npm run supabase:start` + `npm run dev:local` for local stack (requires Docker)
-3. Fill `.env.staging.local` / `.env.production.local` with remote Supabase keys
-4. Apply migrations to live Supabase project + verify RLS
-5. Optional: Arabic UI copy pass
+1. `npm run supabase:start` + `npm run dev:local` for local stack (requires Docker)
+2. Fill `.env.staging.local` / `.env.production.local` with remote Supabase keys
+3. Apply migrations to live Supabase project + verify RLS
+4. Optional: Arabic UI copy pass
 
 ## Open questions
 
