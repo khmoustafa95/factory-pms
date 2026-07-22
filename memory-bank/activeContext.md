@@ -2,11 +2,11 @@
 
 ## Current focus
 
-**Code quality** — shared utilities extracted to reduce duplication (mutation errors, list filters, factory labels, form field errors). Next: apply migrations to live Supabase, E2E tests.
+**Code quality (phase 2)** — `PaginatedListPage`, `EscalationFormDialog`, shadcn Checkbox, centralized join casts. Next: apply migrations to live Supabase, E2E tests.
 
 ## Recent changes
 
-- [2026-07-22] Clean code refactor: `toastMutationError`, `list-filters`, `formatFactoryLabel`, `ActiveStatusBadge`, `FormFieldError`, `useEditDialog`, `toFactoryPayload`/`toPhasePayload`; removed dead English label maps; fixed PhaseFormDialog i18n; moved `useDashboardStats` to `useDashboard.ts`
+- [2026-07-22] Follow-up refactor: `PaginatedListPage` for all list screens; `EscalationFormDialog`; `FormCheckboxField` + shadcn Checkbox; `form-utils` nullable select helpers; `supabase-joins` cast helpers; `FormFieldError` in remaining dialogs
 - [2026-07-22] Performance: DB trigger for `progress_percent`; RPCs `get_dashboard_stats()` + `get_project_activity()`; removed client `syncProjectProgress`
 - [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)

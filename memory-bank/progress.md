@@ -33,6 +33,7 @@
 - [x] DB performance: progress trigger + `get_dashboard_stats` / `get_project_activity` RPCs
 - [x] Motion animations: page transitions, staggered lists/cards, shimmer skeletons, tab/content fade
 - [x] Clean code refactor: shared mutation/list/filter helpers, removed dead label maps, i18n fix in PhaseFormDialog
+- [x] Clean code phase 2: `PaginatedListPage`, `EscalationFormDialog`, `FormCheckboxField`, `form-utils`, `supabase-joins`
 
 ## Backlog
 
@@ -45,6 +46,14 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 19)
+
+- `PaginatedListPage` layout component adopted by Factories, Accounts, Projects, Escalations pages
+- `EscalationFormDialog` extracted from `EscalationsPage`
+- shadcn `Checkbox` + `FormCheckboxField` in factory/account dialogs
+- `form-utils` nullable select helpers; `supabase-joins` `mapJoinRows`/`mapJoinRow` in hooks
+- `FormFieldError` in `ProjectFormDialog`, `TaskFormDialog`, `ProjectRejectDialog`
 
 ### 2026-07-22 (session 18)
 
