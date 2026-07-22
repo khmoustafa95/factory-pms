@@ -12,15 +12,14 @@
 - [x] Lean `agent-quality` rule (filtered from legacy `.cursorrules`)
 - [x] `decisionLog.md` + `lessonsLearned.md` + `npm run verify`
 - [x] Install app deps: TanStack Query, shadcn/ui, RHF+zod, date-fns, lucide, sonner
+- [x] Supabase migration SQL (DDL, enums, RLS, Realtime) in `supabase/migrations/`
+- [x] Typed `src/types/database.ts` matching migration
+- [x] Auth UI + session handling + role-aware routing
+- [x] FT-01 Factories & accounts (director CRUD + account role assignment)
 
 ## Backlog
 
-- [ ] Supabase schema (DDL + enums) from Notion PRD
-- [ ] RLS policies + helper functions
-- [ ] Realtime on `tasks` / `comments` / `projects`
-- [ ] Generate `src/types/database.ts` from schema
-- [ ] Auth UI + session handling
-- [ ] FT-01 Factories & accounts
+- [ ] Apply migration to live Supabase project + verify RLS
 - [ ] FT-02 Project proposals
 - [ ] FT-03 Approval workflow
 - [ ] FT-04 Phases & tasks (WBS)
@@ -30,10 +29,16 @@
 
 ## Blockers / issues
 
-- No live Supabase schema in repo yet — types remain a stub
+- Migration not yet applied to a live Supabase project — UI needs `.env.local` + SQL run
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 2)
+
+- Added initial Supabase schema migration from Notion PRD domain model
+- Implemented auth, protected routes, and FT-01 (Factories + Accounts pages)
+- Hand-authored `Database` types (replace with `supabase gen types` after migration applied)
 
 ### 2026-07-22
 
