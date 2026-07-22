@@ -19,6 +19,9 @@
 - [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
 - [x] FT-03 Approval workflow (director approve/reject with reason)
 - [x] Env scripts: Vite modes (local/staging/production) + Supabase local CLI scripts
+- [x] i18n: Arabic + English, RTL, locale persistence, translated UI copy
+- [x] Theme: light / dark / system toggle with next-themes
+- [x] Responsive layout: mobile nav drawer, scrollable tables/tabs, semantic tokens
 
 ## Backlog
 
@@ -33,6 +36,18 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 9)
+
+- Project detail i18n: `ProjectDetailPage`, `ProjectWbsTab`, `ProjectProgressOverview`, `ProjectTimeline`, `ProjectActivityTab`, `CommentThread`, `TaskKanbanBoard`
+
+### 2026-07-22 (session 8)
+
+- List pages i18n: `DashboardPage`, `ProjectsPage`, `FactoriesPage`, `AccountsPage`, `EscalationsPage` — `useTranslation`, `PageHeader`, `StatusMessage`, `ResponsiveTable`, `getRoleLabel`, `formatLocalizedDate` / `formatLocalizedBudget` / `formatLocalizedDateTime`, semantic theme tokens
+
+### 2026-07-22 (session 7)
+
+- Form dialogs i18n: `ProjectFormDialog`, `ProjectRejectDialog`, `FactoryFormDialog`, `AccountFormDialog`, `PhaseFormDialog`, `TaskFormDialog` — `useTranslation`, `getRoleLabel` / `getTaskStatusLabel` / `getPhaseStatusLabel`, `text-destructive` for errors
 
 ### 2026-07-22 (session 6)
 

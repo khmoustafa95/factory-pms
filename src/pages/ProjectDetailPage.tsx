@@ -10,9 +10,11 @@ import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
 import { ProjectProgressOverview } from '@/components/progress/ProjectProgressOverview'
 import { TaskFormDialog } from '@/components/tasks/TaskFormDialog'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from '@/contexts/LocaleContext'
 import { useProject } from '@/hooks/useProject'
 import {
   useCreatePhase,
@@ -42,6 +44,7 @@ import type { Phase } from '@/types/database'
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { profile } = useAuth()
+  const { t } = useTranslation()
   const { data: project, isLoading, error } = useProject(projectId)
   const { data: phases = [] } = usePhases(projectId)
   const { data: tasks = [] } = useTasks(projectId)
@@ -110,16 +113,16 @@ export function ProjectDetailPage() {
     try {
       if (editingPhase) {
         await updatePhase.mutateAsync({ id: editingPhase.id, values })
-        toast.success('Phase updated')
+        toast.success(t('projectDetail.phaseUpdated'))
       } else {
         await createPhase.mutateAsync(values)
-        toast.success('Phase added')
+        toast.success(t('projectDetail.phaseAdded'))
       }
     } catch (submitError) {
       const message =
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to save phase'
+          : t('projectDetail.savePhaseFailed')
       toast.error(message)
       throw submitError
     }
@@ -128,12 +131,12 @@ export function ProjectDetailPage() {
   const handleDeletePhase = async (phase: Phase) => {
     try {
       await deletePhase.mutateAsync(phase.id)
-      toast.success('Phase deleted')
+      toast.success(t('projectDetail.phaseDeleted'))
     } catch (submitError) {
       toast.error(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to delete phase',
+          : t('projectDetail.deletePhaseFailed'),
       )
     }
   }
@@ -146,16 +149,16 @@ export function ProjectDetailPage() {
     try {
       if (editingTask) {
         await updateTask.mutateAsync({ id: editingTask.id, values })
-        toast.success('Task updated')
+        toast.success(t('projectDetail.taskUpdated'))
       } else {
         await createTask.mutateAsync({ phaseId: activePhaseId, values })
-        toast.success('Task added')
+        toast.success(t('projectDetail.taskAdded'))
       }
     } catch (submitError) {
       toast.error(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to save task',
+          : t('projectDetail.saveTaskFailed'),
       )
       throw submitError
     }
@@ -164,12 +167,12 @@ export function ProjectDetailPage() {
   const handleDeleteTask = async (task: TaskListItem) => {
     try {
       await deleteTask.mutateAsync(task.id)
-      toast.success('Task deleted')
+      toast.success(t('projectDetail.taskDeleted'))
     } catch (submitError) {
       toast.error(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to delete task',
+          : t('projectDetail.deleteTaskFailed'),
       )
     }
   }
@@ -182,18 +185,22 @@ export function ProjectDetailPage() {
         <Button asChild variant="ghost" size="sm" className="-ml-2">
           <Link to="/projects">
             <ArrowLeft className="size-4" />
-            Back to projects
+            {t('projectDetail.backToProjects')}
           </Link>
         </Button>
 
         {isLoading ? (
-          <p className="text-sm text-slate-500">Loading project…</p>
+          <p className="text-sm text-muted-foreground">
+            {t('projectDetail.loading')}
+          </p>
         ) : null}
 
         {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error instanceof Error ? error.message : 'Failed to load project'}
-          </p>
+          <StatusMessage variant="error">
+            {error instanceof Error
+              ? error.message
+              : t('projectDetail.loadFailed')}
+          </StatusMessage>
         ) : null}
 
         {project ? (
@@ -203,21 +210,32 @@ export function ProjectDetailPage() {
                 {project.title}
               </h1>
               <ProjectStatusBadge status={project.status} />
-              <span className="text-sm text-slate-500">
-                Progress: {formatProgress(Number(project.progress_percent))}
+              <span className="text-sm text-muted-foreground">
+                {t('projectDetail.progressLabel', {
+                  value: formatProgress(Number(project.progress_percent)),
+                })}
               </span>
             </div>
             {project.description ? (
-              <p className="max-w-3xl text-slate-600">{project.description}</p>
+              <p className="max-w-3xl text-muted-foreground">
+                {project.description}
+              </p>
             ) : null}
-            <div className="flex flex-wrap gap-4 text-sm text-slate-500">
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               {project.factories ? (
                 <span>
-                  Factory: {project.factories.name} ({project.factories.code})
+                  {t('projectDetail.factoryLabel', {
+                    name: project.factories.name,
+                    code: project.factories.code,
+                  })}
                 </span>
               ) : null}
               {project.assigned_pm ? (
-                <span>PM: {project.assigned_pm.full_name}</span>
+                <span>
+                  {t('projectDetail.pmLabel', {
+                    name: project.assigned_pm.full_name,
+                  })}
+                </span>
               ) : null}
             </div>
           </div>
@@ -226,12 +244,20 @@ export function ProjectDetailPage() {
 
       {project && projectId ? (
         <Tabs defaultValue="overview">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="wbs">WBS</TabsTrigger>
-            <TabsTrigger value="kanban">Kanban</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsList className="w-full justify-start overflow-x-auto">
+            <TabsTrigger value="overview">
+              {t('projectDetail.tabs.overview')}
+            </TabsTrigger>
+            <TabsTrigger value="wbs">{t('projectDetail.tabs.wbs')}</TabsTrigger>
+            <TabsTrigger value="kanban">
+              {t('projectDetail.tabs.kanban')}
+            </TabsTrigger>
+            <TabsTrigger value="timeline">
+              {t('projectDetail.tabs.timeline')}
+            </TabsTrigger>
+            <TabsTrigger value="activity">
+              {t('projectDetail.tabs.activity')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-4">
@@ -293,7 +319,7 @@ export function ProjectDetailPage() {
             open={taskDialogOpen}
             onOpenChange={setTaskDialogOpen}
             task={editingTask}
-            phaseName={activePhase?.name ?? 'Phase'}
+            phaseName={activePhase?.name ?? t('common.phase')}
             factoryId={project.factory_id}
             onSubmit={handleTaskSubmit}
             isSubmitting={createTask.isPending || updateTask.isPending}

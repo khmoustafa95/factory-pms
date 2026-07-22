@@ -1,4 +1,3 @@
-import { format } from 'date-fns'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
@@ -13,9 +12,11 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslation } from '@/contexts/LocaleContext'
 import type { TaskListItem } from '@/hooks/useTasks'
 import { useUpdateTaskStatus } from '@/hooks/useTasks'
-import { TASK_STATUS_LABELS, TASK_STATUS_OPTIONS } from '@/lib/task-status'
+import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
+import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
 import type { Phase, TaskStatus } from '@/types/database'
 
 interface TaskKanbanBoardProps {
@@ -31,6 +32,7 @@ export function TaskKanbanBoard({
   tasks,
   canManage,
 }: TaskKanbanBoardProps) {
+  const { t, locale } = useTranslation()
   const updateStatus = useUpdateTaskStatus(projectId)
   const [blockedTask, setBlockedTask] = useState<TaskListItem | null>(null)
   const [blockedReason, setBlockedReason] = useState('')
@@ -61,10 +63,10 @@ export function TaskKanbanBoard({
         status,
         blockedReason: reason,
       })
-      toast.success('Task status updated')
+      toast.success(t('wbs.taskStatusUpdated'))
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Unable to update task'
+        error instanceof Error ? error.message : t('wbs.updateTaskStatusFailed')
       toast.error(message)
     }
   }
@@ -83,37 +85,37 @@ export function TaskKanbanBoard({
     <>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {TASK_STATUS_OPTIONS.map((status) => (
-          <Card key={status} className="bg-slate-50">
+          <Card key={status} className="bg-muted">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">
-                {TASK_STATUS_LABELS[status]} ({tasksByStatus[status].length})
+                {getTaskStatusLabel(t, status)} ({tasksByStatus[status].length})
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {tasksByStatus[status].length === 0 ? (
-                <p className="text-sm text-slate-500">No tasks</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('wbs.noTasksKanban')}
+                </p>
               ) : (
                 tasksByStatus[status].map((task) => (
-                  <Card key={task.id} className="bg-white shadow-sm">
+                  <Card key={task.id} className="bg-card shadow-sm">
                     <CardContent className="space-y-2 p-3">
                       <div className="space-y-1">
                         <p className="font-medium">{task.title}</p>
-                        <p className="text-xs text-slate-500">
-                          {phaseNameById.get(task.phase_id) ?? 'Phase'}
+                        <p className="text-xs text-muted-foreground">
+                          {phaseNameById.get(task.phase_id) ??
+                            t('common.phase')}
                         </p>
                       </div>
                       {task.status === 'blocked' && task.blocked_reason ? (
-                        <p className="text-xs text-red-600">
+                        <p className="text-xs text-destructive">
                           {task.blocked_reason}
                         </p>
                       ) : null}
                       {task.due_date ? (
-                        <p className="text-xs text-slate-500">
-                          Due{' '}
-                          {format(
-                            new Date(`${task.due_date}T00:00:00`),
-                            'dd MMM yyyy',
-                          )}
+                        <p className="text-xs text-muted-foreground">
+                          {t('wbs.dueDate')}:{' '}
+                          {formatLocalizedDate(task.due_date, locale)}
                         </p>
                       ) : null}
                       <TaskStatusBadge status={task.status} />
@@ -130,7 +132,7 @@ export function TaskKanbanBoard({
                               disabled={updateStatus.isPending}
                               onClick={() => void changeStatus(task, option)}
                             >
-                              → {TASK_STATUS_LABELS[option]}
+                              → {getTaskStatusLabel(t, option)}
                             </Button>
                           ))}
                         </div>
@@ -155,10 +157,12 @@ export function TaskKanbanBoard({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark task as blocked</DialogTitle>
+            <DialogTitle>{t('wbs.markBlocked')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="kanban-blocked-reason">Blocked reason</Label>
+            <Label htmlFor="kanban-blocked-reason">
+              {t('wbs.blockedReasonLabel')}
+            </Label>
             <Textarea
               id="kanban-blocked-reason"
               rows={4}
@@ -168,14 +172,14 @@ export function TaskKanbanBoard({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBlockedTask(null)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
               disabled={!blockedReason.trim() || updateStatus.isPending}
               onClick={() => void submitBlocked()}
             >
-              Mark blocked
+              {t('wbs.markBlocked')}
             </Button>
           </DialogFooter>
         </DialogContent>

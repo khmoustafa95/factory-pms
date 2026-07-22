@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
+import { PageHeader } from '@/components/PageHeader'
+import { ResponsiveTable } from '@/components/ResponsiveTable'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslation } from '@/contexts/LocaleContext'
 import {
   useCreateFactory,
   useFactories,
@@ -20,11 +24,13 @@ import {
 import type { Factory } from '@/types/database'
 
 export function FactoriesPage() {
+  const { t } = useTranslation()
   const { data: factories = [], isLoading, error } = useFactories()
   const createFactory = useCreateFactory()
   const updateFactory = useUpdateFactory()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingFactory, setEditingFactory] = useState<Factory | null>(null)
+  const notAvailable = t('common.notAvailable')
 
   const openCreate = () => {
     setEditingFactory(null)
@@ -42,16 +48,16 @@ export function FactoriesPage() {
     try {
       if (editingFactory) {
         await updateFactory.mutateAsync({ id: editingFactory.id, values })
-        toast.success('Factory updated')
+        toast.success(t('factories.updated'))
       } else {
         await createFactory.mutateAsync(values)
-        toast.success('Factory created')
+        toast.success(t('factories.created'))
       }
     } catch (submitError) {
       const message =
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to save factory'
+          : t('factories.saveFailed')
       toast.error(message)
       throw submitError
     }
@@ -59,40 +65,39 @@ export function FactoriesPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">Factories</h1>
-          <p className="max-w-2xl text-slate-600">
-            Company directors maintain the factory catalog used for project
-            scope and manager assignments.
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Add factory
-        </Button>
-      </div>
+      <PageHeader
+        title={t('factories.title')}
+        description={t('factories.description')}
+        actions={
+          <Button onClick={openCreate}>
+            <Plus className="size-4" />
+            {t('common.addFactory')}
+          </Button>
+        }
+      />
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Loading factories…</p>
+        <StatusMessage>{t('factories.loading')}</StatusMessage>
       ) : null}
 
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error instanceof Error ? error.message : 'Failed to load factories'}
-        </p>
+        <StatusMessage variant="error">
+          {error instanceof Error ? error.message : t('factories.loadFailed')}
+        </StatusMessage>
       ) : null}
 
       {!isLoading && !error ? (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <ResponsiveTable>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('common.name')}</TableHead>
+                <TableHead>{t('common.code')}</TableHead>
+                <TableHead>{t('common.location')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
+                <TableHead className="text-right">
+                  {t('common.actions')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -100,9 +105,9 @@ export function FactoriesPage() {
                 <TableRow>
                   <TableCell
                     colSpan={5}
-                    className="py-10 text-center text-slate-500"
+                    className="py-10 text-center text-muted-foreground"
                   >
-                    No factories yet. Create the first factory to get started.
+                    {t('factories.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -112,12 +117,14 @@ export function FactoriesPage() {
                       {factory.name}
                     </TableCell>
                     <TableCell>{factory.code}</TableCell>
-                    <TableCell>{factory.location ?? '—'}</TableCell>
+                    <TableCell>{factory.location ?? notAvailable}</TableCell>
                     <TableCell>
                       <Badge
                         variant={factory.is_active ? 'default' : 'secondary'}
                       >
-                        {factory.is_active ? 'Active' : 'Inactive'}
+                        {factory.is_active
+                          ? t('common.active')
+                          : t('common.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -126,7 +133,7 @@ export function FactoriesPage() {
                         variant="outline"
                         onClick={() => openEdit(factory)}
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -134,7 +141,7 @@ export function FactoriesPage() {
               )}
             </TableBody>
           </Table>
-        </div>
+        </ResponsiveTable>
       ) : null}
 
       <FactoryFormDialog

@@ -6,8 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import type { Phase } from '@/types/database'
+import { useTranslation } from '@/contexts/LocaleContext'
 import type { ProjectDetail } from '@/hooks/useProject'
+import { formatLocalizedDate } from '@/lib/i18n-format'
+import type { Phase } from '@/types/database'
 
 interface ProjectTimelineProps {
   project: ProjectDetail
@@ -28,42 +30,42 @@ function getTimelineRange(project: ProjectDetail) {
   const endDate = parseISO(end)
   const totalDays = Math.max(differenceInCalendarDays(endDate, startDate), 1)
 
-  return { startDate, endDate, totalDays }
+  return { startDate, endDate, totalDays, start, end }
 }
 
 export function ProjectTimeline({ project, phases }: ProjectTimelineProps) {
-  const { startDate, endDate, totalDays } = getTimelineRange(project)
+  const { t, locale } = useTranslation()
+  const { totalDays, start, end } = getTimelineRange(project)
 
   if (phases.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Timeline</CardTitle>
-          <CardDescription>
-            Add phases to visualize the project schedule.
-          </CardDescription>
+          <CardTitle>{t('timeline.title')}</CardTitle>
+          <CardDescription>{t('timeline.emptyDescription')}</CardDescription>
         </CardHeader>
       </Card>
     )
   }
 
   const segmentWidth = 100 / phases.length
+  const startLabel = formatLocalizedDate(start, locale)
+  const endLabel = formatLocalizedDate(end, locale)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Timeline</CardTitle>
+        <CardTitle>{t('timeline.title')}</CardTitle>
         <CardDescription>
-          {format(startDate, 'dd MMM yyyy')} → {format(endDate, 'dd MMM yyyy')}{' '}
-          ({totalDays} days) — phases distributed across the project window.
+          {startLabel} → {endLabel} ({totalDays}) — {t('timeline.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="relative h-3 overflow-hidden rounded-full bg-slate-200">
+        <div className="relative h-3 overflow-hidden rounded-full bg-muted">
           {phases.map((phase, index) => (
             <div
               key={phase.id}
-              className="absolute top-0 h-full bg-slate-700 first:rounded-l-full last:rounded-r-full"
+              className="absolute top-0 h-full bg-primary first:rounded-l-full last:rounded-r-full"
               style={{
                 left: `${index * segmentWidth}%`,
                 width: `${segmentWidth}%`,
@@ -82,13 +84,13 @@ export function ProjectTimeline({ project, phases }: ProjectTimelineProps) {
               <div key={phase.id} className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{phase.name}</span>
-                  <span className="text-slate-500">
+                  <span className="text-muted-foreground">
                     {phase.weight_percent}%
                   </span>
                 </div>
-                <div className="relative h-8 rounded-md bg-slate-100">
+                <div className="relative h-8 rounded-md bg-muted">
                   <div
-                    className="absolute top-1 bottom-1 rounded bg-slate-800"
+                    className="absolute top-1 bottom-1 rounded bg-primary"
                     style={{
                       left: `${leftPercent}%`,
                       width: `${segmentWidth}%`,

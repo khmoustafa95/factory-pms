@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { LocaleProvider } from '@/contexts/LocaleContext'
 import './index.css'
 import App from './App.tsx'
 
@@ -20,13 +21,15 @@ const queryClient = new QueryClient({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <AuthProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </AuthProvider>
-        <Toaster />
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <LocaleProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </AuthProvider>
+          <Toaster />
+        </LocaleProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>,

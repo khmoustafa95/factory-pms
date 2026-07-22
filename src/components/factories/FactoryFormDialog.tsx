@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useTranslation } from '@/contexts/LocaleContext'
 import type { Factory } from '@/types/database'
 import {
   factoryFormSchema,
@@ -33,6 +34,8 @@ export function FactoryFormDialog({
   onSubmit,
   isSubmitting,
 }: FactoryFormDialogProps) {
+  const { t } = useTranslation()
+
   const form = useForm<FactoryFormValues>({
     resolver: zodResolver(factoryFormSchema),
     defaultValues: {
@@ -65,45 +68,47 @@ export function FactoryFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{factory ? 'Edit factory' : 'Add factory'}</DialogTitle>
+          <DialogTitle>
+            {factory ? t('factories.editFactory') : t('factories.newFactory')}
+          </DialogTitle>
           <DialogDescription>
-            Factories group projects and scope factory managers.
+            {t('factories.formDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="factory-name">Name</Label>
+            <Label htmlFor="factory-name">{t('common.name')}</Label>
             <Input id="factory-name" {...form.register('name')} />
             {form.formState.errors.name ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.name.message}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="factory-code">Code</Label>
+            <Label htmlFor="factory-code">{t('common.code')}</Label>
             <Input
               id="factory-code"
               className="uppercase"
               {...form.register('code')}
             />
             {form.formState.errors.code ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.code.message}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="factory-location">Location</Label>
+            <Label htmlFor="factory-location">{t('common.location')}</Label>
             <Input id="factory-location" {...form.register('location')} />
           </div>
 
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" {...form.register('is_active')} />
-            Active
+            {t('factories.activeFactory')}
           </label>
 
           <DialogFooter>
@@ -112,10 +117,10 @@ export function FactoryFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving…' : factory ? 'Save changes' : 'Create'}
+              {isSubmitting ? t('common.saving') : t('common.save')}
             </Button>
           </DialogFooter>
         </form>

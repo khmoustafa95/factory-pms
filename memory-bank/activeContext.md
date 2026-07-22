@@ -2,10 +2,13 @@
 
 ## Current focus
 
-**Environment scripts** — Vite modes for local / staging / production Supabase. Next: apply migration to live project and end-to-end QA.
+**i18n + theme + responsive UX** — Arabic/English, dark/light/system theme, mobile-first layout. Next: apply migration to live project and end-to-end QA.
 
 ## Recent changes
 
+- [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
+- [2026-07-22] i18n: list pages (Dashboard, Projects, Factories, Accounts, Escalations) — `PageHeader`, `StatusMessage`, `ResponsiveTable`, `formatLocalized*`, semantic theme colors
+- [2026-07-22] i18n: form dialogs (project, reject, factory, account, phase, task) use `useTranslation` + semantic theme colors
 - [2026-07-22] Env scripts: `.env.development` / `.env.staging` / `.env.production`, npm scripts per stage, `supabase init` + local CLI helpers
 - [2026-07-22] FT-05: Kanban board, timeline/Gantt-style view, progress overview, dashboard KPIs
 - [2026-07-22] FT-06: Comments on project/phase/task + activity feed with realtime invalidation
@@ -24,5 +27,5 @@
 
 ## Open questions
 
-- Arabic-only vs bilingual UI for first release
 - Hosting target (Vercel vs Netlify)
+- Validation message i18n (Zod schemas still English)

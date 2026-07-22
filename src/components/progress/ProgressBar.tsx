@@ -14,15 +14,15 @@ export function ProgressBar({ value, className, label }: ProgressBarProps) {
     <div className={cn('space-y-1', className)}>
       {label ? (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-600">{label}</span>
-          <span className="font-medium text-slate-900">
+          <span className="text-muted-foreground">{label}</span>
+          <span className="font-medium text-foreground">
             {formatProgress(clamped)}
           </span>
         </div>
       ) : null}
-      <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+      <div className="h-2 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-slate-900 transition-all"
+          className="h-full rounded-full bg-primary transition-all"
           style={{ width: `${clamped}%` }}
         />
       </div>

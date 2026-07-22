@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
+import { PageHeader } from '@/components/PageHeader'
+import { ResponsiveTable } from '@/components/ResponsiveTable'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,8 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useTranslation } from '@/contexts/LocaleContext'
 import { useAccounts, useUpdateAccount } from '@/hooks/useAccounts'
-import { USER_ROLE_LABELS } from '@/lib/roles'
+import { getRoleLabel } from '@/lib/i18n-format'
 import type { Profile, UserRole } from '@/types/database'
 
 type EditableAccount = Profile & {
@@ -20,12 +24,14 @@ type EditableAccount = Profile & {
 }
 
 export function AccountsPage() {
+  const { t } = useTranslation()
   const { data: accounts = [], isLoading, error } = useAccounts()
   const updateAccount = useUpdateAccount()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<EditableAccount | null>(
     null,
   )
+  const notAvailable = t('common.notAvailable')
 
   const openEdit = (account: EditableAccount) => {
     setEditingAccount(account)
@@ -41,12 +47,12 @@ export function AccountsPage() {
 
     try {
       await updateAccount.mutateAsync({ id: editingAccount.id, values })
-      toast.success('Account updated')
+      toast.success(t('accounts.updated'))
     } catch (submitError) {
       const message =
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to update account'
+          : t('accounts.updateFailed')
       toast.error(message)
       throw submitError
     }
@@ -54,35 +60,34 @@ export function AccountsPage() {
 
   return (
     <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Accounts</h1>
-        <p className="max-w-2xl text-slate-600">
-          Provision users in Supabase Auth, then assign their role and factory
-          scope here. Company directors see every account.
-        </p>
-      </div>
+      <PageHeader
+        title={t('accounts.title')}
+        description={t('accounts.description')}
+      />
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Loading accounts…</p>
+        <StatusMessage>{t('accounts.loading')}</StatusMessage>
       ) : null}
 
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error instanceof Error ? error.message : 'Failed to load accounts'}
-        </p>
+        <StatusMessage variant="error">
+          {error instanceof Error ? error.message : t('accounts.loadFailed')}
+        </StatusMessage>
       ) : null}
 
       {!isLoading && !error ? (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <ResponsiveTable>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Factory</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('common.name')}</TableHead>
+                <TableHead>{t('common.email')}</TableHead>
+                <TableHead>{t('accounts.role')}</TableHead>
+                <TableHead>{t('common.factory')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
+                <TableHead className="text-right">
+                  {t('common.actions')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -90,9 +95,9 @@ export function AccountsPage() {
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="py-10 text-center text-slate-500"
+                    className="py-10 text-center text-muted-foreground"
                   >
-                    No accounts found. Create users in Supabase Auth first.
+                    {t('accounts.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -103,18 +108,20 @@ export function AccountsPage() {
                     </TableCell>
                     <TableCell>{account.email}</TableCell>
                     <TableCell>
-                      {USER_ROLE_LABELS[account.role as UserRole]}
+                      {getRoleLabel(t, account.role as UserRole)}
                     </TableCell>
                     <TableCell>
                       {account.factories
                         ? `${account.factories.name} (${account.factories.code})`
-                        : '—'}
+                        : notAvailable}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={account.is_active ? 'default' : 'secondary'}
                       >
-                        {account.is_active ? 'Active' : 'Inactive'}
+                        {account.is_active
+                          ? t('common.active')
+                          : t('common.inactive')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -123,7 +130,7 @@ export function AccountsPage() {
                         variant="outline"
                         onClick={() => openEdit(account)}
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -131,7 +138,7 @@ export function AccountsPage() {
               )}
             </TableBody>
           </Table>
-        </div>
+        </ResponsiveTable>
       ) : null}
 
       <AccountFormDialog

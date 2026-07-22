@@ -20,9 +20,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { PHASE_STATUS_LABELS } from '@/lib/phase-status'
+import { useTranslation } from '@/contexts/LocaleContext'
+import { getPhaseStatusLabel } from '@/lib/i18n-format'
 import { phaseFormSchema, type PhaseFormValues } from '@/lib/validations/phase'
 import type { Phase, PhaseStatus } from '@/types/database'
+
+const PHASE_STATUS_OPTIONS = [
+  'pending',
+  'in_progress',
+  'completed',
+] as const satisfies readonly PhaseStatus[]
 
 interface PhaseFormDialogProps {
   open: boolean
@@ -41,6 +48,8 @@ export function PhaseFormDialog({
   onSubmit,
   isSubmitting,
 }: PhaseFormDialogProps) {
+  const { t } = useTranslation()
+
   const form = useForm<PhaseFormValues>({
     resolver: zodResolver(phaseFormSchema),
     defaultValues: {
@@ -85,26 +94,30 @@ export function PhaseFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{phase ? 'Edit phase' : 'Add phase'}</DialogTitle>
+          <DialogTitle>
+            {phase ? t('wbs.editPhase') : t('wbs.newPhase')}
+          </DialogTitle>
           <DialogDescription>
-            Phase weights across the project must total 100%. Up to{' '}
-            {maxWeight.toFixed(1)}% available.
+            {t('wbs.weightInvalid')}{' '}
+            {t('wbs.weightRemaining', {
+              remaining: maxWeight.toFixed(1),
+            })}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="phase-name">Name</Label>
+            <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
             <Input id="phase-name" {...form.register('name')} />
             {form.formState.errors.name ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.name.message}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phase-description">Description</Label>
+            <Label htmlFor="phase-description">{t('common.description')}</Label>
             <Textarea
               id="phase-description"
               rows={3}
@@ -114,7 +127,7 @@ export function PhaseFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="phase-weight">Weight (%)</Label>
+              <Label htmlFor="phase-weight">{t('wbs.phaseWeight')}</Label>
               <Input
                 id="phase-weight"
                 type="number"
@@ -124,32 +137,33 @@ export function PhaseFormDialog({
                 {...form.register('weight_percent', { valueAsNumber: true })}
               />
               {form.formState.errors.weight_percent ? (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.weight_percent.message}
                 </p>
               ) : null}
             </div>
 
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label>{t('wbs.phaseStatus')}</Label>
               <Select
                 value={selectedStatus}
-                onValueChange={(value) =>
-                  form.setValue('status', value as PhaseStatus)
-                }
+                onValueChange={(value) => {
+                  if (
+                    value === 'pending' ||
+                    value === 'in_progress' ||
+                    value === 'completed'
+                  ) {
+                    form.setValue('status', value)
+                  }
+                }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(
-                    Object.entries(PHASE_STATUS_LABELS) as [
-                      PhaseStatus,
-                      string,
-                    ][]
-                  ).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
+                  {PHASE_STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {getPhaseStatusLabel(t, status)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -163,10 +177,14 @@ export function PhaseFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving…' : phase ? 'Save changes' : 'Add phase'}
+              {isSubmitting
+                ? t('common.saving')
+                : phase
+                  ? t('common.save')
+                  : t('common.addPhase')}
             </Button>
           </DialogFooter>
         </form>
