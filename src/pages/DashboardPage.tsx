@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Building2, ClipboardList, Users } from 'lucide-react'
+import { Building2, ClipboardList, Users, AlertTriangle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useDashboardStats } from '@/hooks/useEscalations'
 import {
   isCompanyDirector,
   isFactoryManager,
@@ -14,12 +15,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { formatProgress } from '@/lib/progress'
 
 export function DashboardPage() {
   const { profile } = useAuth()
   const roleLabel = profile ? USER_ROLE_LABELS[profile.role] : 'User'
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
+  const { data: stats } = useDashboardStats()
 
   return (
     <section className="space-y-8">
@@ -30,6 +33,46 @@ export function DashboardPage() {
           in as <span className="font-medium text-slate-900">{roleLabel}</span>.
         </p>
       </div>
+
+      {stats ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Active factories</CardDescription>
+              <CardTitle className="text-3xl">{stats.factoryCount}</CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Active projects</CardDescription>
+              <CardTitle className="text-3xl">
+                {stats.activeProjectCount}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Average progress</CardDescription>
+              <CardTitle className="text-3xl">
+                {formatProgress(stats.averageProgress)}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>Blocked tasks</CardDescription>
+              <CardTitle className="text-3xl text-red-600">
+                {stats.blockedTaskCount}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/escalations">View escalations</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-3">
         {isCompanyDirector(profile?.role) ? (
@@ -69,6 +112,23 @@ export function DashboardPage() {
             </Card>
           </>
         ) : null}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <AlertTriangle className="size-5" />
+              Escalations
+            </CardTitle>
+            <CardDescription>
+              Review blocked tasks and notify leadership.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline">
+              <Link to="/escalations">Open escalations</Link>
+            </Button>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

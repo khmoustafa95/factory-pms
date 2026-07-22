@@ -1,29 +1,17 @@
-import { format } from 'date-fns'
-import { ArrowLeft, Layers, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
+import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
+import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
+import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
+import { ProjectProgressOverview } from '@/components/progress/ProjectProgressOverview'
 import { TaskFormDialog } from '@/components/tasks/TaskFormDialog'
-import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProject } from '@/hooks/useProject'
 import {
@@ -32,6 +20,7 @@ import {
   usePhases,
   useUpdatePhase,
 } from '@/hooks/usePhases'
+import { useProjectRealtime } from '@/hooks/useRealtime'
 import {
   useCreateTask,
   useDeleteTask,
@@ -39,7 +28,7 @@ import {
   useUpdateTask,
   type TaskListItem,
 } from '@/hooks/useTasks'
-import { PHASE_STATUS_LABELS } from '@/lib/phase-status'
+import { formatProgress } from '@/lib/progress'
 import {
   canManageWbs,
   canViewWbs,
@@ -50,20 +39,13 @@ import type { PhaseFormValues } from '@/lib/validations/phase'
 import type { TaskFormValues } from '@/lib/validations/task'
 import type { Phase } from '@/types/database'
 
-function formatDate(value: string | null): string {
-  if (!value) {
-    return '—'
-  }
-
-  return format(new Date(`${value}T00:00:00`), 'dd MMM yyyy')
-}
-
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { profile } = useAuth()
   const { data: project, isLoading, error } = useProject(projectId)
   const { data: phases = [] } = usePhases(projectId)
   const { data: tasks = [] } = useTasks(projectId)
+  useProjectRealtime(projectId)
 
   const createPhase = useCreatePhase(projectId)
   const updatePhase = useUpdatePhase(projectId)
@@ -80,20 +62,19 @@ export function ProjectDetailPage() {
 
   const tasksByPhase = useMemo(() => {
     const grouped = new Map<string, TaskListItem[]>()
-
     for (const phase of phases) {
       grouped.set(phase.id, [])
     }
-
     for (const task of tasks) {
       const phaseTasks = grouped.get(task.phase_id) ?? []
       phaseTasks.push(task)
       grouped.set(task.phase_id, phaseTasks)
     }
-
     return grouped
   }, [phases, tasks])
 
+  const phaseIds = useMemo(() => phases.map((phase) => phase.id), [phases])
+  const taskIds = useMemo(() => tasks.map((task) => task.id), [tasks])
   const totalWeight = sumPhaseWeights(phases)
   const weightsValid = isPhaseWeightSumValid(phases)
   const remainingWeight = Math.max(0, 100 - totalWeight)
@@ -149,11 +130,11 @@ export function ProjectDetailPage() {
       await deletePhase.mutateAsync(phase.id)
       toast.success('Phase deleted')
     } catch (submitError) {
-      const message =
+      toast.error(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to delete phase'
-      toast.error(message)
+          : 'Unable to delete phase',
+      )
     }
   }
 
@@ -171,11 +152,11 @@ export function ProjectDetailPage() {
         toast.success('Task added')
       }
     } catch (submitError) {
-      const message =
+      toast.error(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to save task'
-      toast.error(message)
+          : 'Unable to save task',
+      )
       throw submitError
     }
   }
@@ -185,17 +166,15 @@ export function ProjectDetailPage() {
       await deleteTask.mutateAsync(task.id)
       toast.success('Task deleted')
     } catch (submitError) {
-      const message =
+      toast.error(
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to delete task'
-      toast.error(message)
+          : 'Unable to delete task',
+      )
     }
   }
 
   const activePhase = phases.find((phase) => phase.id === activePhaseId) ?? null
-  const isSavingPhase = createPhase.isPending || updatePhase.isPending
-  const isSavingTask = createTask.isPending || updateTask.isPending
 
   return (
     <section className="space-y-6">
@@ -224,6 +203,9 @@ export function ProjectDetailPage() {
                 {project.title}
               </h1>
               <ProjectStatusBadge status={project.status} />
+              <span className="text-sm text-slate-500">
+                Progress: {formatProgress(Number(project.progress_percent))}
+              </span>
             </div>
             {project.description ? (
               <p className="max-w-3xl text-slate-600">{project.description}</p>
@@ -242,202 +224,80 @@ export function ProjectDetailPage() {
         ) : null}
       </div>
 
-      {project ? (
+      {project && projectId ? (
+        <Tabs defaultValue="overview">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="wbs">WBS</TabsTrigger>
+            <TabsTrigger value="kanban">Kanban</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="mt-4">
+            <ProjectProgressOverview phases={phases} tasks={tasks} />
+          </TabsContent>
+
+          <TabsContent value="wbs" className="mt-4">
+            <ProjectWbsTab
+              phases={phases}
+              tasksByPhase={tasksByPhase}
+              canManage={canManage}
+              remainingWeight={remainingWeight}
+              totalWeight={totalWeight}
+              weightsValid={weightsValid}
+              onCreatePhase={openCreatePhase}
+              onEditPhase={openEditPhase}
+              onDeletePhase={handleDeletePhase}
+              onCreateTask={openCreateTask}
+              onEditTask={openEditTask}
+              onDeleteTask={handleDeleteTask}
+            />
+          </TabsContent>
+
+          <TabsContent value="kanban" className="mt-4">
+            <TaskKanbanBoard
+              projectId={projectId}
+              phases={phases}
+              tasks={tasks}
+              canManage={canManage}
+            />
+          </TabsContent>
+
+          <TabsContent value="timeline" className="mt-4">
+            <ProjectTimeline project={project} phases={phases} />
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-4">
+            <ProjectActivityTab
+              projectId={projectId}
+              phaseIds={phaseIds}
+              taskIds={taskIds}
+              canComment={canManage || Boolean(profile)}
+            />
+          </TabsContent>
+        </Tabs>
+      ) : null}
+
+      {project && canManage ? (
         <>
-          <Card>
-            <CardHeader className="flex flex-row items-start justify-between gap-4">
-              <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Layers className="size-5" />
-                  Work breakdown structure
-                </CardTitle>
-                <CardDescription>
-                  {canManage
-                    ? 'Define phases with weights that total 100%, then add tasks under each phase.'
-                    : 'View phases and tasks for this project.'}
-                </CardDescription>
-              </div>
-              {canManage ? (
-                <Button
-                  onClick={openCreatePhase}
-                  disabled={remainingWeight <= 0}
-                >
-                  <Plus className="size-4" />
-                  Add phase
-                </Button>
-              ) : null}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div
-                className={
-                  weightsValid
-                    ? 'rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800'
-                    : 'rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800'
-                }
-              >
-                Phase weights total: <strong>{totalWeight.toFixed(1)}%</strong>
-                {weightsValid
-                  ? ' — valid WBS'
-                  : ' — must equal 100% across all phases'}
-              </div>
-
-              {phases.length === 0 ? (
-                <p className="py-8 text-center text-sm text-slate-500">
-                  {canManage
-                    ? 'No phases yet. Add the first phase to start planning.'
-                    : 'No phases defined for this project yet.'}
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {phases.map((phase) => {
-                    const phaseTasks = tasksByPhase.get(phase.id) ?? []
-
-                    return (
-                      <Card key={phase.id}>
-                        <CardHeader className="flex flex-row items-start justify-between gap-4 pb-3">
-                          <div className="space-y-1">
-                            <CardTitle className="text-base">
-                              {phase.name}{' '}
-                              <Badge variant="outline">
-                                {phase.weight_percent}%
-                              </Badge>
-                            </CardTitle>
-                            <CardDescription>
-                              {PHASE_STATUS_LABELS[phase.status]}
-                              {phase.description
-                                ? ` — ${phase.description}`
-                                : ''}
-                            </CardDescription>
-                          </div>
-                          {canManage ? (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditPhase(phase)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => void handleDeletePhase(phase)}
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => openCreateTask(phase.id)}
-                              >
-                                <Plus className="size-4" />
-                                Task
-                              </Button>
-                            </div>
-                          ) : null}
-                        </CardHeader>
-                        <CardContent>
-                          {phaseTasks.length === 0 ? (
-                            <p className="text-sm text-slate-500">
-                              No tasks in this phase.
-                            </p>
-                          ) : (
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Task</TableHead>
-                                  <TableHead>Status</TableHead>
-                                  <TableHead>Assignee</TableHead>
-                                  <TableHead>Due</TableHead>
-                                  {canManage ? (
-                                    <TableHead className="text-right">
-                                      Actions
-                                    </TableHead>
-                                  ) : null}
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {phaseTasks.map((task) => (
-                                  <TableRow key={task.id}>
-                                    <TableCell>
-                                      <div className="space-y-1">
-                                        <p className="font-medium">
-                                          {task.title}
-                                        </p>
-                                        {task.status === 'blocked' &&
-                                        task.blocked_reason ? (
-                                          <p className="text-sm text-red-600">
-                                            Blocked: {task.blocked_reason}
-                                          </p>
-                                        ) : null}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <TaskStatusBadge status={task.status} />
-                                    </TableCell>
-                                    <TableCell>
-                                      {task.assignee?.full_name ?? '—'}
-                                    </TableCell>
-                                    <TableCell>
-                                      {formatDate(task.due_date)}
-                                    </TableCell>
-                                    {canManage ? (
-                                      <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => openEditTask(task)}
-                                          >
-                                            Edit
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                              void handleDeleteTask(task)
-                                            }
-                                          >
-                                            <Trash2 className="size-4" />
-                                          </Button>
-                                        </div>
-                                      </TableCell>
-                                    ) : null}
-                                  </TableRow>
-                                ))}
-                              </TableBody>
-                            </Table>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {canManage ? (
-            <>
-              <PhaseFormDialog
-                open={phaseDialogOpen}
-                onOpenChange={setPhaseDialogOpen}
-                phase={editingPhase}
-                remainingWeight={remainingWeight}
-                onSubmit={handlePhaseSubmit}
-                isSubmitting={isSavingPhase}
-              />
-
-              <TaskFormDialog
-                open={taskDialogOpen}
-                onOpenChange={setTaskDialogOpen}
-                task={editingTask}
-                phaseName={activePhase?.name ?? 'Phase'}
-                factoryId={project.factory_id}
-                onSubmit={handleTaskSubmit}
-                isSubmitting={isSavingTask}
-              />
-            </>
-          ) : null}
+          <PhaseFormDialog
+            open={phaseDialogOpen}
+            onOpenChange={setPhaseDialogOpen}
+            phase={editingPhase}
+            remainingWeight={remainingWeight}
+            onSubmit={handlePhaseSubmit}
+            isSubmitting={createPhase.isPending || updatePhase.isPending}
+          />
+          <TaskFormDialog
+            open={taskDialogOpen}
+            onOpenChange={setTaskDialogOpen}
+            task={editingTask}
+            phaseName={activePhase?.name ?? 'Phase'}
+            factoryId={project.factory_id}
+            onSubmit={handleTaskSubmit}
+            isSubmitting={createTask.isPending || updateTask.isPending}
+          />
         </>
       ) : null}
     </section>

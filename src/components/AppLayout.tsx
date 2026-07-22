@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   Building2,
   ClipboardList,
   LayoutDashboard,
@@ -42,6 +43,10 @@ export function AppLayout() {
               <NavLink className={navLinkClass} to="/projects">
                 <ClipboardList className="size-4" />
                 Projects
+              </NavLink>
+              <NavLink className={navLinkClass} to="/escalations">
+                <AlertTriangle className="size-4" />
+                Escalations
               </NavLink>
               {isDirector ? (
                 <>
