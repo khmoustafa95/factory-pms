@@ -31,6 +31,7 @@
 - [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
 - [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
 - [x] DB performance: progress trigger + `get_dashboard_stats` / `get_project_activity` RPCs
+- [x] Motion animations: page transitions, staggered lists/cards, shimmer skeletons, tab/content fade
 
 ## Backlog
 
@@ -43,6 +44,11 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 17)
+
+- Motion utilities in `index.css` + `src/components/motion/` (`PageTransition`, `StaggerGroup`, `FadeIn`)
+- Applied to AppLayout outlet, dashboard KPIs, login, kanban columns, AdaptiveList mobile cards, QueryState shimmer, card hover, tabs content, progress bar
 
 ### 2026-07-22 (session 16)
 
