@@ -16,11 +16,11 @@
 - [x] Typed `src/types/database.ts` matching migration
 - [x] Auth UI + session handling + role-aware routing
 - [x] FT-01 Factories & accounts (director CRUD + account role assignment)
+- [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
 
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
-- [ ] FT-02 Project proposals
 - [ ] FT-03 Approval workflow
 - [ ] FT-04 Phases & tasks (WBS)
 - [ ] FT-05 Kanban / Gantt / progress UI
@@ -33,6 +33,10 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 3)
+
+- FT-02: project proposal form, draft/submit workflow, projects list with role-scoped access
 
 ### 2026-07-22 (session 2)
 

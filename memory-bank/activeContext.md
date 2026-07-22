@@ -2,10 +2,11 @@
 
 ## Current focus
 
-Foundation + **FT-01 (Factories & accounts)** implemented in code. Next: apply Supabase migration to a live project, then **FT-02 Project proposals**.
+**FT-02 (Project proposals)** implemented. Next: **FT-03 Approval workflow** (director approve/reject).
 
 ## Recent changes
 
+- [2026-07-22] FT-02: Projects page — factory managers create/edit drafts, submit proposals (`proposed`); directors/PMs get role-scoped list view
 - [2026-07-22] Added `supabase/migrations/20260722100000_initial_schema.sql` — full PRD domain schema, RLS helpers/policies, Realtime publication
 - [2026-07-22] Replaced `database.ts` stub with typed tables/enums matching migration
 - [2026-07-22] Auth: `AuthProvider`, login page, protected + role-based routes
@@ -21,9 +22,8 @@ Foundation + **FT-01 (Factories & accounts)** implemented in code. Next: apply S
 1. Create Supabase project and fill `.env.local`
 2. Run migration SQL in Supabase (or `supabase db push` when CLI linked)
 3. Create first auth user in Supabase Dashboard; set role to `company_director` on `profiles`
-4. Implement **FT-02** — project proposal form + list (factory manager)
-5. Implement **FT-03** — director approval/reject workflow
-6. Implement **FT-04** — phases & tasks WBS
+4. Implement **FT-03** — director approve/reject with reason
+5. Implement **FT-04** — phases & tasks WBS
 
 ## Open questions
 
