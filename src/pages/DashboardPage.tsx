@@ -4,7 +4,7 @@ import { StaggerGroup } from '@/components/motion'
 import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
-import { useDashboardStats } from '@/hooks/useEscalations'
+import { useDashboardStats } from '@/hooks/useDashboard'
 import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import { getRoleLabel } from '@/lib/i18n-format'
 import {

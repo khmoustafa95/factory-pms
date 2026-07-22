@@ -372,6 +372,8 @@ export const en = {
     weightRequired: 'Weight is required',
     weightMin: 'Weight must be at least 0',
     weightMax: 'Weight cannot exceed 100',
+    weightRemainingMax:
+      'Weight cannot exceed {{remaining}}% for the remaining budget',
     codeMin: 'Code must be at least 2 characters',
     codeMax: 'Code must be at most 12 characters',
     codeFormat: 'Code must be uppercase letters, numbers, _ or -',

@@ -36,8 +36,11 @@ import type { ProjectsPageParams } from '@/lib/list-query-params'
 import {
   formatLocalizedBudget,
   formatLocalizedDate,
+  formatFactoryLabel,
   getProjectStatusLabel,
 } from '@/lib/i18n-format'
+import { buildFactoryFilterOptions } from '@/lib/list-filters'
+import { toastMutationError } from '@/lib/mutation-error'
 import {
   canEditProject,
   canReviewProject,
@@ -130,11 +133,7 @@ export function ProjectsPage() {
         toast.success(t('projects.draftCreated'))
       }
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.saveDraftFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.saveDraftFailed'))
       throw submitError
     }
   }
@@ -162,11 +161,7 @@ export function ProjectsPage() {
         toast.success(t('projects.proposalSubmitted'))
       }
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.submitFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.submitFailed'))
       throw submitError
     }
   }
@@ -182,11 +177,7 @@ export function ProjectsPage() {
       await submitProject.mutateAsync({ id: project.id, userId })
       toast.success(t('projects.proposalSubmitted'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.submitFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.submitFailed'))
     }
   }
 
@@ -201,11 +192,7 @@ export function ProjectsPage() {
       await approveProject.mutateAsync({ id: project.id, userId })
       toast.success(t('projects.proposalApproved'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.approveFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.approveFailed'))
     }
   }
 
@@ -226,11 +213,7 @@ export function ProjectsPage() {
       })
       toast.success(t('projects.proposalRejected'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.rejectFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.rejectFailed'))
       throw submitError
     }
   }
@@ -340,13 +323,10 @@ export function ProjectsPage() {
                   value: listState.filters.factoryId,
                   onChange: (value: string) =>
                     listState.setFilter('factoryId', value),
-                  options: [
-                    { value: 'all', label: t('list.allFactories') },
-                    ...factories.map((factory) => ({
-                      value: factory.id,
-                      label: `${factory.name} (${factory.code})`,
-                    })),
-                  ],
+                  options: buildFactoryFilterOptions(
+                    factories,
+                    t('list.allFactories'),
+                  ),
                 },
               ]
             : []),
@@ -472,7 +452,7 @@ export function ProjectsPage() {
                   {isDirector ? (
                     <TableCell>
                       {project.factories
-                        ? `${project.factories.name} (${project.factories.code})`
+                        ? formatFactoryLabel(project.factories)
                         : notAvailable}
                     </TableCell>
                   ) : null}

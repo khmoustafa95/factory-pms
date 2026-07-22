@@ -10,6 +10,13 @@ import type {
 
 type TranslateFn = (key: string) => string
 
+export function formatFactoryLabel(factory: {
+  name: string
+  code: string
+}): string {
+  return `${factory.name} (${factory.code})`
+}
+
 const DATE_LOCALES = {
   en: enUS,
   ar,

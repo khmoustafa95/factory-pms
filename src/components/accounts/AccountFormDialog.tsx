@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
+import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/select'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactories } from '@/hooks/useFactories'
-import { getRoleLabel } from '@/lib/i18n-format'
+import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createAccountFormSchema,
@@ -113,11 +114,7 @@ export function AccountFormDialog({
           <div className="space-y-2">
             <Label htmlFor="account-name">{t('accounts.fullName')}</Label>
             <Input id="account-name" {...form.register('full_name')} />
-            {form.formState.errors.full_name ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.full_name.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.full_name} />
           </div>
 
           <div className="space-y-2">
@@ -162,16 +159,12 @@ export function AccountFormDialog({
                     .filter((factory) => factory.is_active)
                     .map((factory) => (
                       <SelectItem key={factory.id} value={factory.id}>
-                        {factory.name} ({factory.code})
+                        {formatFactoryLabel(factory)}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
-              {form.formState.errors.factory_id ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.factory_id.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.factory_id} />
             </div>
           ) : null}
 

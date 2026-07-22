@@ -6,9 +6,11 @@ import {
   type PaginatedResult,
 } from '@/lib/list-query'
 import type { FactoriesPageParams } from '@/lib/list-query-params'
+import { applyActiveStatusFilter } from '@/lib/list-filters'
 import { queryKeys } from '@/lib/query-keys'
 import type { Factory } from '@/types/database'
 import type { FactoryFormValues } from '@/lib/validations/factory'
+import { toFactoryPayload } from '@/lib/validations/factory'
 
 export function useFactories() {
   return useQuery({
@@ -48,11 +50,7 @@ export function useFactoriesPage(params: FactoriesPageParams) {
         )
       }
 
-      if (params.status === 'active') {
-        query = query.eq('is_active', true)
-      } else if (params.status === 'inactive') {
-        query = query.eq('is_active', false)
-      }
+      query = applyActiveStatusFilter(query, params.status)
 
       const { data, error, count } = await query.range(from, to)
 
@@ -78,12 +76,7 @@ export function useCreateFactory() {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('factories')
-        .insert({
-          name: values.name,
-          code: values.code.toUpperCase(),
-          location: values.location || null,
-          is_active: values.is_active,
-        })
+        .insert(toFactoryPayload(values))
         .select('*')
         .single()
 
@@ -113,12 +106,7 @@ export function useUpdateFactory() {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('factories')
-        .update({
-          name: values.name,
-          code: values.code.toUpperCase(),
-          location: values.location || null,
-          is_active: values.is_active,
-        })
+        .update(toFactoryPayload(values))
         .eq('id', id)
         .select('*')
         .single()

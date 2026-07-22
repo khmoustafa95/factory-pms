@@ -1,12 +1,11 @@
-import { useState } from 'react'
 import { toast } from 'sonner'
+import { ActiveStatusBadge } from '@/components/ActiveStatusBadge'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { ListPagination } from '@/components/ListPagination'
 import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -17,15 +16,21 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
-import { useAccountsPage, useUpdateAccount } from '@/hooks/useAccounts'
+import {
+  useAccountsPage,
+  useUpdateAccount,
+  type ProfileWithFactory,
+} from '@/hooks/useAccounts'
+import { useEditDialog } from '@/hooks/useEditDialog'
 import { useFactories } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
-import { getRoleLabel } from '@/lib/i18n-format'
-import type { Profile, UserRole } from '@/types/database'
-
-type EditableAccount = Profile & {
-  factories: { name: string; code: string } | null
-}
+import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
+import {
+  buildFactoryFilterOptions,
+  getActiveInactiveFilterOptions,
+} from '@/lib/list-filters'
+import { toastMutationError } from '@/lib/mutation-error'
+import type { UserRole } from '@/types/database'
 
 export function AccountsPage() {
   const { t } = useTranslation()
@@ -47,16 +52,13 @@ export function AccountsPage() {
   const accounts = data?.items ?? []
   const total = data?.total ?? 0
   const updateAccount = useUpdateAccount()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingAccount, setEditingAccount] = useState<EditableAccount | null>(
-    null,
-  )
+  const {
+    open: dialogOpen,
+    setOpen: setDialogOpen,
+    editingItem: editingAccount,
+    openEdit,
+  } = useEditDialog<ProfileWithFactory>()
   const notAvailable = t('common.notAvailable')
-
-  const openEdit = (account: EditableAccount) => {
-    setEditingAccount(account)
-    setDialogOpen(true)
-  }
 
   const handleSubmit = async (
     values: Parameters<typeof updateAccount.mutateAsync>[0]['values'],
@@ -69,11 +71,7 @@ export function AccountsPage() {
       await updateAccount.mutateAsync({ id: editingAccount.id, values })
       toast.success(t('accounts.updated'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('accounts.updateFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('accounts.updateFailed'))
       throw submitError
     }
   }
@@ -118,24 +116,17 @@ export function AccountsPage() {
             label: t('common.factory'),
             value: listState.filters.factoryId,
             onChange: (value) => listState.setFilter('factoryId', value),
-            options: [
-              { value: 'all', label: t('list.allFactories') },
-              ...factories.map((factory) => ({
-                value: factory.id,
-                label: `${factory.name} (${factory.code})`,
-              })),
-            ],
+            options: buildFactoryFilterOptions(
+              factories,
+              t('list.allFactories'),
+            ),
           },
           {
             id: 'account-status-filter',
             label: t('common.status'),
             value: listState.filters.status,
             onChange: (value) => listState.setFilter('status', value),
-            options: [
-              { value: 'all', label: t('list.all') },
-              { value: 'active', label: t('list.activeOnly') },
-              { value: 'inactive', label: t('list.inactiveOnly') },
-            ],
+            options: getActiveInactiveFilterOptions(t),
           },
         ]}
       />
@@ -160,11 +151,7 @@ export function AccountsPage() {
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-medium">{account.full_name}</p>
-                <Badge variant={account.is_active ? 'default' : 'secondary'}>
-                  {account.is_active
-                    ? t('common.active')
-                    : t('common.inactive')}
-                </Badge>
+                <ActiveStatusBadge isActive={account.is_active} />
               </div>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <p>
@@ -184,7 +171,7 @@ export function AccountsPage() {
                     {t('common.factory')}:{' '}
                   </span>
                   {account.factories
-                    ? `${account.factories.name} (${account.factories.code})`
+                    ? formatFactoryLabel(account.factories)
                     : notAvailable}
                 </p>
               </div>
@@ -223,17 +210,11 @@ export function AccountsPage() {
                   </TableCell>
                   <TableCell>
                     {account.factories
-                      ? `${account.factories.name} (${account.factories.code})`
+                      ? formatFactoryLabel(account.factories)
                       : notAvailable}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={account.is_active ? 'default' : 'secondary'}
-                    >
-                      {account.is_active
-                        ? t('common.active')
-                        : t('common.inactive')}
-                    </Badge>
+                    <ActiveStatusBadge isActive={account.is_active} />
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

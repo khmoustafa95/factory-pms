@@ -18,3 +18,12 @@ export function createFactoryFormSchema(t: ValidationTranslator) {
 export type FactoryFormValues = z.infer<
   ReturnType<typeof createFactoryFormSchema>
 >
+
+export function toFactoryPayload(values: FactoryFormValues) {
+  return {
+    name: values.name,
+    code: values.code.toUpperCase(),
+    location: values.location || null,
+    is_active: values.is_active,
+  }
+}

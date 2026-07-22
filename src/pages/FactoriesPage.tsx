@@ -1,13 +1,12 @@
-import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
+import { ActiveStatusBadge } from '@/components/ActiveStatusBadge'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
 import { ListPagination } from '@/components/ListPagination'
 import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -18,12 +17,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useEditDialog } from '@/hooks/useEditDialog'
 import {
   useCreateFactory,
   useFactoriesPage,
   useUpdateFactory,
 } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
+import { getActiveInactiveFilterOptions } from '@/lib/list-filters'
+import { toastMutationError } from '@/lib/mutation-error'
 import type { Factory } from '@/types/database'
 
 export function FactoriesPage() {
@@ -39,19 +41,14 @@ export function FactoriesPage() {
   const total = data?.total ?? 0
   const createFactory = useCreateFactory()
   const updateFactory = useUpdateFactory()
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingFactory, setEditingFactory] = useState<Factory | null>(null)
+  const {
+    open: dialogOpen,
+    setOpen: setDialogOpen,
+    editingItem: editingFactory,
+    openCreate,
+    openEdit,
+  } = useEditDialog<Factory>()
   const notAvailable = t('common.notAvailable')
-
-  const openCreate = () => {
-    setEditingFactory(null)
-    setDialogOpen(true)
-  }
-
-  const openEdit = (factory: Factory) => {
-    setEditingFactory(factory)
-    setDialogOpen(true)
-  }
 
   const handleSubmit = async (
     values: Parameters<typeof createFactory.mutateAsync>[0],
@@ -65,11 +62,7 @@ export function FactoriesPage() {
         toast.success(t('factories.created'))
       }
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('factories.saveFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('factories.saveFailed'))
       throw submitError
     }
   }
@@ -99,11 +92,7 @@ export function FactoriesPage() {
             label: t('common.status'),
             value: listState.filters.status,
             onChange: (value) => listState.setFilter('status', value),
-            options: [
-              { value: 'all', label: t('list.all') },
-              { value: 'active', label: t('list.activeOnly') },
-              { value: 'inactive', label: t('list.inactiveOnly') },
-            ],
+            options: getActiveInactiveFilterOptions(t),
           },
         ]}
       />
@@ -128,11 +117,7 @@ export function FactoriesPage() {
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-medium">{factory.name}</p>
-                <Badge variant={factory.is_active ? 'default' : 'secondary'}>
-                  {factory.is_active
-                    ? t('common.active')
-                    : t('common.inactive')}
-                </Badge>
+                <ActiveStatusBadge isActive={factory.is_active} />
               </div>
               <div className="space-y-1 text-sm text-muted-foreground">
                 <p>
@@ -177,13 +162,7 @@ export function FactoriesPage() {
                   <TableCell>{factory.code}</TableCell>
                   <TableCell>{factory.location ?? notAvailable}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={factory.is_active ? 'default' : 'secondary'}
-                    >
-                      {factory.is_active
-                        ? t('common.active')
-                        : t('common.inactive')}
-                    </Badge>
+                    <ActiveStatusBadge isActive={factory.is_active} />
                   </TableCell>
                   <TableCell className="text-right">
                     <Button

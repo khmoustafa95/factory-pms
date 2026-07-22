@@ -9,8 +9,9 @@ import type { AccountsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
 import type { Profile } from '@/types/database'
 import type { AccountFormValues } from '@/lib/validations/account'
+import { applyActiveStatusFilter } from '@/lib/list-filters'
 
-type ProfileWithFactory = Profile & {
+export type ProfileWithFactory = Profile & {
   factories: { name: string; code: string } | null
 }
 
@@ -41,11 +42,7 @@ export function useAccountsPage(params: AccountsPageParams) {
         query = query.eq('factory_id', params.factoryId)
       }
 
-      if (params.status === 'active') {
-        query = query.eq('is_active', true)
-      } else if (params.status === 'inactive') {
-        query = query.eq('is_active', false)
-      }
+      query = applyActiveStatusFilter(query, params.status)
 
       const { data, error, count } = await query.range(from, to)
 

@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { FormFieldError } from '@/components/FormFieldError'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { ListPagination } from '@/components/ListPagination'
 import { ListToolbar } from '@/components/ListToolbar'
@@ -33,7 +34,9 @@ import { useCreateComment } from '@/hooks/useComments'
 import { useEscalationsPage } from '@/hooks/useEscalations'
 import { useFactories } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
-import { formatLocalizedDateTime } from '@/lib/i18n-format'
+import { formatFactoryLabel, formatLocalizedDateTime } from '@/lib/i18n-format'
+import { buildFactoryFilterOptions } from '@/lib/list-filters'
+import { toastMutationError } from '@/lib/mutation-error'
 import { isCompanyDirector } from '@/lib/roles'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
@@ -85,11 +88,7 @@ export function EscalationsPage() {
       toast.success(t('escalations.sent'))
       setSelectedTask(null)
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('escalations.sendFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('escalations.sendFailed'))
     }
   })
 
@@ -119,13 +118,10 @@ export function EscalationsPage() {
                   label: t('common.factory'),
                   value: listState.filters.factoryId,
                   onChange: (value) => listState.setFilter('factoryId', value),
-                  options: [
-                    { value: 'all', label: t('list.allFactories') },
-                    ...factories.map((factory) => ({
-                      value: factory.id,
-                      label: `${factory.name} (${factory.code})`,
-                    })),
-                  ],
+                  options: buildFactoryFilterOptions(
+                    factories,
+                    t('list.allFactories'),
+                  ),
                 },
               ]
             : undefined
@@ -221,7 +217,7 @@ export function EscalationsPage() {
                   </TableCell>
                   <TableCell>
                     {task.projects?.factories
-                      ? `${task.projects.factories.name} (${task.projects.factories.code})`
+                      ? formatFactoryLabel(task.projects.factories)
                       : notAvailable}
                   </TableCell>
                   <TableCell className="max-w-xs text-sm text-destructive">
@@ -271,11 +267,7 @@ export function EscalationsPage() {
           </DialogHeader>
           <form key={locale} className="space-y-4" onSubmit={submitEscalation}>
             <Textarea rows={4} {...form.register('message')} />
-            {form.formState.errors.message ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.message.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.message} />
             <DialogFooter>
               <Button
                 type="button"

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -82,11 +83,7 @@ export function FactoryFormDialog({
           <div className="space-y-2">
             <Label htmlFor="factory-name">{t('common.name')}</Label>
             <Input id="factory-name" {...form.register('name')} />
-            {form.formState.errors.name ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.name.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.name} />
           </div>
 
           <div className="space-y-2">
@@ -96,11 +93,7 @@ export function FactoryFormDialog({
               className="uppercase"
               {...form.register('code')}
             />
-            {form.formState.errors.code ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.code.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.code} />
           </div>
 
           <div className="space-y-2">

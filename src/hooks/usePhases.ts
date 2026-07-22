@@ -3,6 +3,7 @@ import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
 import type { Phase } from '@/types/database'
 import type { PhaseFormValues } from '@/lib/validations/phase'
+import { toPhasePayload } from '@/lib/validations/phase'
 
 export function usePhases(projectId: string | undefined) {
   return useQuery({
@@ -64,12 +65,7 @@ export function useCreatePhase(projectId: string | undefined) {
         .from('phases')
         .insert({
           project_id: projectId,
-          name: values.name,
-          description: values.description?.trim()
-            ? values.description.trim()
-            : null,
-          weight_percent: values.weight_percent,
-          status: values.status,
+          ...toPhasePayload(values),
           sort_order: sortOrder,
         })
         .select('*')
@@ -103,14 +99,7 @@ export function useUpdatePhase(projectId: string | undefined) {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('phases')
-        .update({
-          name: values.name,
-          description: values.description?.trim()
-            ? values.description.trim()
-            : null,
-          weight_percent: values.weight_percent,
-          status: values.status,
-        })
+        .update(toPhasePayload(values))
         .eq('id', id)
         .select('*')
         .single()
