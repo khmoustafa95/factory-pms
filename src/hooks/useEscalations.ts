@@ -90,47 +90,27 @@ export function useDashboardStats() {
     queryKey: queryKeys.dashboard,
     queryFn: async (): Promise<DashboardStats> => {
       const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('get_dashboard_stats')
 
-      const [factoriesResult, projectsResult, blockedResult] =
-        await Promise.all([
-          supabase
-            .from('factories')
-            .select('id', { count: 'exact', head: true })
-            .eq('is_active', true),
-          supabase
-            .from('projects')
-            .select('progress_percent, status')
-            .in('status', ['approved', 'in_progress', 'paused']),
-          supabase
-            .from('tasks')
-            .select('id', { count: 'exact', head: true })
-            .eq('status', 'blocked'),
-        ])
-
-      if (factoriesResult.error) {
-        throw factoriesResult.error
-      }
-      if (projectsResult.error) {
-        throw projectsResult.error
-      }
-      if (blockedResult.error) {
-        throw blockedResult.error
+      if (error) {
+        throw error
       }
 
-      const projects = projectsResult.data ?? []
-      const averageProgress =
-        projects.length > 0
-          ? projects.reduce(
-              (sum, project) => sum + Number(project.progress_percent),
-              0,
-            ) / projects.length
-          : 0
+      const row = data?.[0]
+      if (!row) {
+        return {
+          factoryCount: 0,
+          activeProjectCount: 0,
+          averageProgress: 0,
+          blockedTaskCount: 0,
+        }
+      }
 
       return {
-        factoryCount: factoriesResult.count ?? 0,
-        activeProjectCount: projects.length,
-        averageProgress,
-        blockedTaskCount: blockedResult.count ?? 0,
+        factoryCount: Number(row.factory_count),
+        activeProjectCount: Number(row.active_project_count),
+        averageProgress: Number(row.average_progress),
+        blockedTaskCount: Number(row.blocked_task_count),
       }
     },
   })

@@ -103,8 +103,6 @@ export function ProjectDetailPage() {
     return grouped
   }, [phases, tasks])
 
-  const phaseIds = useMemo(() => phases.map((phase) => phase.id), [phases])
-  const taskIds = useMemo(() => tasks.map((task) => task.id), [tasks])
   const totalWeight = sumPhaseWeights(phases)
   const weightsValid = isPhaseWeightSumValid(phases)
   const remainingWeight = Math.max(0, 100 - totalWeight)
@@ -329,8 +327,6 @@ export function ProjectDetailPage() {
             <TabsContent value="activity" className="mt-4">
               <ProjectActivityTab
                 projectId={projectId}
-                phaseIds={phaseIds}
-                taskIds={taskIds}
                 canComment={canManage || Boolean(profile)}
               />
             </TabsContent>

@@ -79,73 +79,41 @@ export function useCreateComment(
         queryKey: queryKeys.comments(entityType, entityId),
       })
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.projectActivity,
+        queryKey: ['project-activity'],
       })
     },
   })
 }
 
-export type ActivityItem = CommentListItem & {
-  context_label: string
-}
+export type ActivityItem = CommentListItem
 
-async function fetchCommentsByType(
-  entityType: EntityType,
-  entityIds: string[],
-): Promise<CommentListItem[]> {
-  if (entityIds.length === 0) {
-    return []
-  }
-
-  const supabase = getSupabase()
-  const { data, error } = await supabase
-    .from('comments')
-    .select(`*, author:profiles!author_id (full_name, role)`)
-    .eq('entity_type', entityType)
-    .in('entity_id', entityIds)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    throw error
-  }
-
-  return data as unknown as CommentListItem[]
-}
-
-export function useProjectActivity(
-  projectId: string | undefined,
-  phaseIds: string[],
-  taskIds: string[],
-) {
+export function useProjectActivity(projectId: string | undefined) {
   return useQuery({
-    queryKey: [...queryKeys.projectActivity, projectId, phaseIds, taskIds],
+    queryKey: queryKeys.projectActivity(projectId),
     enabled: Boolean(projectId),
     queryFn: async (): Promise<ActivityItem[]> => {
-      const [projectComments, phaseComments, taskComments] = await Promise.all([
-        fetchCommentsByType('project', projectId ? [projectId] : []),
-        fetchCommentsByType('phase', phaseIds),
-        fetchCommentsByType('task', taskIds),
-      ])
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('get_project_activity', {
+        p_project_id: projectId!,
+      })
 
-      const items: ActivityItem[] = [
-        ...projectComments.map((comment) => ({
-          ...comment,
-          context_label: 'Project',
-        })),
-        ...phaseComments.map((comment) => ({
-          ...comment,
-          context_label: 'Phase',
-        })),
-        ...taskComments.map((comment) => ({
-          ...comment,
-          context_label: 'Task',
-        })),
-      ]
+      if (error) {
+        throw error
+      }
 
-      return items.sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
+      return (data ?? []).map((row) => ({
+        id: row.id,
+        entity_type: row.entity_type,
+        entity_id: row.entity_id,
+        author_id: row.author_id,
+        body: row.body,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        author: {
+          full_name: row.author_full_name,
+          role: row.author_role,
+        },
+      }))
     },
   })
 }
