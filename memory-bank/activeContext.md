@@ -2,11 +2,11 @@
 
 ## Current focus
 
-**Merged security + query UX** — auth hardening and QueryState/Error Boundary on one branch. Next: apply migrations to live Supabase, E2E tests.
+**General settings / branding** — app name, logo, and sign-in text are configurable via `/settings` (company director). Next: apply migrations to live Supabase, E2E tests.
 
 ## Recent changes
 
-- [2026-07-22] QueryState component: unified loading skeletons, localized errors, retry; AppErrorBoundary; refactored list pages, dashboard, project detail, comments, activity tab
+- [2026-07-22] General settings: `app_settings` table + `app-assets` storage bucket; `/settings` page with General tab; `AppBrand` + `AppSettingsProvider`; removed hardcoded app name/logo from layout, login, and i18n
 - [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)
 - [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
