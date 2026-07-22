@@ -1,0 +1,13 @@
+---
+description: Supabase client and typing conventions
+globs: "src/lib/**,src/types/database.ts,**/*supabase*"
+alwaysApply: false
+---
+
+# Supabase
+
+- Use `isSupabaseConfigured()` for UI checks and `getSupabase()` for queries — see `src/lib/supabase.ts`.
+- Type the client with `Database` from `src/types/database.ts`. Replace that stub with generated types when a schema exists (`supabase gen types typescript`).
+- Env vars: `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` only. Never expose or hardcode the service-role key in the SPA.
+- Fail clearly when env is missing; do not silently create an unconfigured client for data calls.
+- Enable and respect Row Level Security in any future schema work; do not bypass RLS from the frontend.

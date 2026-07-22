@@ -1,0 +1,16 @@
+---
+description: Always resolve terminal errors, warnings, and info before finishing
+alwaysApply: true
+---
+
+# Fix terminal output
+
+Whenever a command or tool run prints **errors**, **warnings**, or **info** messages in the terminal:
+
+1. Read the full relevant terminal output.
+2. Diagnose the cause.
+3. Fix the underlying issue in the project (code, config, deps, or scripts).
+4. Re-run the same or equivalent command to confirm the messages are gone or acceptably resolved.
+5. Do not stop after a partial fix — clear all remaining errors/warnings/info from that failure path before considering the task done.
+
+Ignore only noise that is clearly unrelated to the current task (e.g. global npm env notices you cannot change). Prefer fixing project-owned warnings over silencing them.

@@ -1,0 +1,13 @@
+---
+description: Core project conventions for Projects System Management
+alwaysApply: true
+---
+
+# Project core
+
+- Product: **Projects System Management** (Vite + React 19 + TypeScript + Tailwind v4 + React Router + Supabase).
+- Import from `src/` with the `@/` alias (e.g. `import { getSupabase } from '@/lib/supabase'`).
+- Put UI in `src/components/`, route screens in `src/pages/`, clients/utils in `src/lib/`, shared types in `src/types/`.
+- Keep changes focused — no unrelated refactors, no unsolicited markdown/docs.
+- Never commit secrets or put the Supabase service-role key in frontend code. Env lives in `.env.local` (see `.env.example`).
+- Prefer existing scripts: `npm run typecheck`, `lint`, `format`, `build`.

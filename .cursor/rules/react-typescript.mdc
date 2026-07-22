@@ -1,0 +1,24 @@
+---
+description: React and TypeScript patterns for this SPA
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# React + TypeScript
+
+- Use functional components and typed props. Prefer named exports for components/hooks; default export is fine for route `App` entry.
+- Colocate route screens under `src/pages/` and shared pieces under `src/components/`.
+- Style with Tailwind utility classes; avoid new CSS modules or inline style objects unless necessary.
+- Do not add `useMemo` / `useCallback` by default — only when there is a measured need or an existing pattern.
+- Prefer `import type` for type-only imports (`verbatimModuleSyntax` is on).
+- Match Prettier (single quotes, no semicolons, trailing commas) and existing file structure.
+
+```tsx
+// ✅ GOOD
+import type { ReactNode } from 'react'
+import { isSupabaseConfigured } from '@/lib/supabase'
+
+export function StatusBadge({ label }: { label: string }) {
+  return <span className="text-sm text-slate-600">{label}</span>
+}
+```
