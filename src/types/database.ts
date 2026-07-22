@@ -276,6 +276,45 @@ export interface Database {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          id: number
+          app_name_en: string
+          app_name_ar: string
+          app_short_name_en: string
+          app_short_name_ar: string
+          logo_url: string | null
+          sign_in_description_en: string
+          sign_in_description_ar: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: number
+          app_name_en?: string
+          app_name_ar?: string
+          app_short_name_en?: string
+          app_short_name_ar?: string
+          logo_url?: string | null
+          sign_in_description_en?: string
+          sign_in_description_ar?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: number
+          app_name_en?: string
+          app_name_ar?: string
+          app_short_name_en?: string
+          app_short_name_ar?: string
+          logo_url?: string | null
+          sign_in_description_en?: string
+          sign_in_description_ar?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           id: string
@@ -349,6 +388,9 @@ export interface Database {
   }
 }
 
+export type AppSettings = Database['public']['Tables']['app_settings']['Row']
+export type AppSettingsUpdate =
+  Database['public']['Tables']['app_settings']['Update']
 export type Factory = Database['public']['Tables']['factories']['Row']
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']

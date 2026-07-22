@@ -29,6 +29,7 @@
 - [x] Comprehensive `supabase/seed.sql` demo data (all enums/statuses)
 - [x] Security: restrict signup role metadata; enforce `is_active` on login
 - [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
+- [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
 
 ## Backlog
 
@@ -41,6 +42,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 15)
+
+- `app_settings` singleton table + `app-assets` storage bucket (migration `20260722120000_app_settings.sql`)
+- Settings page at `/settings` (General tab): app name (en/ar), short name, logo upload, sign-in description
+- `AppSettingsProvider` / `AppBrand` replace hardcoded branding in header, login, document title, favicon
+- Removed static `app.name` / `auth.signInDescription` from i18n locales
 
 ### 2026-07-22 (session 14)
 

@@ -26,6 +26,7 @@ export const queryKeys = {
   escalationsPage: (params: EscalationsPageParams) =>
     ['escalations', 'page', params] as const,
   dashboard: ['dashboard'] as const,
+  appSettings: ['app-settings'] as const,
   factoryProjectManagers: (factoryId: string | null | undefined) =>
     ['factory-project-managers', factoryId] as const,
 }

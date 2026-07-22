@@ -35,6 +35,11 @@ const AccountsPage = lazy(() =>
     default: module.AccountsPage,
   })),
 )
+const SettingsPage = lazy(() =>
+  import('@/pages/SettingsPage').then((module) => ({
+    default: module.SettingsPage,
+  })),
+)
 const LoginPage = lazy(() =>
   import('@/pages/LoginPage').then((module) => ({
     default: module.LoginPage,
@@ -70,6 +75,7 @@ export default function App() {
             <Route element={<RoleRoute allowedRoles={['company_director']} />}>
               <Route path="factories" element={<FactoriesPage />} />
               <Route path="accounts" element={<AccountsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Route>
         </Route>

@@ -5,10 +5,12 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Settings,
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
+import { AppBrand } from '@/components/AppBrand'
 import { LocaleToggle } from '@/components/LocaleToggle'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useAuth } from '@/contexts/AuthContext'
@@ -58,6 +60,7 @@ export function AppLayout() {
       ? [
           { to: '/factories', label: t('nav.factories'), icon: Building2 },
           { to: '/accounts', label: t('nav.accounts'), icon: Users },
+          { to: '/settings', label: t('nav.settings'), icon: Settings },
         ]
       : []),
   ]
@@ -84,13 +87,7 @@ export function AppLayout() {
               <Menu className="size-4" />
             </Button>
 
-            <Link
-              className="truncate text-sm font-semibold tracking-tight sm:text-base"
-              to="/"
-            >
-              <span className="hidden sm:inline">{t('app.name')}</span>
-              <span className="sm:hidden">{t('app.shortName')}</span>
-            </Link>
+            <AppBrand linkToHome showFullName />
 
             <nav className="hidden items-center gap-1 md:flex">
               {navItems.map((item) => (
