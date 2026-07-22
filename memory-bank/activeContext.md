@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Performance / DB functions** — progress recalculation, dashboard stats, and project activity moved to PostgreSQL. Next: apply migrations to live Supabase, E2E tests.
+**UI polish** — subtle motion animations added across the app. Next: apply migrations to live Supabase, E2E tests.
 
 ## Recent changes
 
+- [2026-07-22] Motion system: `PageTransition`, `StaggerGroup`, `FadeIn` components + CSS utilities in `index.css` (page enter, stagger, shimmer, card hover); respects `prefers-reduced-motion`
 - [2026-07-22] Performance: DB trigger for `progress_percent`; RPCs `get_dashboard_stats()` + `get_project_activity()`; removed client `syncProjectProgress`
 - [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)

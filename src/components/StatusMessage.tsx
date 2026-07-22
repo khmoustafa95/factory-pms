@@ -27,7 +27,7 @@ export function StatusMessage({
     <p
       role={resolvedRole}
       className={cn(
-        'rounded-md border px-3 py-2 text-sm',
+        'motion-fade-in rounded-md border px-3 py-2 text-sm',
         variantClasses[variant],
         className,
       )}
