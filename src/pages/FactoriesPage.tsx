@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
 import { PageHeader } from '@/components/PageHeader'
-import { StatusMessage } from '@/components/StatusMessage'
+import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +25,13 @@ import type { Factory } from '@/types/database'
 
 export function FactoriesPage() {
   const { t } = useTranslation()
-  const { data: factories = [], isLoading, error } = useFactories()
+  const {
+    data: factories = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useFactories()
   const createFactory = useCreateFactory()
   const updateFactory = useUpdateFactory()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -76,17 +82,14 @@ export function FactoriesPage() {
         }
       />
 
-      {isLoading ? (
-        <StatusMessage>{t('factories.loading')}</StatusMessage>
-      ) : null}
-
-      {error ? (
-        <StatusMessage variant="error">
-          {error instanceof Error ? error.message : t('factories.loadFailed')}
-        </StatusMessage>
-      ) : null}
-
-      {!isLoading && !error ? (
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        loadingMessage={t('factories.loading')}
+        errorMessage={t('factories.loadFailed')}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      >
         <AdaptiveList
           items={factories}
           emptyMessage={t('factories.empty')}
@@ -166,7 +169,7 @@ export function FactoriesPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
-      ) : null}
+      </QueryState>
 
       <FactoryFormDialog
         open={dialogOpen}

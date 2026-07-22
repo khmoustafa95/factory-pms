@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
-import { StatusMessage } from '@/components/StatusMessage'
+import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -43,7 +43,13 @@ import type { Project } from '@/types/database'
 export function ProjectsPage() {
   const { t, locale } = useTranslation()
   const { profile, user } = useAuth()
-  const { data: projects = [], isLoading, error } = useProjects()
+  const {
+    data: projects = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useProjects()
   const createProject = useCreateProject()
   const updateProject = useUpdateProject()
   const submitProject = useSubmitProject()
@@ -283,17 +289,14 @@ export function ProjectsPage() {
         }
       />
 
-      {isLoading ? (
-        <StatusMessage>{t('projects.loading')}</StatusMessage>
-      ) : null}
-
-      {error ? (
-        <StatusMessage variant="error">
-          {error instanceof Error ? error.message : t('projects.loadFailed')}
-        </StatusMessage>
-      ) : null}
-
-      {!isLoading && !error ? (
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        loadingMessage={t('projects.loading')}
+        errorMessage={t('projects.loadFailed')}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      >
         <AdaptiveList
           items={projects}
           emptyMessage={
@@ -447,7 +450,7 @@ export function ProjectsPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
-      ) : null}
+      </QueryState>
 
       {canManageProposals ? (
         <ProjectFormDialog
