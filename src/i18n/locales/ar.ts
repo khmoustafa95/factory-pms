@@ -1,8 +1,4 @@
 export const ar = {
-  app: {
-    name: 'نظام إدارة المشاريع',
-    shortName: 'نظام المشاريع',
-  },
   common: {
     loading: 'جاري التحميل…',
     save: 'حفظ',
@@ -95,6 +91,7 @@ export const ar = {
     escalations: 'التصعيدات',
     factories: 'المصانع',
     accounts: 'الحسابات',
+    settings: 'الإعدادات',
   },
   roles: {
     company_director: 'مدير الشركة',
@@ -123,7 +120,6 @@ export const ar = {
   },
   auth: {
     signInTitle: 'تسجيل الدخول',
-    signInDescription: 'نظام إدارة المشاريع — بوابة قيادة المصانع',
     password: 'كلمة المرور',
     signedInSuccess: 'تم تسجيل الدخول بنجاح',
     signInFailed: 'تعذر تسجيل الدخول',
@@ -325,6 +321,28 @@ export const ar = {
     role: 'الدور',
     activeAccount: 'حساب نشط',
   },
+  settings: {
+    title: 'الإعدادات',
+    description: 'إدارة هوية التطبيق والإعدادات العامة.',
+    generalTab: 'عام',
+    generalTitle: 'الإعدادات العامة',
+    generalDescription:
+      'خصّص اسم التطبيق والشعار ونص صفحة تسجيل الدخول لكل لغة.',
+    logo: 'الشعار',
+    logoHelp:
+      'PNG أو JPEG أو WebP أو SVG حتى 2 ميجابايت. يظهر في الشريط العلوي وصفحة تسجيل الدخول.',
+    uploadLogo: 'رفع الشعار',
+    removeLogo: 'إزالة الشعار',
+    appNameEn: 'اسم التطبيق (إنجليزي)',
+    appNameAr: 'اسم التطبيق (عربي)',
+    appShortNameEn: 'الاسم المختصر (إنجليزي)',
+    appShortNameAr: 'الاسم المختصر (عربي)',
+    signInDescriptionEn: 'وصف تسجيل الدخول (إنجليزي)',
+    signInDescriptionAr: 'وصف تسجيل الدخول (عربي)',
+    saved: 'تم حفظ الإعدادات',
+    saveFailed: 'تعذر حفظ الإعدادات',
+    logoRemoved: 'تمت إزالة الشعار',
+  },
   errors: {
     generic: 'حدث خطأ ما',
     boundaryTitle: 'حدث خطأ غير متوقع',
@@ -351,6 +369,11 @@ export const ar = {
     rejectionReasonMin: 'يجب أن يكون سبب الرفض 3 أحرف على الأقل',
     commentRequired: 'لا يمكن أن يكون التعليق فارغاً',
     escalationMin: 'يجب أن تكون رسالة التصعيد 3 أحرف على الأقل',
+    appNameMin: 'يجب أن يكون اسم التطبيق حرفين على الأقل',
+    appShortNameMin: 'الاسم المختصر مطلوب',
+    signInDescriptionMin: 'يجب أن يكون الوصف 5 أحرف على الأقل',
+    logoMaxSize: 'يجب ألا يتجاوز حجم الشعار 2 ميجابايت',
+    logoType: 'يجب أن يكون الشعار بصيغة PNG أو JPEG أو WebP أو SVG',
   },
   a11y: {
     skipToContent: 'تخطي إلى المحتوى الرئيسي',

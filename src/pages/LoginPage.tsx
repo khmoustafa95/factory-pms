@@ -4,9 +4,11 @@ import { useForm } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { LocaleToggle } from '@/components/LocaleToggle'
+import { AppBrand } from '@/components/AppBrand'
 import { StatusMessage } from '@/components/StatusMessage'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useAuth } from '@/contexts/AuthContext'
+import { useAppBranding } from '@/contexts/AppSettingsContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { isAuthError } from '@/lib/auth-errors'
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,7 @@ import {
 
 export function LoginPage() {
   const { signIn, isConfigured, session, profile, isLoading } = useAuth()
+  const { branding } = useAppBranding()
   const { t, locale } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const loginFormSchema = useValidationSchema(createLoginFormSchema)
@@ -75,9 +78,14 @@ export function LoginPage() {
       </div>
 
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>{t('auth.signInTitle')}</CardTitle>
-          <CardDescription>{t('auth.signInDescription')}</CardDescription>
+        <CardHeader className="space-y-4">
+          <div className="flex justify-center">
+            <AppBrand />
+          </div>
+          <div className="space-y-1 text-center">
+            <CardTitle>{t('auth.signInTitle')}</CardTitle>
+            <CardDescription>{branding.signInDescription}</CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {!isConfigured ? (

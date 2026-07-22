@@ -1,8 +1,4 @@
 export const en = {
-  app: {
-    name: 'Projects System Management',
-    shortName: 'PMS',
-  },
   common: {
     loading: 'Loading…',
     save: 'Save',
@@ -95,6 +91,7 @@ export const en = {
     escalations: 'Escalations',
     factories: 'Factories',
     accounts: 'Accounts',
+    settings: 'Settings',
   },
   roles: {
     company_director: 'Company Director',
@@ -123,7 +120,6 @@ export const en = {
   },
   auth: {
     signInTitle: 'Sign in',
-    signInDescription: 'Projects System Management — factory leadership portal',
     password: 'Password',
     signedInSuccess: 'Signed in successfully',
     signInFailed: 'Unable to sign in',
@@ -333,6 +329,28 @@ export const en = {
     role: 'Role',
     activeAccount: 'Active account',
   },
+  settings: {
+    title: 'Settings',
+    description: 'Manage application branding and general preferences.',
+    generalTab: 'General',
+    generalTitle: 'General settings',
+    generalDescription:
+      'Customize the application name, logo, and sign-in page text for each language.',
+    logo: 'Logo',
+    logoHelp:
+      'PNG, JPEG, WebP, or SVG up to 2 MB. Shown in the header and sign-in page.',
+    uploadLogo: 'Upload logo',
+    removeLogo: 'Remove logo',
+    appNameEn: 'Application name (English)',
+    appNameAr: 'Application name (Arabic)',
+    appShortNameEn: 'Short name (English)',
+    appShortNameAr: 'Short name (Arabic)',
+    signInDescriptionEn: 'Sign-in description (English)',
+    signInDescriptionAr: 'Sign-in description (Arabic)',
+    saved: 'Settings saved',
+    saveFailed: 'Unable to save settings',
+    logoRemoved: 'Logo removed',
+  },
   errors: {
     generic: 'Something went wrong',
     boundaryTitle: 'Something went wrong',
@@ -360,6 +378,11 @@ export const en = {
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
     commentRequired: 'Comment cannot be empty',
     escalationMin: 'Escalation message must be at least 3 characters',
+    appNameMin: 'Application name must be at least 2 characters',
+    appShortNameMin: 'Short name is required',
+    signInDescriptionMin: 'Description must be at least 5 characters',
+    logoMaxSize: 'Logo must be 2 MB or smaller',
+    logoType: 'Logo must be PNG, JPEG, WebP, or SVG',
   },
   a11y: {
     skipToContent: 'Skip to main content',

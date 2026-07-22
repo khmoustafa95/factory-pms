@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AppErrorBoundaryProvider } from '@/components/AppErrorBoundaryProvider'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { AppSettingsProvider } from '@/contexts/AppSettingsContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
 import './index.css'
 import App from './App.tsx'
@@ -24,14 +25,16 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <LocaleProvider>
-          <AppErrorBoundaryProvider>
-            <AuthProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </AuthProvider>
-          </AppErrorBoundaryProvider>
-          <Toaster />
+          <AppSettingsProvider>
+            <AppErrorBoundaryProvider>
+              <AuthProvider>
+                <BrowserRouter>
+                  <App />
+                </BrowserRouter>
+              </AuthProvider>
+            </AppErrorBoundaryProvider>
+            <Toaster />
+          </AppSettingsProvider>
         </LocaleProvider>
       </ThemeProvider>
     </QueryClientProvider>
