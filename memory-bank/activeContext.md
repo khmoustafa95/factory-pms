@@ -2,11 +2,11 @@
 
 ## Current focus
 
-**UX polish** — localized validation, mobile cards, code-splitting, tests. Next: apply migration to live project and end-to-end QA.
+**Audit & demo data** — comprehensive seed.sql for local QA; security/quality audit documented. Next: fix privilege-escalation in signup trigger, enforce `is_active` on auth, apply migration to live project.
 
 ## Recent changes
 
-- [2026-07-22] UX polish: Zod validation i18n, AdaptiveList mobile cards, route lazy-loading, Kanban/Gantt mobile, Vitest tests, a11y skip link
+- [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)
 - [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
 - [2026-07-22] Responsive list pages: `AdaptiveList` on Factories, Accounts, Escalations, Projects — mobile card view + desktop table via `ResponsiveTable` wrapper inside `AdaptiveList`
 - [2026-07-22] i18n: form dialogs (project, reject, factory, account, phase, task) use `useTranslation` + semantic theme colors
