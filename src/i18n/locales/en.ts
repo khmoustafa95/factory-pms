@@ -24,6 +24,8 @@ export const en = {
     no: 'No',
     back: 'Back',
     notAvailable: '—',
+    retry: 'Try again',
+    retrying: 'Retrying…',
     user: 'User',
     phase: 'Phase',
     factory: 'Factory',
@@ -105,6 +107,9 @@ export const en = {
     password: 'Password',
     signedInSuccess: 'Signed in successfully',
     signInFailed: 'Unable to sign in',
+    accountInactive:
+      'This account has been deactivated. Contact your company director.',
+    noProfile: 'Your profile is not set up yet. Contact your company director.',
     loadingSession: 'Loading session…',
     needAccount:
       'Need an account? Ask your company director to provision access in Supabase Auth, then assign your role from the Accounts screen.',
@@ -132,6 +137,8 @@ export const en = {
       'Submit project proposals for director approval.',
     projectsDirectorDescription: 'Approve or reject submitted proposals.',
     projectsPmDescription: 'Track projects assigned to you.',
+    loading: 'Loading dashboard…',
+    loadFailed: 'Failed to load dashboard stats',
   },
   projects: {
     title: 'Projects',
@@ -254,6 +261,7 @@ export const en = {
     post: 'Post comment',
     posting: 'Posting…',
     empty: 'No activity yet. Be the first to comment.',
+    loadFailed: 'Failed to load activity',
     commentAdded: 'Comment added',
     commentFailed: 'Unable to add comment',
     onProject: 'On project',
@@ -307,6 +315,9 @@ export const en = {
   },
   errors: {
     generic: 'Something went wrong',
+    boundaryTitle: 'Something went wrong',
+    boundaryDescription:
+      'An unexpected error occurred. Try reloading the page.',
   },
   validation: {
     nameMin: 'Name must be at least 2 characters',

@@ -27,12 +27,12 @@
 - [x] Route-level code splitting (React.lazy)
 - [x] Vitest unit tests for i18n + validation
 - [x] Comprehensive `supabase/seed.sql` demo data (all enums/statuses)
+- [x] Security: restrict signup role metadata; enforce `is_active` on login
+- [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
 
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
-- [ ] Security: restrict signup role metadata; enforce `is_active` on login
-- [ ] Error Boundary + global query error handling
 - [ ] E2E tests (Playwright)
 
 ## Blockers / issues
@@ -41,6 +41,16 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 14)
+
+- Merged PR #7 (security) + PR #8 (QueryState/Error Boundary) on `cursor/merge-branches-2853`
+- `QueryState`, `AppErrorBoundary`, `getQueryErrorMessage`; list pages + project detail refactored
+
+### 2026-07-22 (session 13)
+
+- Migration `20260722110000_security_auth_hardening.sql`: `is_auth_active()`, hardened `handle_new_user`, RLS blocks inactive users
+- `AuthContext` signs out inactive/missing profiles; localized login errors; `enable_signup = false`
 
 ### 2026-07-22 (session 12)
 

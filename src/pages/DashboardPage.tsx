@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Building2, ClipboardList, Users, AlertTriangle } from 'lucide-react'
+import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useDashboardStats } from '@/hooks/useEscalations'
@@ -21,7 +22,13 @@ export function DashboardPage() {
   const roleLabel = profile ? getRoleLabel(t, profile.role) : t('common.user')
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
-  const { data: stats } = useDashboardStats()
+  const {
+    data: stats,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useDashboardStats()
 
   return (
     <section className="space-y-8">
@@ -39,49 +46,60 @@ export function DashboardPage() {
         </p>
       </div>
 
-      {stats ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>
-                {t('dashboard.activeFactories')}
-              </CardDescription>
-              <CardTitle className="text-3xl">{stats.factoryCount}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>{t('dashboard.activeProjects')}</CardDescription>
-              <CardTitle className="text-3xl">
-                {stats.activeProjectCount}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>
-                {t('dashboard.averageProgress')}
-              </CardDescription>
-              <CardTitle className="text-3xl">
-                {formatProgress(stats.averageProgress)}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>{t('dashboard.blockedTasks')}</CardDescription>
-              <CardTitle className="text-3xl text-destructive">
-                {stats.blockedTaskCount}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button asChild size="sm" variant="outline">
-                <Link to="/escalations">{t('common.viewEscalations')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        loadingMessage={t('dashboard.loading')}
+        errorMessage={t('dashboard.loadFailed')}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      >
+        {stats ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>
+                  {t('dashboard.activeFactories')}
+                </CardDescription>
+                <CardTitle className="text-3xl">{stats.factoryCount}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>
+                  {t('dashboard.activeProjects')}
+                </CardDescription>
+                <CardTitle className="text-3xl">
+                  {stats.activeProjectCount}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>
+                  {t('dashboard.averageProgress')}
+                </CardDescription>
+                <CardTitle className="text-3xl">
+                  {formatProgress(stats.averageProgress)}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>{t('dashboard.blockedTasks')}</CardDescription>
+                <CardTitle className="text-3xl text-destructive">
+                  {stats.blockedTaskCount}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/escalations">{t('common.viewEscalations')}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null}
+      </QueryState>
 
       <div className="grid gap-4 md:grid-cols-3">
         {isCompanyDirector(profile?.role) ? (

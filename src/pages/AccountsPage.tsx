@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { PageHeader } from '@/components/PageHeader'
-import { StatusMessage } from '@/components/StatusMessage'
+import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +25,13 @@ type EditableAccount = Profile & {
 
 export function AccountsPage() {
   const { t } = useTranslation()
-  const { data: accounts = [], isLoading, error } = useAccounts()
+  const {
+    data: accounts = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useAccounts()
   const updateAccount = useUpdateAccount()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<EditableAccount | null>(
@@ -65,17 +71,14 @@ export function AccountsPage() {
         description={t('accounts.description')}
       />
 
-      {isLoading ? (
-        <StatusMessage>{t('accounts.loading')}</StatusMessage>
-      ) : null}
-
-      {error ? (
-        <StatusMessage variant="error">
-          {error instanceof Error ? error.message : t('accounts.loadFailed')}
-        </StatusMessage>
-      ) : null}
-
-      {!isLoading && !error ? (
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        loadingMessage={t('accounts.loading')}
+        errorMessage={t('accounts.loadFailed')}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+      >
         <AdaptiveList
           items={accounts}
           emptyMessage={t('accounts.empty')}
@@ -173,7 +176,7 @@ export function AccountsPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
-      ) : null}
+      </QueryState>
 
       <AccountFormDialog
         open={dialogOpen}

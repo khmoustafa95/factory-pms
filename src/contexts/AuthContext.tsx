@@ -8,6 +8,7 @@ import {
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
+import { AuthError } from '@/lib/auth-errors'
 import type { Profile } from '@/types/database'
 
 interface AuthContextValue {
@@ -35,6 +36,25 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
   }
 
   return data
+}
+
+async function assertActiveProfile(
+  supabase: ReturnType<typeof getSupabase>,
+  userId: string,
+): Promise<Profile> {
+  const profile = await fetchProfile(userId)
+
+  if (!profile) {
+    await supabase.auth.signOut()
+    throw new AuthError('NO_PROFILE')
+  }
+
+  if (!profile.is_active) {
+    await supabase.auth.signOut()
+    throw new AuthError('INACTIVE_ACCOUNT')
+  }
+
+  return profile
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -69,12 +89,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.session?.user) {
         try {
-          const nextProfile = await fetchProfile(data.session.user.id)
+          const nextProfile = await assertActiveProfile(
+            supabase,
+            data.session.user.id,
+          )
           if (isMounted) {
             setProfile(nextProfile)
           }
         } catch {
           if (isMounted) {
+            setSession(null)
             setProfile(null)
           }
         }
@@ -97,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      void fetchProfile(nextSession.user.id)
+      void assertActiveProfile(supabase, nextSession.user.id)
         .then((nextProfile) => {
           if (isMounted) {
             setProfile(nextProfile)
@@ -105,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .catch(() => {
           if (isMounted) {
+            setSession(null)
             setProfile(null)
           }
         })
@@ -118,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const supabase = getSupabase()
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
@@ -126,6 +151,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       throw error
     }
+
+    if (!data.user) {
+      throw new AuthError('NO_PROFILE')
+    }
+
+    await assertActiveProfile(supabase, data.user.id)
   }
 
   const signOut = async () => {

@@ -2,10 +2,12 @@
 
 ## Current focus
 
-**Audit & demo data** — comprehensive seed.sql for local QA; security/quality audit documented. Next: fix privilege-escalation in signup trigger, enforce `is_active` on auth, apply migration to live project.
+**Merged security + query UX** — auth hardening and QueryState/Error Boundary on one branch. Next: apply migrations to live Supabase, E2E tests.
 
 ## Recent changes
 
+- [2026-07-22] QueryState component: unified loading skeletons, localized errors, retry; AppErrorBoundary; refactored list pages, dashboard, project detail, comments, activity tab
+- [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)
 - [2026-07-22] i18n infrastructure: `LocaleContext`, `src/i18n/locales/{en,ar}.ts`, RTL + Noto Sans Arabic, `ThemeToggle` / `LocaleToggle`, responsive `AppLayout` mobile drawer
 - [2026-07-22] Responsive list pages: `AdaptiveList` on Factories, Accounts, Escalations, Projects — mobile card view + desktop table via `ResponsiveTable` wrapper inside `AdaptiveList`
@@ -22,9 +24,8 @@
 
 1. `npm run supabase:start` + `npm run dev:local` for local stack (requires Docker)
 2. Fill `.env.staging.local` / `.env.production.local` with remote Supabase keys
-3. Create users and assign roles; walk through full workflow end-to-end
-4. Optional: `npm run supabase:types` after local DB is up
-5. Optional: Arabic UI copy pass
+3. Apply migrations to live Supabase project + verify RLS
+4. Optional: Arabic UI copy pass
 
 ## Open questions
 
