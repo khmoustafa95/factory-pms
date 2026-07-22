@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
+import {
+  buildIlikePattern,
+  getPaginationRange,
+  type PaginatedResult,
+} from '@/lib/list-query'
+import type { ProjectsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
 import type { Profile, Project, ProjectStatus } from '@/types/database'
 import type { ProjectFormValues } from '@/lib/validations/project'
@@ -11,28 +17,52 @@ export type ProjectListItem = Project & {
   assigned_pm: { full_name: string } | null
 }
 
-export function useProjects() {
+const PROJECT_LIST_SELECT = `
+  *,
+  factories (name, code),
+  proposer:profiles!proposed_by (full_name),
+  assigned_pm:profiles!assigned_pm_id (full_name)
+`
+
+export function useProjectsPage(params: ProjectsPageParams) {
   return useQuery({
-    queryKey: queryKeys.projects,
-    queryFn: async (): Promise<ProjectListItem[]> => {
+    queryKey: queryKeys.projectsPage(params),
+    queryFn: async (): Promise<PaginatedResult<ProjectListItem>> => {
       const supabase = getSupabase()
-      const { data, error } = await supabase
+      const { from, to } = getPaginationRange(params.page, params.pageSize)
+      const searchPattern = buildIlikePattern(params.search)
+
+      let query = supabase
         .from('projects')
-        .select(
-          `
-          *,
-          factories (name, code),
-          proposer:profiles!proposed_by (full_name),
-          assigned_pm:profiles!assigned_pm_id (full_name)
-        `,
-        )
+        .select(PROJECT_LIST_SELECT, { count: 'exact' })
         .order('created_at', { ascending: false })
+
+      if (searchPattern) {
+        query = query.or(
+          `title.ilike.${searchPattern},description.ilike.${searchPattern},factories.name.ilike.${searchPattern},factories.code.ilike.${searchPattern}`,
+        )
+      }
+
+      if (params.status !== 'all') {
+        query = query.eq('status', params.status as ProjectStatus)
+      }
+
+      if (params.factoryId !== 'all') {
+        query = query.eq('factory_id', params.factoryId)
+      }
+
+      const { data, error, count } = await query.range(from, to)
 
       if (error) {
         throw error
       }
 
-      return data as unknown as ProjectListItem[]
+      return {
+        items: (data ?? []) as unknown as ProjectListItem[],
+        total: count ?? 0,
+        page: params.page,
+        pageSize: params.pageSize,
+      }
     },
   })
 }

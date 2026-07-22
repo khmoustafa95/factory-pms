@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
+import { ListPagination } from '@/components/ListPagination'
+import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
@@ -22,13 +24,20 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import {
   useApproveProject,
   useCreateProject,
-  useProjects,
+  useProjectsPage,
   useRejectProject,
   useSubmitProject,
   useUpdateProject,
   type ProjectListItem,
 } from '@/hooks/useProjects'
-import { formatLocalizedBudget, formatLocalizedDate } from '@/lib/i18n-format'
+import { useFactories } from '@/hooks/useFactories'
+import { useListQueryState } from '@/hooks/useListQueryState'
+import type { ProjectsPageParams } from '@/lib/list-query-params'
+import {
+  formatLocalizedBudget,
+  formatLocalizedDate,
+  getProjectStatusLabel,
+} from '@/lib/i18n-format'
 import {
   canEditProject,
   canReviewProject,
@@ -38,18 +47,32 @@ import type { ProjectRejectValues } from '@/lib/validations/approval'
 import { canViewWbs } from '@/lib/wbs'
 import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import type { ProjectFormValues } from '@/lib/validations/project'
-import type { Project } from '@/types/database'
+import type { Project, ProjectStatus } from '@/types/database'
+
+const PROJECT_STATUS_FILTERS: ProjectStatus[] = [
+  'draft',
+  'proposed',
+  'approved',
+  'rejected',
+  'in_progress',
+  'completed',
+  'paused',
+]
 
 export function ProjectsPage() {
   const { t, locale } = useTranslation()
   const { profile, user } = useAuth()
-  const {
-    data: projects = [],
-    isLoading,
-    error,
-    refetch,
-    isFetching,
-  } = useProjects()
+  const listState = useListQueryState({ status: 'all', factoryId: 'all' })
+  const { data: factories = [] } = useFactories()
+  const { data, isLoading, error, refetch, isFetching } = useProjectsPage({
+    page: listState.page,
+    pageSize: listState.pageSize,
+    search: listState.debouncedSearch,
+    status: listState.filters.status as ProjectsPageParams['status'],
+    factoryId: listState.filters.factoryId,
+  })
+  const projects = data?.items ?? []
+  const total = data?.total ?? 0
   const createProject = useCreateProject()
   const updateProject = useUpdateProject()
   const submitProject = useSubmitProject()
@@ -289,6 +312,47 @@ export function ProjectsPage() {
         }
       />
 
+      <ListToolbar
+        search={listState.search}
+        onSearchChange={listState.setSearch}
+        searchPlaceholder={t('list.searchProjects')}
+        hasActiveFilters={listState.hasActiveFilters}
+        onClear={listState.clearAll}
+        filters={[
+          {
+            id: 'project-status-filter',
+            label: t('common.status'),
+            value: listState.filters.status,
+            onChange: (value) => listState.setFilter('status', value),
+            options: [
+              { value: 'all', label: t('list.allStatuses') },
+              ...PROJECT_STATUS_FILTERS.map((status) => ({
+                value: status,
+                label: getProjectStatusLabel(t, status),
+              })),
+            ],
+          },
+          ...(isDirector
+            ? [
+                {
+                  id: 'project-factory-filter',
+                  label: t('common.factory'),
+                  value: listState.filters.factoryId,
+                  onChange: (value: string) =>
+                    listState.setFilter('factoryId', value),
+                  options: [
+                    { value: 'all', label: t('list.allFactories') },
+                    ...factories.map((factory) => ({
+                      value: factory.id,
+                      label: `${factory.name} (${factory.code})`,
+                    })),
+                  ],
+                },
+              ]
+            : []),
+        ]}
+      />
+
       <QueryState
         isLoading={isLoading}
         error={error}
@@ -300,9 +364,11 @@ export function ProjectsPage() {
         <AdaptiveList
           items={projects}
           emptyMessage={
-            canManageProposals
-              ? t('projects.emptyManager')
-              : t('projects.emptyDefault')
+            listState.hasActiveFilters
+              ? t('list.noResults')
+              : canManageProposals
+                ? t('projects.emptyManager')
+                : t('projects.emptyDefault')
           }
           getKey={(project) => project.id}
           renderMobileCard={(project) => (
@@ -450,6 +516,14 @@ export function ProjectsPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
+
+        <ListPagination
+          page={listState.page}
+          pageSize={listState.pageSize}
+          total={total}
+          onPageChange={listState.setPage}
+          onPageSizeChange={listState.setPageSize}
+        />
       </QueryState>
 
       {canManageProposals ? (
