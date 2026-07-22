@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 
 export function ProtectedRoute() {
-  const { session, isLoading, isConfigured } = useAuth()
+  const { session, profile, isLoading, isConfigured } = useAuth()
   const { t } = useTranslation()
 
   if (!isConfigured) {
@@ -18,7 +18,7 @@ export function ProtectedRoute() {
     )
   }
 
-  if (!session) {
+  if (!session || !profile?.is_active) {
     return <Navigate to="/login" replace />
   }
 

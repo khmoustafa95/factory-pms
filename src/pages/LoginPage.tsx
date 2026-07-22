@@ -8,6 +8,7 @@ import { StatusMessage } from '@/components/StatusMessage'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { isAuthError } from '@/lib/auth-errors'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -25,7 +26,7 @@ import {
 } from '@/lib/validations/account'
 
 export function LoginPage() {
-  const { signIn, isConfigured, session, isLoading } = useAuth()
+  const { signIn, isConfigured, session, profile, isLoading } = useAuth()
   const { t, locale } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const loginFormSchema = useValidationSchema(createLoginFormSchema)
@@ -38,7 +39,7 @@ export function LoginPage() {
     },
   })
 
-  if (!isLoading && session) {
+  if (!isLoading && session && profile?.is_active) {
     return <Navigate to="/" replace />
   }
 
@@ -49,8 +50,17 @@ export function LoginPage() {
       await signIn(values.email, values.password)
       toast.success(t('auth.signedInSuccess'))
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('auth.signInFailed')
+      let message = t('auth.signInFailed')
+
+      if (isAuthError(error)) {
+        message =
+          error.code === 'INACTIVE_ACCOUNT'
+            ? t('auth.accountInactive')
+            : t('auth.noProfile')
+      } else if (error instanceof Error) {
+        message = error.message
+      }
+
       toast.error(message)
     } finally {
       setIsSubmitting(false)

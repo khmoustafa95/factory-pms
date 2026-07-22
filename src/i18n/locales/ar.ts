@@ -105,6 +105,8 @@ export const ar = {
     password: 'كلمة المرور',
     signedInSuccess: 'تم تسجيل الدخول بنجاح',
     signInFailed: 'تعذر تسجيل الدخول',
+    accountInactive: 'تم تعطيل هذا الحساب. تواصل مع مدير الشركة.',
+    noProfile: 'لم يتم إعداد ملفك الشخصي بعد. تواصل مع مدير الشركة.',
     loadingSession: 'جاري تحميل الجلسة…',
     needAccount:
       'تحتاج حساباً؟ اطلب من مدير الشركة إنشاء وصول في Supabase Auth، ثم تعيين دورك من شاشة الحسابات.',
