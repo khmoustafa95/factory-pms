@@ -11,6 +11,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { TaskListItem } from '@/hooks/useTasks'
@@ -83,9 +90,17 @@ export function TaskKanbanBoard({
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4"
+        role="list"
+        aria-label={t('projectDetail.tabs.kanban')}
+      >
         {TASK_STATUS_OPTIONS.map((status) => (
-          <Card key={status} className="bg-muted">
+          <Card
+            key={status}
+            role="listitem"
+            className="w-[min(100%,18rem)] shrink-0 snap-start bg-muted md:w-auto md:shrink"
+          >
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">
                 {getTaskStatusLabel(t, status)} ({tasksByStatus[status].length})
@@ -120,21 +135,43 @@ export function TaskKanbanBoard({
                       ) : null}
                       <TaskStatusBadge status={task.status} />
                       {canManage ? (
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {TASK_STATUS_OPTIONS.filter(
-                            (option) => option !== task.status,
-                          ).map((option) => (
-                            <Button
-                              key={option}
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs"
-                              disabled={updateStatus.isPending}
-                              onClick={() => void changeStatus(task, option)}
+                        <div className="pt-1">
+                          <Label
+                            className="sr-only"
+                            htmlFor={`status-${task.id}`}
+                          >
+                            {t('wbs.taskStatus')}
+                          </Label>
+                          <Select
+                            value={task.status}
+                            onValueChange={(value) => {
+                              const nextStatus = value as TaskStatus
+                              if (nextStatus === task.status) {
+                                return
+                              }
+                              void changeStatus(task, nextStatus)
+                            }}
+                            disabled={updateStatus.isPending}
+                          >
+                            <SelectTrigger
+                              id={`status-${task.id}`}
+                              className="h-8 w-full text-xs"
+                              aria-label={t('a11y.moveTaskTo', {
+                                status: getTaskStatusLabel(t, task.status),
+                              })}
                             >
-                              → {getTaskStatusLabel(t, option)}
-                            </Button>
-                          ))}
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {TASK_STATUS_OPTIONS.filter(
+                                (option) => option !== task.status,
+                              ).map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {getTaskStatusLabel(t, option)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       ) : null}
                     </CardContent>

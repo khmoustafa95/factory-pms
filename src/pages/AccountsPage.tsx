@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { AdaptiveList } from '@/components/AdaptiveList'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { PageHeader } from '@/components/PageHeader'
-import { ResponsiveTable } from '@/components/ResponsiveTable'
 import { StatusMessage } from '@/components/StatusMessage'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -76,7 +76,52 @@ export function AccountsPage() {
       ) : null}
 
       {!isLoading && !error ? (
-        <ResponsiveTable>
+        <AdaptiveList
+          items={accounts}
+          emptyMessage={t('accounts.empty')}
+          getKey={(account) => account.id}
+          renderMobileCard={(account) => (
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-medium">{account.full_name}</p>
+                <Badge variant={account.is_active ? 'default' : 'secondary'}>
+                  {account.is_active
+                    ? t('common.active')
+                    : t('common.inactive')}
+                </Badge>
+              </div>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>
+                  <span className="font-medium text-foreground">
+                    {t('common.email')}:{' '}
+                  </span>
+                  {account.email}
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">
+                    {t('accounts.role')}:{' '}
+                  </span>
+                  {getRoleLabel(t, account.role as UserRole)}
+                </p>
+                <p>
+                  <span className="font-medium text-foreground">
+                    {t('common.factory')}:{' '}
+                  </span>
+                  {account.factories
+                    ? `${account.factories.name} (${account.factories.code})`
+                    : notAvailable}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => openEdit(account)}
+              >
+                {t('common.edit')}
+              </Button>
+            </div>
+          )}
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -91,54 +136,43 @@ export function AccountsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {accounts.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="py-10 text-center text-muted-foreground"
-                  >
-                    {t('accounts.empty')}
+              {accounts.map((account) => (
+                <TableRow key={account.id}>
+                  <TableCell className="font-medium">
+                    {account.full_name}
+                  </TableCell>
+                  <TableCell>{account.email}</TableCell>
+                  <TableCell>
+                    {getRoleLabel(t, account.role as UserRole)}
+                  </TableCell>
+                  <TableCell>
+                    {account.factories
+                      ? `${account.factories.name} (${account.factories.code})`
+                      : notAvailable}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={account.is_active ? 'default' : 'secondary'}
+                    >
+                      {account.is_active
+                        ? t('common.active')
+                        : t('common.inactive')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEdit(account)}
+                    >
+                      {t('common.edit')}
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : (
-                accounts.map((account) => (
-                  <TableRow key={account.id}>
-                    <TableCell className="font-medium">
-                      {account.full_name}
-                    </TableCell>
-                    <TableCell>{account.email}</TableCell>
-                    <TableCell>
-                      {getRoleLabel(t, account.role as UserRole)}
-                    </TableCell>
-                    <TableCell>
-                      {account.factories
-                        ? `${account.factories.name} (${account.factories.code})`
-                        : notAvailable}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={account.is_active ? 'default' : 'secondary'}
-                      >
-                        {account.is_active
-                          ? t('common.active')
-                          : t('common.inactive')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openEdit(account)}
-                      >
-                        {t('common.edit')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
-        </ResponsiveTable>
+        </AdaptiveList>
       ) : null}
 
       <AccountFormDialog

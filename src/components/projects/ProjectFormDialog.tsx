@@ -22,8 +22,9 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  projectFormSchema,
+  createProjectFormSchema,
   type ProjectFormValues,
 } from '@/lib/validations/project'
 import type { Project } from '@/types/database'
@@ -47,8 +48,9 @@ export function ProjectFormDialog({
   onSubmitProposal,
   isSubmitting,
 }: ProjectFormDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { data: projectManagers = [] } = useFactoryProjectManagers(factoryId)
+  const projectFormSchema = useValidationSchema(createProjectFormSchema)
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
@@ -104,7 +106,7 @@ export function ProjectFormDialog({
           <DialogDescription>{t('projects.formDescription')}</DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4">
+        <form key={locale} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="project-title">{t('common.title')}</Label>
             <Input id="project-title" {...form.register('title')} />

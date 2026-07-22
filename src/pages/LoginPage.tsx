@@ -18,15 +18,17 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  loginFormSchema,
+  createLoginFormSchema,
   type LoginFormValues,
 } from '@/lib/validations/account'
 
 export function LoginPage() {
   const { signIn, isConfigured, session, isLoading } = useAuth()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const loginFormSchema = useValidationSchema(createLoginFormSchema)
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -74,7 +76,7 @@ export function LoginPage() {
             </StatusMessage>
           ) : null}
 
-          <form className="space-y-4" onSubmit={onSubmit}>
+          <form key={locale} className="space-y-4" onSubmit={onSubmit}>
             <div className="space-y-2">
               <Label htmlFor="email">{t('common.email')}</Label>
               <Input

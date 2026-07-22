@@ -12,8 +12,9 @@ import {
 } from '@/hooks/useComments'
 import { useCommentsRealtime } from '@/hooks/useRealtime'
 import { formatLocalizedDateTime, getRoleLabel } from '@/lib/i18n-format'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
-  commentFormSchema,
+  createCommentFormSchema,
   type CommentFormValues,
 } from '@/lib/validations/comment'
 import type { EntityType, UserRole } from '@/types/database'
@@ -68,10 +69,11 @@ export function CommentThread({
   canComment,
 }: CommentThreadProps) {
   const { user } = useAuth()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { data: comments = [], isLoading } = useComments(entityType, entityId)
   const createComment = useCreateComment(entityType, entityId)
   useCommentsRealtime(entityType, entityId)
+  const commentFormSchema = useValidationSchema(createCommentFormSchema)
 
   const form = useForm<CommentFormValues>({
     resolver: zodResolver(commentFormSchema),
@@ -113,7 +115,7 @@ export function CommentThread({
       )}
 
       {canComment ? (
-        <form className="space-y-2" onSubmit={onSubmit}>
+        <form key={locale} className="space-y-2" onSubmit={onSubmit}>
           <Textarea
             rows={3}
             placeholder={t('activity.placeholder')}

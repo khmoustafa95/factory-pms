@@ -1,10 +1,15 @@
 import { z } from 'zod'
+import type { ValidationTranslator } from '@/lib/validations/types'
 
-export const projectRejectSchema = z.object({
-  rejection_reason: z
-    .string()
-    .trim()
-    .min(3, 'Rejection reason must be at least 3 characters'),
-})
+export function createProjectRejectSchema(t: ValidationTranslator) {
+  return z.object({
+    rejection_reason: z
+      .string()
+      .trim()
+      .min(3, t('validation.rejectionReasonMin')),
+  })
+}
 
-export type ProjectRejectValues = z.infer<typeof projectRejectSchema>
+export type ProjectRejectValues = z.infer<
+  ReturnType<typeof createProjectRejectSchema>
+>

@@ -1,35 +1,38 @@
 import { z } from 'zod'
+import type { ValidationTranslator } from '@/lib/validations/types'
 
-export const taskFormSchema = z
-  .object({
-    title: z.string().trim().min(2, 'Title must be at least 2 characters'),
-    description: z.string().trim().optional(),
-    status: z.enum(['todo', 'in_progress', 'blocked', 'done']),
-    blocked_reason: z.string().trim().optional(),
-    due_date: z.string().trim().optional(),
-    assignee_id: z.string().uuid().nullable(),
-  })
-  .superRefine((values, ctx) => {
-    if (values.status === 'blocked') {
-      if (!values.blocked_reason?.trim()) {
+export function createTaskFormSchema(t: ValidationTranslator) {
+  return z
+    .object({
+      title: z.string().trim().min(2, t('validation.titleMinShort')),
+      description: z.string().trim().optional(),
+      status: z.enum(['todo', 'in_progress', 'blocked', 'done']),
+      blocked_reason: z.string().trim().optional(),
+      due_date: z.string().trim().optional(),
+      assignee_id: z.string().uuid().nullable(),
+    })
+    .superRefine((values, ctx) => {
+      if (values.status === 'blocked') {
+        if (!values.blocked_reason?.trim()) {
+          ctx.addIssue({
+            code: 'custom',
+            message: t('validation.blockedReasonRequired'),
+            path: ['blocked_reason'],
+          })
+        }
+      }
+
+      if (values.status !== 'blocked' && values.blocked_reason?.trim()) {
         ctx.addIssue({
           code: 'custom',
-          message: 'Blocked reason is required',
+          message: t('validation.clearBlockedReason'),
           path: ['blocked_reason'],
         })
       }
-    }
+    })
+}
 
-    if (values.status !== 'blocked' && values.blocked_reason?.trim()) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Clear blocked reason when status is not blocked',
-        path: ['blocked_reason'],
-      })
-    }
-  })
-
-export type TaskFormValues = z.infer<typeof taskFormSchema>
+export type TaskFormValues = z.infer<ReturnType<typeof createTaskFormSchema>>
 
 export function toTaskPayload(values: TaskFormValues) {
   return {

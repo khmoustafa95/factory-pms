@@ -1,13 +1,16 @@
 import { z } from 'zod'
+import type { ValidationTranslator } from '@/lib/validations/types'
 
-export const phaseFormSchema = z.object({
-  name: z.string().trim().min(2, 'Name must be at least 2 characters'),
-  description: z.string().trim().optional(),
-  weight_percent: z
-    .number({ error: 'Weight is required' })
-    .min(0, 'Weight must be at least 0')
-    .max(100, 'Weight cannot exceed 100'),
-  status: z.enum(['pending', 'in_progress', 'completed']),
-})
+export function createPhaseFormSchema(t: ValidationTranslator) {
+  return z.object({
+    name: z.string().trim().min(2, t('validation.nameMin')),
+    description: z.string().trim().optional(),
+    weight_percent: z
+      .number({ error: t('validation.weightRequired') })
+      .min(0, t('validation.weightMin'))
+      .max(100, t('validation.weightMax')),
+    status: z.enum(['pending', 'in_progress', 'completed']),
+  })
+}
 
-export type PhaseFormValues = z.infer<typeof phaseFormSchema>
+export type PhaseFormValues = z.infer<ReturnType<typeof createPhaseFormSchema>>

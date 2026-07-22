@@ -2,11 +2,11 @@ import { Check, Layers, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
+import { AdaptiveList } from '@/components/AdaptiveList'
 import { PageHeader } from '@/components/PageHeader'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
-import { ResponsiveTable } from '@/components/ResponsiveTable'
 import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
@@ -213,6 +213,55 @@ export function ProjectsPage() {
 
   const isReviewing = approveProject.isPending || rejectProject.isPending
 
+  const renderProjectActions = (project: ProjectListItem) => (
+    <div className="flex flex-wrap gap-2">
+      {canViewWbs(project.status) ? (
+        <Button asChild size="sm" variant="outline">
+          <Link to={`/projects/${project.id}`}>
+            <Layers className="size-4" />
+            {t('common.wbs')}
+          </Link>
+        </Button>
+      ) : null}
+      {isDirector && canReviewProject(project.status) ? (
+        <>
+          <Button
+            size="sm"
+            onClick={() => void handleApprove(project)}
+            disabled={isReviewing}
+          >
+            <Check className="size-4" />
+            {t('common.approve')}
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => openReject(project)}
+            disabled={isReviewing}
+          >
+            <X className="size-4" />
+            {t('common.reject')}
+          </Button>
+        </>
+      ) : null}
+      {canManageProposals && canEditProject(project.status) ? (
+        <Button size="sm" variant="outline" onClick={() => openEdit(project)}>
+          {t('common.edit')}
+        </Button>
+      ) : null}
+      {canManageProposals && canSubmitProject(project.status) ? (
+        <Button
+          size="sm"
+          onClick={() => void handleQuickSubmit(project)}
+          disabled={submitProject.isPending}
+        >
+          <Send className="size-4" />
+          {t('common.submit')}
+        </Button>
+      ) : null}
+    </div>
+  )
+
   return (
     <section className="space-y-6">
       <PageHeader
@@ -245,7 +294,62 @@ export function ProjectsPage() {
       ) : null}
 
       {!isLoading && !error ? (
-        <ResponsiveTable>
+        <AdaptiveList
+          items={projects}
+          emptyMessage={
+            canManageProposals
+              ? t('projects.emptyManager')
+              : t('projects.emptyDefault')
+          }
+          getKey={(project) => project.id}
+          renderMobileCard={(project) => (
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-medium">
+                  {canViewWbs(project.status) ? (
+                    <Link
+                      className="hover:underline"
+                      to={`/projects/${project.id}`}
+                    >
+                      {project.title}
+                    </Link>
+                  ) : (
+                    project.title
+                  )}
+                </p>
+                <ProjectStatusBadge status={project.status} />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {t('common.budget')}:{' '}
+                </span>
+                {formatLocalizedBudget(
+                  project.budget,
+                  project.currency,
+                  locale,
+                  notAvailable,
+                )}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {t('common.timeline')}:{' '}
+                </span>
+                {formatLocalizedDate(
+                  project.proposed_start_date,
+                  locale,
+                  notAvailable,
+                )}{' '}
+                →{' '}
+                {formatLocalizedDate(
+                  project.proposed_end_date,
+                  locale,
+                  notAvailable,
+                )}
+              </p>
+              {renderProjectActions(project)}
+            </div>
+          )}
+        >
           <Table>
             <TableHeader>
               <TableRow>
@@ -266,147 +370,83 @@ export function ProjectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projects.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={isDirector ? 8 : 6}
-                    className="py-10 text-center text-muted-foreground"
-                  >
-                    {canManageProposals
-                      ? t('projects.emptyManager')
-                      : t('projects.emptyDefault')}
+              {projects.map((project) => (
+                <TableRow key={project.id}>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        {canViewWbs(project.status) ? (
+                          <Link
+                            className="hover:underline"
+                            to={`/projects/${project.id}`}
+                          >
+                            {project.title}
+                          </Link>
+                        ) : (
+                          project.title
+                        )}
+                      </p>
+                      {project.description ? (
+                        <p className="line-clamp-1 text-sm text-muted-foreground">
+                          {project.description}
+                        </p>
+                      ) : null}
+                      {project.status === 'rejected' &&
+                      project.rejection_reason ? (
+                        <p className="text-sm text-destructive">
+                          {t('projects.rejectedPrefix')}{' '}
+                          {project.rejection_reason}
+                        </p>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                  {isDirector ? (
+                    <TableCell>
+                      {project.factories
+                        ? `${project.factories.name} (${project.factories.code})`
+                        : notAvailable}
+                    </TableCell>
+                  ) : null}
+                  <TableCell>
+                    <ProjectStatusBadge status={project.status} />
+                  </TableCell>
+                  <TableCell>
+                    {formatLocalizedBudget(
+                      project.budget,
+                      project.currency,
+                      locale,
+                      notAvailable,
+                    )}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                    {formatLocalizedDate(
+                      project.proposed_start_date,
+                      locale,
+                      notAvailable,
+                    )}{' '}
+                    →{' '}
+                    {formatLocalizedDate(
+                      project.proposed_end_date,
+                      locale,
+                      notAvailable,
+                    )}
+                  </TableCell>
+                  {isDirector ? (
+                    <TableCell>
+                      {project.proposer?.full_name ?? notAvailable}
+                    </TableCell>
+                  ) : null}
+                  <TableCell>
+                    {project.assigned_pm?.full_name ?? notAvailable}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {renderProjectActions(project)}
                   </TableCell>
                 </TableRow>
-              ) : (
-                projects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p className="font-medium">
-                          {canViewWbs(project.status) ? (
-                            <Link
-                              className="hover:underline"
-                              to={`/projects/${project.id}`}
-                            >
-                              {project.title}
-                            </Link>
-                          ) : (
-                            project.title
-                          )}
-                        </p>
-                        {project.description ? (
-                          <p className="line-clamp-1 text-sm text-muted-foreground">
-                            {project.description}
-                          </p>
-                        ) : null}
-                        {project.status === 'rejected' &&
-                        project.rejection_reason ? (
-                          <p className="text-sm text-destructive">
-                            {t('projects.rejectedPrefix')}{' '}
-                            {project.rejection_reason}
-                          </p>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    {isDirector ? (
-                      <TableCell>
-                        {project.factories
-                          ? `${project.factories.name} (${project.factories.code})`
-                          : notAvailable}
-                      </TableCell>
-                    ) : null}
-                    <TableCell>
-                      <ProjectStatusBadge status={project.status} />
-                    </TableCell>
-                    <TableCell>
-                      {formatLocalizedBudget(
-                        project.budget,
-                        project.currency,
-                        locale,
-                        notAvailable,
-                      )}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                      {formatLocalizedDate(
-                        project.proposed_start_date,
-                        locale,
-                        notAvailable,
-                      )}{' '}
-                      →{' '}
-                      {formatLocalizedDate(
-                        project.proposed_end_date,
-                        locale,
-                        notAvailable,
-                      )}
-                    </TableCell>
-                    {isDirector ? (
-                      <TableCell>
-                        {project.proposer?.full_name ?? notAvailable}
-                      </TableCell>
-                    ) : null}
-                    <TableCell>
-                      {project.assigned_pm?.full_name ?? notAvailable}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {canViewWbs(project.status) ? (
-                          <Button asChild size="sm" variant="outline">
-                            <Link to={`/projects/${project.id}`}>
-                              <Layers className="size-4" />
-                              {t('common.wbs')}
-                            </Link>
-                          </Button>
-                        ) : null}
-                        {isDirector && canReviewProject(project.status) ? (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => void handleApprove(project)}
-                              disabled={isReviewing}
-                            >
-                              <Check className="size-4" />
-                              {t('common.approve')}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => openReject(project)}
-                              disabled={isReviewing}
-                            >
-                              <X className="size-4" />
-                              {t('common.reject')}
-                            </Button>
-                          </>
-                        ) : null}
-                        {canManageProposals &&
-                        canEditProject(project.status) ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openEdit(project)}
-                          >
-                            {t('common.edit')}
-                          </Button>
-                        ) : null}
-                        {canManageProposals &&
-                        canSubmitProject(project.status) ? (
-                          <Button
-                            size="sm"
-                            onClick={() => void handleQuickSubmit(project)}
-                            disabled={submitProject.isPending}
-                          >
-                            <Send className="size-4" />
-                            {t('common.submit')}
-                          </Button>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+              ))}
             </TableBody>
           </Table>
-        </ResponsiveTable>
+        </AdaptiveList>
       ) : null}
 
       {canManageProposals ? (

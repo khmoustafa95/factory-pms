@@ -24,7 +24,11 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { getTaskStatusLabel } from '@/lib/i18n-format'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
-import { taskFormSchema, type TaskFormValues } from '@/lib/validations/task'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
+import {
+  createTaskFormSchema,
+  type TaskFormValues,
+} from '@/lib/validations/task'
 import type { Task } from '@/types/database'
 
 interface TaskFormDialogProps {
@@ -46,8 +50,9 @@ export function TaskFormDialog({
   onSubmit,
   isSubmitting,
 }: TaskFormDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const { data: assignees = [] } = useFactoryProjectManagers(factoryId)
+  const taskFormSchema = useValidationSchema(createTaskFormSchema)
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -99,7 +104,7 @@ export function TaskFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="task-title">{t('wbs.taskTitle')}</Label>
             <Input id="task-title" {...form.register('title')} />

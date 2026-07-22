@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card'
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { ProjectDetail } from '@/hooks/useProject'
-import { formatLocalizedDate } from '@/lib/i18n-format'
+import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
 import type { Phase } from '@/types/database'
 
 interface ProjectTimelineProps {
@@ -61,19 +61,23 @@ export function ProjectTimeline({ project, phases }: ProjectTimelineProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="relative h-3 overflow-hidden rounded-full bg-muted">
-          {phases.map((phase, index) => (
-            <div
-              key={phase.id}
-              className="absolute top-0 h-full bg-primary first:rounded-l-full last:rounded-r-full"
-              style={{
-                left: `${index * segmentWidth}%`,
-                width: `${segmentWidth}%`,
-                opacity: 0.45 + (index % 3) * 0.15,
-              }}
-              title={phase.name}
-            />
-          ))}
+        <div className="hidden overflow-x-auto sm:block">
+          <div className="min-w-[320px]">
+            <div className="relative h-3 overflow-hidden rounded-full bg-muted">
+              {phases.map((phase, index) => (
+                <div
+                  key={phase.id}
+                  className="absolute top-0 h-full bg-primary first:rounded-s-full last:rounded-e-full"
+                  style={{
+                    insetInlineStart: `${index * segmentWidth}%`,
+                    width: `${segmentWidth}%`,
+                    opacity: 0.45 + (index % 3) * 0.15,
+                  }}
+                  title={phase.name}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -81,18 +85,26 @@ export function ProjectTimeline({ project, phases }: ProjectTimelineProps) {
             const leftPercent = index * segmentWidth
 
             return (
-              <div key={phase.id} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{phase.name}</span>
-                  <span className="text-muted-foreground">
+              <div
+                key={phase.id}
+                className="rounded-lg border border-border bg-card p-3 sm:border-0 sm:bg-transparent sm:p-0"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <div className="space-y-1">
+                    <span className="text-sm font-medium">{phase.name}</span>
+                    <p className="text-xs text-muted-foreground sm:hidden">
+                      {getPhaseStatusLabel(t, phase.status)}
+                    </p>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
                     {phase.weight_percent}%
                   </span>
                 </div>
-                <div className="relative h-8 rounded-md bg-muted">
+                <div className="relative mt-2 hidden h-8 rounded-md bg-muted sm:block">
                   <div
                     className="absolute top-1 bottom-1 rounded bg-primary"
                     style={{
-                      left: `${leftPercent}%`,
+                      insetInlineStart: `${leftPercent}%`,
                       width: `${segmentWidth}%`,
                     }}
                   />

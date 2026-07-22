@@ -22,6 +22,10 @@
 - [x] i18n: Arabic + English, RTL, locale persistence, translated UI copy
 - [x] Theme: light / dark / system toggle with next-themes
 - [x] Responsive layout: mobile nav drawer, scrollable tables/tabs, semantic tokens
+- [x] Localized Zod validation messages (ar/en)
+- [x] AdaptiveList mobile card view for list pages
+- [x] Route-level code splitting (React.lazy)
+- [x] Vitest unit tests for i18n + validation
 
 ## Backlog
 
@@ -36,6 +40,17 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 11)
+
+- Localized Zod schemas via `create*Schema(t)` factories
+- `AdaptiveList` mobile cards for Projects/Factories/Accounts/Escalations
+- React.lazy route splitting; main chunk ~344 kB (was ~887 kB)
+- Vitest tests for translator + validation; Kanban horizontal scroll + status Select
+
+### 2026-07-22 (session 10)
+
+- `AdaptiveList` on Factories, Accounts, Escalations, Projects list pages — mobile cards + desktop tables; empty state handled by `AdaptiveList`
 
 ### 2026-07-22 (session 9)
 

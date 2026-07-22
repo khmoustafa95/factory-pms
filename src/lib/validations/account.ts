@@ -1,35 +1,42 @@
 import { z } from 'zod'
+import type { ValidationTranslator } from '@/lib/validations/types'
 
-export const accountFormSchema = z
-  .object({
-    full_name: z.string().trim().min(2, 'Name must be at least 2 characters'),
-    role: z.enum(['company_director', 'factory_manager', 'project_manager']),
-    factory_id: z.string().uuid().nullable(),
-    is_active: z.boolean(),
+export function createAccountFormSchema(t: ValidationTranslator) {
+  return z
+    .object({
+      full_name: z.string().trim().min(2, t('validation.nameMin')),
+      role: z.enum(['company_director', 'factory_manager', 'project_manager']),
+      factory_id: z.string().uuid().nullable(),
+      is_active: z.boolean(),
+    })
+    .superRefine((values, ctx) => {
+      if (values.role !== 'company_director' && !values.factory_id) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.factoryRequired'),
+          path: ['factory_id'],
+        })
+      }
+
+      if (values.role === 'company_director' && values.factory_id) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.directorNoFactory'),
+          path: ['factory_id'],
+        })
+      }
+    })
+}
+
+export type AccountFormValues = z.infer<
+  ReturnType<typeof createAccountFormSchema>
+>
+
+export function createLoginFormSchema(t: ValidationTranslator) {
+  return z.object({
+    email: z.email(t('validation.emailInvalid')),
+    password: z.string().min(6, t('validation.passwordMin')),
   })
-  .superRefine((values, ctx) => {
-    if (values.role !== 'company_director' && !values.factory_id) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Factory is required for this role',
-        path: ['factory_id'],
-      })
-    }
+}
 
-    if (values.role === 'company_director' && values.factory_id) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Company directors are not assigned to a factory',
-        path: ['factory_id'],
-      })
-    }
-  })
-
-export type AccountFormValues = z.infer<typeof accountFormSchema>
-
-export const loginFormSchema = z.object({
-  email: z.email('Enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-
-export type LoginFormValues = z.infer<typeof loginFormSchema>
+export type LoginFormValues = z.infer<ReturnType<typeof createLoginFormSchema>>
