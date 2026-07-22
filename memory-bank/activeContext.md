@@ -2,31 +2,26 @@
 
 ## Current focus
 
-**FT-04 (Phases & tasks WBS)** implemented. Next: **FT-05** Kanban/Gantt/progress UI (or FT-06 comments).
+**All PRD features (FT-01 → FT-07)** implemented in code. Next: apply Supabase migration to a live project and end-to-end QA.
 
 ## Recent changes
 
+- [2026-07-22] FT-05: Kanban board, timeline/Gantt-style view, progress overview, dashboard KPIs
+- [2026-07-22] FT-06: Comments on project/phase/task + activity feed with realtime invalidation
+- [2026-07-22] FT-07: Escalations page for blocked tasks with leadership notification via comments
 - [2026-07-22] FT-04: Project WBS page — phases with 100% weight validation, tasks with statuses and blocked reason
-- [2026-07-22] FT-02: Projects page — factory managers create/edit drafts, submit proposals (`proposed`); directors/PMs get role-scoped list view
-- [2026-07-22] Added `supabase/migrations/20260722100000_initial_schema.sql` — full PRD domain schema, RLS helpers/policies, Realtime publication
-- [2026-07-22] Replaced `database.ts` stub with typed tables/enums matching migration
-- [2026-07-22] Auth: `AuthProvider`, login page, protected + role-based routes
-- [2026-07-22] FT-01 UI: Factories CRUD + Accounts role/factory assignment (company director only)
-- [2026-07-22] Installed `@tanstack/react-query`, shadcn/ui (+ core UI components), `zod`, `react-hook-form`, `date-fns`, `lucide-react`, `sonner`, `next-themes`; wired providers in `main.tsx`
-- [2026-07-22] Added `agent-quality.mdc`, extended Memory Bank (`decisionLog`, `lessonsLearned`, UMB), added `npm run verify`
-- Added Memory Bank (`memory-bank/` + `.cursor/rules/memory-bank.mdc`)
-- Linked Memory Bank from `AGENTS.md`
-- Earlier: Vite/React/Supabase shell, Cursor rules, tsconfig `NodeNext` casing fix for Edge Tools
+- [2026-07-22] FT-03: Directors approve/reject `proposed` projects; rejection requires reason shown to factory managers
+- [2026-07-22] FT-02: Projects page — factory managers create/edit drafts, submit proposals (`proposed`)
 
 ## Next steps (concrete)
 
 1. Create Supabase project and fill `.env.local`
 2. Run migration SQL in Supabase (or `supabase db push` when CLI linked)
-3. Create first auth user in Supabase Dashboard; set role to `company_director` on `profiles`
-4. Implement **FT-05** — Kanban/Gantt/progress UI (or FT-06 comments)
+3. Create users and assign roles; walk through full workflow end-to-end
+4. Optional: regenerate `database.ts` via `supabase gen types`
+5. Optional: Arabic UI copy pass
 
 ## Open questions
 
-- Confirm React-only path (vs Flutter Web) for v1 — repo is React
 - Arabic-only vs bilingual UI for first release
-- Which chart/Kanban library for FT-05 (defer until that feature)
+- Hosting target (Vercel vs Netlify)
