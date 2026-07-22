@@ -87,7 +87,7 @@ export function useCommentsRealtime(
             queryKey: queryKeys.comments(entityType, entityId),
           })
           void queryClient.invalidateQueries({
-            queryKey: queryKeys.projectActivity,
+            queryKey: ['project-activity'],
           })
         },
       )

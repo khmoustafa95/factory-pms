@@ -376,6 +376,29 @@ export interface Database {
         Args: Record<string, never>
         Returns: boolean
       }
+      get_dashboard_stats: {
+        Args: Record<string, never>
+        Returns: {
+          factory_count: number
+          active_project_count: number
+          average_progress: number
+          blocked_task_count: number
+        }[]
+      }
+      get_project_activity: {
+        Args: { p_project_id: string }
+        Returns: {
+          id: string
+          entity_type: EntityType
+          entity_id: string
+          author_id: string
+          body: string
+          created_at: string
+          updated_at: string
+          author_full_name: string
+          author_role: UserRole
+        }[]
+      }
     }
     Enums: {
       user_role: UserRole

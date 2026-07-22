@@ -30,6 +30,7 @@
 - [x] Security: restrict signup role metadata; enforce `is_active` on login
 - [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
 - [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
+- [x] DB performance: progress trigger + `get_dashboard_stats` / `get_project_activity` RPCs
 
 ## Backlog
 
@@ -42,6 +43,11 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 16)
+
+- Migration `20260722130000_performance_functions.sql`: `recalculate_project_progress` trigger on tasks/phases; `get_dashboard_stats()` + `get_project_activity()` RPCs
+- Frontend: removed `syncProjectProgress` from task mutations; dashboard/activity use `.rpc()`; narrower cache invalidation
 
 ### 2026-07-22 (session 15)
 

@@ -20,8 +20,6 @@ import type { EntityType, UserRole } from '@/types/database'
 
 interface ProjectActivityTabProps {
   projectId: string
-  phaseIds: string[]
-  taskIds: string[]
   canComment: boolean
 }
 
@@ -53,8 +51,6 @@ function getActivityContextLabel(
 
 export function ProjectActivityTab({
   projectId,
-  phaseIds,
-  taskIds,
   canComment,
 }: ProjectActivityTabProps) {
   const { t, locale } = useTranslation()
@@ -64,7 +60,7 @@ export function ProjectActivityTab({
     error,
     refetch,
     isFetching,
-  } = useProjectActivity(projectId, phaseIds, taskIds)
+  } = useProjectActivity(projectId)
   useCommentsRealtime('project', projectId)
 
   return (

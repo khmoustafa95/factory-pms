@@ -21,7 +21,8 @@ export const queryKeys = {
   tasks: (projectId: string | undefined) => ['tasks', projectId] as const,
   comments: (entityType: string, entityId: string | undefined) =>
     ['comments', entityType, entityId] as const,
-  projectActivity: ['project-activity'] as const,
+  projectActivity: (projectId: string | undefined) =>
+    ['project-activity', projectId] as const,
   escalations: ['escalations'] as const,
   escalationsPage: (params: EscalationsPageParams) =>
     ['escalations', 'page', params] as const,

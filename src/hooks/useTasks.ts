@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
-import { calculateProjectProgress } from '@/lib/progress'
 import { toTaskPayload, type TaskFormValues } from '@/lib/validations/task'
 import type { Task, TaskStatus } from '@/types/database'
 
@@ -9,47 +8,20 @@ export type TaskListItem = Task & {
   assignee: { full_name: string } | null
 }
 
-async function syncProjectProgress(projectId: string) {
-  const supabase = getSupabase()
-
-  const [
-    { data: phases, error: phasesError },
-    { data: tasks, error: tasksError },
-  ] = await Promise.all([
-    supabase.from('phases').select('*').eq('project_id', projectId),
-    supabase.from('tasks').select('*').eq('project_id', projectId),
-  ])
-
-  if (phasesError) {
-    throw phasesError
-  }
-  if (tasksError) {
-    throw tasksError
-  }
-
-  const progress = calculateProjectProgress(phases ?? [], tasks ?? [])
-
-  const { error: updateError } = await supabase
-    .from('projects')
-    .update({ progress_percent: Number(progress.toFixed(2)) })
-    .eq('id', projectId)
-
-  if (updateError) {
-    throw updateError
-  }
-}
-
 async function invalidateTaskQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   projectId: string | undefined,
+  options?: { refreshEscalations?: boolean },
 ) {
   await queryClient.invalidateQueries({ queryKey: queryKeys.tasks(projectId) })
   await queryClient.invalidateQueries({
     queryKey: queryKeys.project(projectId),
   })
   await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
-  await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard })
-  await queryClient.invalidateQueries({ queryKey: queryKeys.escalations })
+
+  if (options?.refreshEscalations) {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.escalations })
+  }
 }
 
 export function useTasks(projectId: string | undefined) {
@@ -128,11 +100,12 @@ export function useCreateTask(projectId: string | undefined) {
         throw error
       }
 
-      await syncProjectProgress(projectId)
       return data
     },
     onSuccess: async () => {
-      await invalidateTaskQueries(queryClient, projectId)
+      await invalidateTaskQueries(queryClient, projectId, {
+        refreshEscalations: true,
+      })
     },
   })
 }
@@ -160,14 +133,12 @@ export function useUpdateTask(projectId: string | undefined) {
         throw error
       }
 
-      if (projectId) {
-        await syncProjectProgress(projectId)
-      }
-
       return data
     },
     onSuccess: async () => {
-      await invalidateTaskQueries(queryClient, projectId)
+      await invalidateTaskQueries(queryClient, projectId, {
+        refreshEscalations: true,
+      })
     },
   })
 }
@@ -201,14 +172,12 @@ export function useUpdateTaskStatus(projectId: string | undefined) {
         throw error
       }
 
-      if (projectId) {
-        await syncProjectProgress(projectId)
-      }
-
       return data
     },
     onSuccess: async () => {
-      await invalidateTaskQueries(queryClient, projectId)
+      await invalidateTaskQueries(queryClient, projectId, {
+        refreshEscalations: true,
+      })
     },
   })
 }
@@ -224,13 +193,11 @@ export function useDeleteTask(projectId: string | undefined) {
       if (error) {
         throw error
       }
-
-      if (projectId) {
-        await syncProjectProgress(projectId)
-      }
     },
     onSuccess: async () => {
-      await invalidateTaskQueries(queryClient, projectId)
+      await invalidateTaskQueries(queryClient, projectId, {
+        refreshEscalations: true,
+      })
     },
   })
 }
