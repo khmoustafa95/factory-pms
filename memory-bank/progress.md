@@ -26,13 +26,14 @@
 - [x] AdaptiveList mobile card view for list pages
 - [x] Route-level code splitting (React.lazy)
 - [x] Vitest unit tests for i18n + validation
+- [x] Comprehensive `supabase/seed.sql` demo data (all enums/statuses)
 
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
-- [ ] FT-05 Kanban / Gantt / progress UI
-- [ ] FT-06 Comments
-- [ ] FT-07 Escalation / blocked
+- [ ] Security: restrict signup role metadata; enforce `is_active` on login
+- [ ] Error Boundary + global query error handling
+- [ ] E2E tests (Playwright)
 
 ## Blockers / issues
 
@@ -40,6 +41,10 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 12)
+
+- Comprehensive `supabase/seed.sql`: 3 factories, 7 users, 7 projects (all statuses), phases, tasks, comments; demo password `Demo123!`
 
 ### 2026-07-22 (session 11)
 
