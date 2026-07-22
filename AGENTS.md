@@ -46,3 +46,9 @@ Use the `@/` path alias for imports from `src/`.
 - Cross-session context: read/update [`memory-bank/`](memory-bank/) per the Memory Bank protocol (product PRD lives in Notion). Say **UMB** to force a full Memory Bank sync.
 - Use `getSupabase()` / `isSupabaseConfigured()` from `src/lib/supabase.ts`; keep `Database` types in `src/types/database.ts`.
 - Match existing Prettier/ESLint style; do not add docs or comments unless asked (Memory Bank updates are expected).
+
+## Cursor Cloud specific instructions
+
+- This is a frontend-only SPA; there is no local backend/DB to run. Supabase is a remote SaaS and is optional — the app boots and renders without it, showing "Supabase: not configured".
+- Run the dev server with `npm run dev` (Vite, serves on `http://localhost:5173`). Standard scripts (`build`, `typecheck`, `lint`, `verify`, `format`) are in the Commands table above.
+- Vite reads `.env.local` only at server startup. After creating or changing `.env.local` (e.g. adding `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`), restart `npm run dev` — HMR does not pick up env changes. `.env.local` is gitignored.
