@@ -1,0 +1,36 @@
+---
+description: High-signal agent quality and safety for this SPA
+alwaysApply: true
+---
+
+# Agent quality
+
+## Code
+
+- Never use `as any`. Prefer proper types, generics, or `unknown` + narrowing.
+- Do not omit code with placeholders (`// ...`, `[rest of file]`, pseudo-implementations). Ship complete, working edits.
+- Prefer descriptive names. Match existing Prettier/ESLint style.
+- Preserve unrelated code and structure. Only change what was requested.
+- Check the repo (layout, `package.json`, existing helpers) before suggesting new dependencies or structural moves.
+- When unsure how a function/component/hook works, read its source or types first.
+- Security first: no secrets in git or rules; SPA uses publishable Supabase key only; respect RLS.
+
+## After code changes
+
+1. Fix introduced lint and TypeScript errors.
+2. Run `npm run verify` (`typecheck` + `lint`) before considering the task done.
+3. Use `npm run build` when the change can affect the production build.
+
+## Collaboration
+
+- List real assumptions/uncertainties that block correctness; ask briefly when a better approach is unclear.
+- Prefer an automated check over asking the user to manually verify visible code.
+- Do not invent unrelated features, whitespace-only churn, or unsolicited docs outside `memory-bank/`.
+- Cursor modes (Agent / Plan / Ask / Debug) already cover collaboration — do not emulate custom mode handoffs in chat.
+
+## Explicitly not used here
+
+- No demo login credentials in rules or repo.
+- No `typedSelect` helper (use typed Supabase client + `Database` types).
+- No mandatory `useCallback` (see `react-typescript` — React Compiler-friendly defaults).
+- No `cursor-tools` integration in this project.

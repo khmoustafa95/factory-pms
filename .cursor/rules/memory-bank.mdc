@@ -1,0 +1,52 @@
+---
+description: Read and update the Memory Bank for cross-session project context
+alwaysApply: true
+---
+
+# Memory Bank Protocol
+
+This project uses a **Memory Bank** in `memory-bank/` for persistent context across sessions.
+
+**Canonical product docs:** Notion page *Projects Management system* (Enterprise PMS PRD).
+**Coding standards:** `.cursor/rules/` and `AGENTS.md` — do not duplicate them here; reference them.
+
+## Session start (required)
+
+Before planning or implementing non-trivial work:
+
+1. Read `memory-bank/activeContext.md` and `memory-bank/progress.md`.
+2. If touching architecture, schema, RLS, or dependencies, also read `systemPatterns.md` and `techContext.md`.
+3. If clarifying scope/roles/features, skim `projectbrief.md` and `productContext.md`.
+
+Do **not** prefix every chat reply with Memory Bank status tags — just read the files when needed.
+
+## After completing a task (required)
+
+Update Memory Bank before ending your turn. **Append** changelog/decision/lesson entries — never wipe history or replace a whole article with a stub.
+
+1. **`activeContext.md`** — current focus, what changed, concrete next steps.
+2. **`progress.md`** — checkboxes + dated changelog entry.
+3. **`decisionLog.md`** — append when an architectural/tech choice is made.
+4. **`lessonsLearned.md`** — append when a task surfaces a non-obvious lesson.
+5. **`systemPatterns.md` / `techContext.md` / `projectbrief.md` / `productContext.md`** — only if that domain changed.
+
+Keep entries factual and concise. Prefer English in Memory Bank files.
+
+## UMB command
+
+If the user says **Update Memory Bank** or **UMB**: stop other work, sync Memory Bank from the current session (clarifications, decisions, progress), then confirm sync is done.
+
+## File map
+
+| File                | Role                           |
+| ------------------- | ------------------------------ |
+| `projectbrief.md`   | Scope, goals, constraints      |
+| `productContext.md` | Users, UX, product rationale   |
+| `systemPatterns.md` | Architecture and code patterns |
+| `techContext.md`    | Stack and environment          |
+| `activeContext.md`  | Now / next (highest churn)     |
+| `progress.md`       | Done / backlog / issues        |
+| `decisionLog.md`    | Append-only decisions          |
+| `lessonsLearned.md` | Append-only lessons            |
+
+See `memory-bank/README.md` for the full workflow.

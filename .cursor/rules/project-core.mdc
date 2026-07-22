@@ -10,4 +10,6 @@ alwaysApply: true
 - Put UI in `src/components/`, route screens in `src/pages/`, clients/utils in `src/lib/`, shared types in `src/types/`.
 - Keep changes focused — no unrelated refactors, no unsolicited markdown/docs.
 - Never commit secrets or put the Supabase service-role key in frontend code. Env lives in `.env.local` (see `.env.example`).
-- Prefer existing scripts: `npm run typecheck`, `lint`, `format`, `build`.
+- Prefer existing scripts: `npm run verify` (typecheck + lint), `format`, `build`.
+- UI: shadcn under `src/components/ui/`; add with `npx shadcn add <name>`.
+- Server state: TanStack Query (`QueryClientProvider` in `main.tsx`).
