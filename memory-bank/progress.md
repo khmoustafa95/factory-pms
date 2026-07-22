@@ -44,6 +44,11 @@
 
 ## Changelog
 
+### 2026-07-22 (session 16)
+
+- Migration `20260722130000_performance_functions.sql`: `recalculate_project_progress` trigger on tasks/phases; `get_dashboard_stats()` + `get_project_activity()` RPCs
+- Frontend: removed `syncProjectProgress` from task mutations; dashboard/activity use `.rpc()`; narrower cache invalidation
+
 ### 2026-07-22 (session 15)
 
 - `app_settings` singleton table + `app-assets` storage bucket (migration `20260722120000_app_settings.sql`)
