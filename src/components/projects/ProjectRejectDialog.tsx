@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslation } from '@/contexts/LocaleContext'
 import {
   projectRejectSchema,
   type ProjectRejectValues,
@@ -32,6 +33,8 @@ export function ProjectRejectDialog({
   onSubmit,
   isSubmitting,
 }: ProjectRejectDialogProps) {
+  const { t } = useTranslation()
+
   const form = useForm<ProjectRejectValues>({
     resolver: zodResolver(projectRejectSchema),
     defaultValues: {
@@ -56,25 +59,26 @@ export function ProjectRejectDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reject proposal</DialogTitle>
+          <DialogTitle>{t('projects.rejectProposal')}</DialogTitle>
           <DialogDescription>
             {projectTitle
-              ? `Provide a reason for rejecting "${projectTitle}". The factory manager will see this feedback.`
-              : 'Provide a reason for rejecting this proposal.'}
+              ? `${t('projects.rejectDescription')} (${projectTitle})`
+              : t('projects.rejectDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="rejection-reason">Rejection reason</Label>
+            <Label htmlFor="rejection-reason">
+              {t('projects.rejectionReason')}
+            </Label>
             <Textarea
               id="rejection-reason"
               rows={4}
-              placeholder="Explain what needs to change before this proposal can be approved."
               {...form.register('rejection_reason')}
             />
             {form.formState.errors.rejection_reason ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.rejection_reason.message}
               </p>
             ) : null}
@@ -86,10 +90,12 @@ export function ProjectRejectDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" variant="destructive" disabled={isSubmitting}>
-              {isSubmitting ? 'Rejecting…' : 'Reject proposal'}
+              {isSubmitting
+                ? t('common.submitting')
+                : t('projects.rejectProposal')}
             </Button>
           </DialogFooter>
         </form>

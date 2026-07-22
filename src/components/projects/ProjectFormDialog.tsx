@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import {
   projectFormSchema,
@@ -46,6 +47,7 @@ export function ProjectFormDialog({
   onSubmitProposal,
   isSubmitting,
 }: ProjectFormDialogProps) {
+  const { t } = useTranslation()
   const { data: projectManagers = [] } = useFactoryProjectManagers(factoryId)
 
   const form = useForm<ProjectFormValues>({
@@ -97,26 +99,26 @@ export function ProjectFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {project ? 'Edit project proposal' : 'New project proposal'}
+            {project ? t('projects.editProposal') : t('projects.newProposal')}
           </DialogTitle>
-          <DialogDescription>
-            Capture scope, budget, and timeline for director approval.
-          </DialogDescription>
+          <DialogDescription>{t('projects.formDescription')}</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="project-title">Title</Label>
+            <Label htmlFor="project-title">{t('common.title')}</Label>
             <Input id="project-title" {...form.register('title')} />
             {form.formState.errors.title ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.title.message}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="project-description">Description</Label>
+            <Label htmlFor="project-description">
+              {t('common.description')}
+            </Label>
             <Textarea
               id="project-description"
               rows={4}
@@ -126,7 +128,7 @@ export function ProjectFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="project-budget">Budget</Label>
+              <Label htmlFor="project-budget">{t('common.budget')}</Label>
               <Input
                 id="project-budget"
                 type="number"
@@ -136,14 +138,14 @@ export function ProjectFormDialog({
                 {...form.register('budget')}
               />
               {form.formState.errors.budget ? (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.budget.message}
                 </p>
               ) : null}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="project-currency">Currency</Label>
+              <Label htmlFor="project-currency">{t('projects.currency')}</Label>
               <Input
                 id="project-currency"
                 className="uppercase"
@@ -151,7 +153,7 @@ export function ProjectFormDialog({
                 {...form.register('currency')}
               />
               {form.formState.errors.currency ? (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.currency.message}
                 </p>
               ) : null}
@@ -160,7 +162,9 @@ export function ProjectFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="project-start">Proposed start</Label>
+              <Label htmlFor="project-start">
+                {t('projects.proposedStart')}
+              </Label>
               <Input
                 id="project-start"
                 type="date"
@@ -169,14 +173,14 @@ export function ProjectFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="project-end">Proposed end</Label>
+              <Label htmlFor="project-end">{t('projects.proposedEnd')}</Label>
               <Input
                 id="project-end"
                 type="date"
                 {...form.register('proposed_end_date')}
               />
               {form.formState.errors.proposed_end_date ? (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.proposed_end_date.message}
                 </p>
               ) : null}
@@ -184,7 +188,7 @@ export function ProjectFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Assigned project manager</Label>
+            <Label>{t('projects.assignedPm')}</Label>
             <Select
               value={selectedPmId ?? 'none'}
               onValueChange={(value) =>
@@ -192,10 +196,10 @@ export function ProjectFormDialog({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Optional" />
+                <SelectValue placeholder={t('common.optional')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Unassigned</SelectItem>
+                <SelectItem value="none">{t('common.unassigned')}</SelectItem>
                 {projectManagers.map((manager) => (
                   <SelectItem key={manager.id} value={manager.id}>
                     {manager.full_name}
@@ -211,7 +215,7 @@ export function ProjectFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="button"
@@ -219,14 +223,16 @@ export function ProjectFormDialog({
               disabled={isSubmitting}
               onClick={() => void saveDraft()}
             >
-              {isSubmitting ? 'Saving…' : 'Save draft'}
+              {isSubmitting ? t('common.saving') : t('common.saveDraft')}
             </Button>
             <Button
               type="button"
               disabled={isSubmitting}
               onClick={() => void submitProposal()}
             >
-              {isSubmitting ? 'Submitting…' : 'Submit proposal'}
+              {isSubmitting
+                ? t('common.submitting')
+                : t('common.submitProposal')}
             </Button>
           </DialogFooter>
         </form>

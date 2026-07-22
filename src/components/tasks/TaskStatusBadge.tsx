@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
-import { TASK_STATUS_LABELS } from '@/lib/task-status'
+import { useTranslation } from '@/contexts/LocaleContext'
+import { getTaskStatusLabel } from '@/lib/i18n-format'
 import type { TaskStatus } from '@/types/database'
 
 const STATUS_VARIANTS: Record<
@@ -17,9 +18,11 @@ interface TaskStatusBadgeProps {
 }
 
 export function TaskStatusBadge({ status }: TaskStatusBadgeProps) {
+  const { t } = useTranslation()
+
   return (
     <Badge variant={STATUS_VARIANTS[status]}>
-      {TASK_STATUS_LABELS[status]}
+      {getTaskStatusLabel(t, status)}
     </Badge>
   )
 }

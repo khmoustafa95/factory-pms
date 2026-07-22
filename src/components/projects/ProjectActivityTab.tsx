@@ -1,12 +1,3 @@
-import { format } from 'date-fns'
-import { useProjectActivity } from '@/hooks/useComments'
-import { useCommentsRealtime } from '@/hooks/useRealtime'
-import { USER_ROLE_LABELS } from '@/lib/roles'
-import {
-  ESCALATION_PREFIX,
-  isEscalationComment,
-} from '@/lib/validations/comment'
-import type { UserRole } from '@/types/database'
 import { CommentThread } from '@/components/comments/CommentThread'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -16,6 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useTranslation } from '@/contexts/LocaleContext'
+import { useProjectActivity } from '@/hooks/useComments'
+import { useCommentsRealtime } from '@/hooks/useRealtime'
+import { formatLocalizedDateTime, getRoleLabel } from '@/lib/i18n-format'
+import {
+  ESCALATION_PREFIX,
+  isEscalationComment,
+} from '@/lib/validations/comment'
+import type { EntityType, UserRole } from '@/types/database'
 
 interface ProjectActivityTabProps {
   projectId: string
@@ -24,12 +24,39 @@ interface ProjectActivityTabProps {
   canComment: boolean
 }
 
+function parseUserRole(role: string | undefined): UserRole | undefined {
+  if (
+    role === 'company_director' ||
+    role === 'factory_manager' ||
+    role === 'project_manager'
+  ) {
+    return role
+  }
+
+  return undefined
+}
+
+function getActivityContextLabel(
+  t: (key: string) => string,
+  entityType: EntityType,
+): string {
+  switch (entityType) {
+    case 'project':
+      return t('activity.onProject')
+    case 'phase':
+      return t('activity.onPhase')
+    case 'task':
+      return t('activity.onTask')
+  }
+}
+
 export function ProjectActivityTab({
   projectId,
   phaseIds,
   taskIds,
   canComment,
 }: ProjectActivityTabProps) {
+  const { t, locale } = useTranslation()
   const { data: activity = [], isLoading } = useProjectActivity(
     projectId,
     phaseIds,
@@ -41,46 +68,52 @@ export function ProjectActivityTab({
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Activity feed</CardTitle>
-          <CardDescription>
-            Comments on this project, its phases, and tasks.
-          </CardDescription>
+          <CardTitle>{t('activity.title')}</CardTitle>
+          <CardDescription>{t('activity.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {isLoading ? (
-            <p className="text-sm text-slate-500">Loading activity…</p>
+            <p className="text-sm text-muted-foreground">
+              {t('common.loading')}
+            </p>
           ) : null}
 
           {activity.length === 0 && !isLoading ? (
-            <p className="text-sm text-slate-500">No activity yet.</p>
+            <p className="text-sm text-muted-foreground">
+              {t('activity.empty')}
+            </p>
           ) : (
             activity.map((item) => {
-              const role = item.author?.role as UserRole | undefined
+              const role = parseUserRole(item.author?.role)
               const escalated = isEscalationComment(item.body)
 
               return (
                 <div
                   key={item.id}
-                  className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                  className="rounded-lg border border-border bg-muted p-3"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <Badge variant="outline">{item.context_label}</Badge>
+                    <Badge variant="outline">
+                      {getActivityContextLabel(t, item.entity_type)}
+                    </Badge>
                     {escalated ? (
-                      <Badge variant="destructive">Escalation</Badge>
+                      <Badge variant="destructive">
+                        {t('common.escalate')}
+                      </Badge>
                     ) : null}
                     <span className="font-medium">
-                      {item.author?.full_name ?? 'Unknown'}
+                      {item.author?.full_name ?? t('common.user')}
                     </span>
                     {role ? (
-                      <span className="text-slate-500">
-                        {USER_ROLE_LABELS[role]}
+                      <span className="text-muted-foreground">
+                        {getRoleLabel(t, role)}
                       </span>
                     ) : null}
-                    <span className="text-slate-400">
-                      {format(new Date(item.created_at), 'dd MMM yyyy HH:mm')}
+                    <span className="text-muted-foreground">
+                      {formatLocalizedDateTime(item.created_at, locale)}
                     </span>
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
                     {escalated
                       ? item.body.replace(`${ESCALATION_PREFIX} `, '')
                       : item.body}
@@ -93,17 +126,11 @@ export function ProjectActivityTab({
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Project discussion</CardTitle>
-          <CardDescription>
-            Leave notes visible to everyone with project access.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <CommentThread
             entityType="project"
             entityId={projectId}
-            title="Project comments"
+            title={t('activity.onProject')}
             canComment={canComment}
           />
         </CardContent>

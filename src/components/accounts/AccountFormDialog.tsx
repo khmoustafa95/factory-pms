@@ -19,13 +19,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { USER_ROLE_LABELS } from '@/lib/roles'
+import { useTranslation } from '@/contexts/LocaleContext'
+import { useFactories } from '@/hooks/useFactories'
+import { getRoleLabel } from '@/lib/i18n-format'
 import {
   accountFormSchema,
   type AccountFormValues,
 } from '@/lib/validations/account'
 import type { UserRole } from '@/types/database'
-import { useFactories } from '@/hooks/useFactories'
+
+const USER_ROLES = [
+  'company_director',
+  'factory_manager',
+  'project_manager',
+] as const satisfies readonly UserRole[]
 
 interface AccountFormDialogProps {
   open: boolean
@@ -49,6 +56,7 @@ export function AccountFormDialog({
   onSubmit,
   isSubmitting,
 }: AccountFormDialogProps) {
+  const { t } = useTranslation()
   const { data: factories = [] } = useFactories()
 
   const form = useForm<AccountFormValues>({
@@ -95,55 +103,57 @@ export function AccountFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit account</DialogTitle>
-          <DialogDescription>
-            {account?.email} — assign role and factory scope.
-          </DialogDescription>
+          <DialogTitle>{t('accounts.editAccount')}</DialogTitle>
+          <DialogDescription>{account?.email}</DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="account-name">Full name</Label>
+            <Label htmlFor="account-name">{t('accounts.fullName')}</Label>
             <Input id="account-name" {...form.register('full_name')} />
             {form.formState.errors.full_name ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.full_name.message}
               </p>
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label>Role</Label>
+            <Label>{t('accounts.role')}</Label>
             <Select
               value={selectedRole}
-              onValueChange={(value) =>
-                form.setValue('role', value as UserRole)
-              }
+              onValueChange={(value) => {
+                if (
+                  value === 'company_director' ||
+                  value === 'factory_manager' ||
+                  value === 'project_manager'
+                ) {
+                  form.setValue('role', value)
+                }
+              }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select role" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.entries(USER_ROLE_LABELS) as [UserRole, string][]).map(
-                  ([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ),
-                )}
+                {USER_ROLES.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {getRoleLabel(t, role)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
 
           {selectedRole !== 'company_director' ? (
             <div className="space-y-2">
-              <Label>Factory</Label>
+              <Label>{t('common.factory')}</Label>
               <Select
                 value={selectedFactoryId ?? undefined}
                 onValueChange={(value) => form.setValue('factory_id', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select factory" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {factories
@@ -156,7 +166,7 @@ export function AccountFormDialog({
                 </SelectContent>
               </Select>
               {form.formState.errors.factory_id ? (
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-destructive">
                   {form.formState.errors.factory_id.message}
                 </p>
               ) : null}
@@ -165,7 +175,7 @@ export function AccountFormDialog({
 
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" {...form.register('is_active')} />
-            Active
+            {t('accounts.activeAccount')}
           </label>
 
           <DialogFooter>
@@ -174,10 +184,10 @@ export function AccountFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving…' : 'Save changes'}
+              {isSubmitting ? t('common.saving') : t('common.save')}
             </Button>
           </DialogFooter>
         </form>

@@ -6,13 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useTranslation } from '@/contexts/LocaleContext'
+import type { TaskListItem } from '@/hooks/useTasks'
 import {
   calculatePhaseProgress,
   calculateProjectProgress,
-  formatProgress,
 } from '@/lib/progress'
 import type { Phase } from '@/types/database'
-import type { TaskListItem } from '@/hooks/useTasks'
 
 interface ProjectProgressOverviewProps {
   phases: Phase[]
@@ -23,22 +23,21 @@ export function ProjectProgressOverview({
   phases,
   tasks,
 }: ProjectProgressOverviewProps) {
+  const { t } = useTranslation()
   const projectProgress = calculateProjectProgress(phases, tasks)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Progress overview</CardTitle>
-        <CardDescription>
-          Weighted by phase importance. Updates as tasks move to done.
-        </CardDescription>
+        <CardTitle>{t('progress.title')}</CardTitle>
+        <CardDescription>{t('progress.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        <ProgressBar label="Overall project" value={projectProgress} />
+        <ProgressBar label={t('progress.overall')} value={projectProgress} />
 
         {phases.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            Add phases in the WBS tab to track progress.
+          <p className="text-sm text-muted-foreground">
+            {t('progress.noPhases')}
           </p>
         ) : (
           <div className="space-y-4">
@@ -47,6 +46,9 @@ export function ProjectProgressOverview({
                 (task) => task.phase_id === phase.id,
               )
               const phaseProgress = calculatePhaseProgress(phaseTasks)
+              const doneCount = phaseTasks.filter(
+                (task) => task.status === 'done',
+              ).length
 
               return (
                 <div key={phase.id} className="space-y-1">
@@ -54,13 +56,11 @@ export function ProjectProgressOverview({
                     label={`${phase.name} (${phase.weight_percent}%)`}
                     value={phaseProgress}
                   />
-                  <p className="text-xs text-slate-500">
-                    {phaseTasks.filter((task) => task.status === 'done').length}
-                    /{phaseTasks.length} tasks done · contributes{' '}
-                    {formatProgress(
-                      (Number(phase.weight_percent) / 100) * phaseProgress,
-                    )}{' '}
-                    to project
+                  <p className="text-xs text-muted-foreground">
+                    {t('progress.tasksComplete', {
+                      done: doneCount,
+                      total: phaseTasks.length,
+                    })}
                   </p>
                 </div>
               )

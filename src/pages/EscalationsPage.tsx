@@ -1,10 +1,12 @@
-import { format } from 'date-fns'
 import { AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/PageHeader'
+import { ResponsiveTable } from '@/components/ResponsiveTable'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,8 +26,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTranslation } from '@/contexts/LocaleContext'
 import { useCreateComment } from '@/hooks/useComments'
 import { useEscalations } from '@/hooks/useEscalations'
+import { formatLocalizedDateTime } from '@/lib/i18n-format'
 import {
   escalationFormSchema,
   formatEscalationBody,
@@ -34,10 +38,12 @@ import {
 import type { EscalationItem } from '@/hooks/useEscalations'
 
 export function EscalationsPage() {
+  const { t, locale } = useTranslation()
   const { data: escalations = [], isLoading, error } = useEscalations()
   const { user } = useAuth()
   const [selectedTask, setSelectedTask] = useState<EscalationItem | null>(null)
   const createComment = useCreateComment('task', selectedTask?.id)
+  const notAvailable = t('common.notAvailable')
 
   const form = useForm<EscalationFormValues>({
     resolver: zodResolver(escalationFormSchema),
@@ -59,53 +65,52 @@ export function EscalationsPage() {
         values: { body: formatEscalationBody(values.message) },
         authorId: user.id,
       })
-      toast.success('Escalation sent to leadership')
+      toast.success(t('escalations.sent'))
       setSelectedTask(null)
     } catch (submitError) {
       const message =
         submitError instanceof Error
           ? submitError.message
-          : 'Unable to escalate'
+          : t('escalations.sendFailed')
       toast.error(message)
     }
   })
 
   return (
     <section className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">
-          <AlertTriangle className="size-8 text-red-600" />
-          Escalations
-        </h1>
-        <p className="max-w-2xl text-slate-600">
-          Blocked tasks across your scope. Escalate to notify leadership with
-          context in the project activity feed.
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <AlertTriangle className="size-8 text-destructive" />
+            {t('escalations.title')}
+          </span>
+        }
+        description={t('escalations.description')}
+      />
 
       {isLoading ? (
-        <p className="text-sm text-slate-500">Loading blocked tasks…</p>
+        <StatusMessage>{t('escalations.loading')}</StatusMessage>
       ) : null}
 
       {error ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error instanceof Error
-            ? error.message
-            : 'Failed to load escalations'}
-        </p>
+        <StatusMessage variant="error">
+          {error instanceof Error ? error.message : t('escalations.loadFailed')}
+        </StatusMessage>
       ) : null}
 
       {!isLoading && !error ? (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <ResponsiveTable>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Task</TableHead>
-                <TableHead>Project</TableHead>
-                <TableHead>Factory</TableHead>
-                <TableHead>Blocked reason</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('escalations.task')}</TableHead>
+                <TableHead>{t('escalations.project')}</TableHead>
+                <TableHead>{t('common.factory')}</TableHead>
+                <TableHead>{t('escalations.blockedReason')}</TableHead>
+                <TableHead>{t('common.updated')}</TableHead>
+                <TableHead className="text-right">
+                  {t('common.actions')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,9 +118,9 @@ export function EscalationsPage() {
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="py-10 text-center text-slate-500"
+                    className="py-10 text-center text-muted-foreground"
                   >
-                    No blocked tasks right now.
+                    {t('escalations.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -124,8 +129,8 @@ export function EscalationsPage() {
                     <TableCell>
                       <div className="space-y-1">
                         <p className="font-medium">{task.title}</p>
-                        <p className="text-sm text-slate-500">
-                          {task.phases?.name ?? 'Phase'}
+                        <p className="text-sm text-muted-foreground">
+                          {task.phases?.name ?? t('common.phase')}
                         </p>
                       </div>
                     </TableCell>
@@ -138,23 +143,23 @@ export function EscalationsPage() {
                           {task.projects.title}
                         </Link>
                       ) : (
-                        '—'
+                        notAvailable
                       )}
                     </TableCell>
                     <TableCell>
                       {task.projects?.factories
                         ? `${task.projects.factories.name} (${task.projects.factories.code})`
-                        : '—'}
+                        : notAvailable}
                     </TableCell>
-                    <TableCell className="max-w-xs text-sm text-red-700">
-                      {task.blocked_reason ?? '—'}
+                    <TableCell className="max-w-xs text-sm text-destructive">
+                      {task.blocked_reason ?? notAvailable}
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-slate-500">
-                      {format(new Date(task.updated_at), 'dd MMM yyyy')}
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      {formatLocalizedDateTime(task.updated_at, locale)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" onClick={() => openEscalate(task)}>
-                        Escalate
+                        {t('common.escalate')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -162,7 +167,7 @@ export function EscalationsPage() {
               )}
             </TableBody>
           </Table>
-        </div>
+        </ResponsiveTable>
       ) : null}
 
       <Dialog
@@ -175,16 +180,19 @@ export function EscalationsPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Escalate blocked task</DialogTitle>
+            <DialogTitle>{t('escalations.escalateTitle')}</DialogTitle>
             <DialogDescription>
-              {selectedTask?.title} — leadership will see this in the activity
-              feed.
+              {selectedTask
+                ? t('escalations.escalateDescription', {
+                    title: selectedTask.title,
+                  })
+                : null}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={submitEscalation}>
             <Textarea rows={4} {...form.register('message')} />
             {form.formState.errors.message ? (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {form.formState.errors.message.message}
               </p>
             ) : null}
@@ -194,10 +202,12 @@ export function EscalationsPage() {
                 variant="outline"
                 onClick={() => setSelectedTask(null)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={createComment.isPending}>
-                {createComment.isPending ? 'Sending…' : 'Send escalation'}
+                {createComment.isPending
+                  ? t('common.sending')
+                  : t('common.sendEscalation')}
               </Button>
             </DialogFooter>
           </form>

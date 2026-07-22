@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
-import { PROJECT_STATUS_LABELS } from '@/lib/project-status'
+import { useTranslation } from '@/contexts/LocaleContext'
+import { getProjectStatusLabel } from '@/lib/i18n-format'
 import type { ProjectStatus } from '@/types/database'
 
 const STATUS_VARIANTS: Record<
@@ -20,9 +21,11 @@ interface ProjectStatusBadgeProps {
 }
 
 export function ProjectStatusBadge({ status }: ProjectStatusBadgeProps) {
+  const { t } = useTranslation()
+
   return (
     <Badge variant={STATUS_VARIANTS[status]}>
-      {PROJECT_STATUS_LABELS[status]}
+      {getProjectStatusLabel(t, status)}
     </Badge>
   )
 }
