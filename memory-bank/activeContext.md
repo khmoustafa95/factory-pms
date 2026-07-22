@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**FT-02 (Project proposals)** implemented. Next: **FT-03 Approval workflow** (director approve/reject).
+**FT-03 (Approval workflow)** implemented. Next: **FT-04 Phases & tasks (WBS)**.
 
 ## Recent changes
 
+- [2026-07-22] FT-03: Directors approve/reject `proposed` projects; rejection requires reason shown to factory managers
 - [2026-07-22] FT-02: Projects page — factory managers create/edit drafts, submit proposals (`proposed`); directors/PMs get role-scoped list view
 - [2026-07-22] Added `supabase/migrations/20260722100000_initial_schema.sql` — full PRD domain schema, RLS helpers/policies, Realtime publication
 - [2026-07-22] Replaced `database.ts` stub with typed tables/enums matching migration
@@ -22,8 +23,7 @@
 1. Create Supabase project and fill `.env.local`
 2. Run migration SQL in Supabase (or `supabase db push` when CLI linked)
 3. Create first auth user in Supabase Dashboard; set role to `company_director` on `profiles`
-4. Implement **FT-03** — director approve/reject with reason
-5. Implement **FT-04** — phases & tasks WBS
+4. Implement **FT-04** — phases & tasks WBS
 
 ## Open questions
 

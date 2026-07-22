@@ -17,11 +17,11 @@
 - [x] Auth UI + session handling + role-aware routing
 - [x] FT-01 Factories & accounts (director CRUD + account role assignment)
 - [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
+- [x] FT-03 Approval workflow (director approve/reject with reason)
 
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
-- [ ] FT-03 Approval workflow
 - [ ] FT-04 Phases & tasks (WBS)
 - [ ] FT-05 Kanban / Gantt / progress UI
 - [ ] FT-06 Comments
@@ -33,6 +33,10 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 4)
+
+- FT-03: director approve/reject on proposed projects; rejection reason surfaced to factory managers
 
 ### 2026-07-22 (session 3)
 
