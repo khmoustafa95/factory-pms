@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
-import type { Comment, EntityType } from '@/types/database'
+import { joinMappers } from '@/lib/supabase-joins'
+import type { CommentListItem } from '@/types/joins'
+import { COMMENT_LIST_SELECT } from '@/types/joins'
+import type { EntityType } from '@/types/database'
 import type { CommentFormValues } from '@/lib/validations/comment'
 
-export type CommentListItem = Comment & {
-  author: { full_name: string; role: string } | null
-}
+export type { CommentListItem } from '@/types/joins'
 
 export function useComments(
   entityType: EntityType,
@@ -19,12 +20,7 @@ export function useComments(
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('comments')
-        .select(
-          `
-          *,
-          author:profiles!author_id (full_name, role)
-        `,
-        )
+        .select(COMMENT_LIST_SELECT)
         .eq('entity_type', entityType)
         .eq('entity_id', entityId!)
         .order('created_at', { ascending: true })
@@ -33,7 +29,7 @@ export function useComments(
         throw error
       }
 
-      return data as unknown as CommentListItem[]
+      return joinMappers.commentListItem(data)
     },
   })
 }

@@ -32,6 +32,9 @@
 - [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
 - [x] DB performance: progress trigger + `get_dashboard_stats` / `get_project_activity` RPCs
 - [x] Motion animations: page transitions, staggered lists/cards, shimmer skeletons, tab/content fade
+- [x] Clean code refactor: shared mutation/list/filter helpers, removed dead label maps, i18n fix in PhaseFormDialog
+- [x] Clean code phase 2: `PaginatedListPage`, `EscalationFormDialog`, `FormCheckboxField`, `form-utils`, `supabase-joins`
+- [x] Clean code phase 3: `fetchPaginatedList`, `useFormDialog`, `types/joins.ts` canonical join types + select strings
 
 ## Backlog
 
@@ -44,6 +47,28 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 20)
+
+- `fetchPaginatedList` generic helper; all paginated hooks refactored
+- `useFormDialog` hook adopted by all 7 form dialogs (incl. dual-submit ProjectFormDialog)
+- `types/joins.ts`: canonical join row types, select string constants, `joinMappers`; re-exported from `database.ts`
+- Tests for `fetchPaginatedList` and `joinMappers`
+
+### 2026-07-22 (session 19)
+
+- `PaginatedListPage` layout component adopted by Factories, Accounts, Projects, Escalations pages
+- `EscalationFormDialog` extracted from `EscalationsPage`
+- shadcn `Checkbox` + `FormCheckboxField` in factory/account dialogs
+- `form-utils` nullable select helpers; `supabase-joins` `mapJoinRows`/`mapJoinRow` in hooks
+- `FormFieldError` in `ProjectFormDialog`, `TaskFormDialog`, `ProjectRejectDialog`
+
+### 2026-07-22 (session 18)
+
+- Extracted `toastMutationError`, `list-filters` (`getActiveInactiveFilterOptions`, `buildFactoryFilterOptions`, `applyActiveStatusFilter`), `formatFactoryLabel`, `ActiveStatusBadge`, `FormFieldError`, `useEditDialog`
+- Added `toFactoryPayload` / `toPhasePayload`; removed unused `*_LABELS` maps and `phase-status.ts`
+- Fixed hardcoded English weight validation in `PhaseFormDialog`; moved `useDashboardStats` to `hooks/useDashboard.ts`
+- Unit tests for `list-filters` and `mutation-error`
 
 ### 2026-07-22 (session 17)
 

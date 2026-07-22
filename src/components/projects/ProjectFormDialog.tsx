@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
+import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,8 +21,14 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
+import {
+  formatNullableSelectValue,
+  NULL_SELECT_VALUE,
+  parseNullableSelectValue,
+} from '@/lib/form-utils'
 import {
   createProjectFormSchema,
   type ProjectFormValues,
@@ -39,6 +45,16 @@ interface ProjectFormDialogProps {
   isSubmitting: boolean
 }
 
+const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
+  title: '',
+  description: '',
+  budget: '',
+  currency: 'SAR',
+  proposed_start_date: undefined,
+  proposed_end_date: undefined,
+  assigned_pm_id: null,
+}
+
 export function ProjectFormDialog({
   open,
   onOpenChange,
@@ -52,30 +68,11 @@ export function ProjectFormDialog({
   const { data: projectManagers = [] } = useFactoryProjectManagers(factoryId)
   const projectFormSchema = useValidationSchema(createProjectFormSchema)
 
-  const form = useForm<ProjectFormValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(projectFormSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      budget: '',
-      currency: 'SAR',
-      proposed_start_date: undefined,
-      proposed_end_date: undefined,
-      assigned_pm_id: null,
-    },
-  })
-
-  const selectedPmId = useWatch({
-    control: form.control,
-    name: 'assigned_pm_id',
-  })
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({
+    defaultValues: PROJECT_FORM_DEFAULTS,
+    getValues: () => ({
       title: project?.title ?? '',
       description: project?.description ?? '',
       budget: project?.budget != null ? String(project.budget) : '',
@@ -83,18 +80,18 @@ export function ProjectFormDialog({
       proposed_start_date: project?.proposed_start_date ?? undefined,
       proposed_end_date: project?.proposed_end_date ?? undefined,
       assigned_pm_id: project?.assigned_pm_id ?? null,
-    })
-  }, [form, open, project])
-
-  const saveDraft = form.handleSubmit(async (values) => {
-    await onSaveDraft(values)
-    onOpenChange(false)
+    }),
+    resetDependencies: [project],
   })
 
-  const submitProposal = form.handleSubmit(async (values) => {
-    await onSubmitProposal(values)
-    onOpenChange(false)
+  const selectedPmId = useWatch({
+    control: form.control,
+    name: 'assigned_pm_id',
   })
+
+  const closeDialog = () => onOpenChange(false)
+  const saveDraft = createSubmitHandler(onSaveDraft, closeDialog)
+  const submitProposal = createSubmitHandler(onSubmitProposal, closeDialog)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -110,11 +107,7 @@ export function ProjectFormDialog({
           <div className="space-y-2">
             <Label htmlFor="project-title">{t('common.title')}</Label>
             <Input id="project-title" {...form.register('title')} />
-            {form.formState.errors.title ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.title.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.title} />
           </div>
 
           <div className="space-y-2">
@@ -139,11 +132,7 @@ export function ProjectFormDialog({
                 inputMode="decimal"
                 {...form.register('budget')}
               />
-              {form.formState.errors.budget ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.budget.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.budget} />
             </div>
 
             <div className="space-y-2">
@@ -154,11 +143,7 @@ export function ProjectFormDialog({
                 maxLength={3}
                 {...form.register('currency')}
               />
-              {form.formState.errors.currency ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.currency.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.currency} />
             </div>
           </div>
 
@@ -181,27 +166,25 @@ export function ProjectFormDialog({
                 type="date"
                 {...form.register('proposed_end_date')}
               />
-              {form.formState.errors.proposed_end_date ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.proposed_end_date.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.proposed_end_date} />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label>{t('projects.assignedPm')}</Label>
             <Select
-              value={selectedPmId ?? 'none'}
+              value={formatNullableSelectValue(selectedPmId)}
               onValueChange={(value) =>
-                form.setValue('assigned_pm_id', value === 'none' ? null : value)
+                form.setValue('assigned_pm_id', parseNullableSelectValue(value))
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder={t('common.optional')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">{t('common.unassigned')}</SelectItem>
+                <SelectItem value={NULL_SELECT_VALUE}>
+                  {t('common.unassigned')}
+                </SelectItem>
                 {projectManagers.map((manager) => (
                   <SelectItem key={manager.id} value={manager.id}>
                     {manager.full_name}

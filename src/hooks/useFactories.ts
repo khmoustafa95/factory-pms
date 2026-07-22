@@ -1,14 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
-import {
-  buildIlikePattern,
-  getPaginationRange,
-  type PaginatedResult,
-} from '@/lib/list-query'
+import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { FactoriesPageParams } from '@/lib/list-query-params'
+import { applyActiveStatusFilter } from '@/lib/list-filters'
 import { queryKeys } from '@/lib/query-keys'
 import type { Factory } from '@/types/database'
 import type { FactoryFormValues } from '@/lib/validations/factory'
+import { toFactoryPayload } from '@/lib/validations/factory'
 
 export function useFactories() {
   return useQuery({
@@ -32,9 +30,8 @@ export function useFactories() {
 export function useFactoriesPage(params: FactoriesPageParams) {
   return useQuery({
     queryKey: queryKeys.factoriesPage(params),
-    queryFn: async (): Promise<PaginatedResult<Factory>> => {
+    queryFn: async () => {
       const supabase = getSupabase()
-      const { from, to } = getPaginationRange(params.page, params.pageSize)
       const searchPattern = buildIlikePattern(params.search)
 
       let query = supabase
@@ -48,24 +45,13 @@ export function useFactoriesPage(params: FactoriesPageParams) {
         )
       }
 
-      if (params.status === 'active') {
-        query = query.eq('is_active', true)
-      } else if (params.status === 'inactive') {
-        query = query.eq('is_active', false)
-      }
+      query = applyActiveStatusFilter(query, params.status)
 
-      const { data, error, count } = await query.range(from, to)
-
-      if (error) {
-        throw error
-      }
-
-      return {
-        items: data ?? [],
-        total: count ?? 0,
+      return fetchPaginatedList<Factory>({
         page: params.page,
         pageSize: params.pageSize,
-      }
+        query,
+      })
     },
   })
 }
@@ -78,12 +64,7 @@ export function useCreateFactory() {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('factories')
-        .insert({
-          name: values.name,
-          code: values.code.toUpperCase(),
-          location: values.location || null,
-          is_active: values.is_active,
-        })
+        .insert(toFactoryPayload(values))
         .select('*')
         .single()
 
@@ -113,12 +94,7 @@ export function useUpdateFactory() {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('factories')
-        .update({
-          name: values.name,
-          code: values.code.toUpperCase(),
-          location: values.location || null,
-          is_active: values.is_active,
-        })
+        .update(toFactoryPayload(values))
         .eq('id', id)
         .select('*')
         .single()

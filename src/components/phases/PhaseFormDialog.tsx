@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
+import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useFormDialog } from '@/hooks/useFormDialog'
 import { getPhaseStatusLabel } from '@/lib/i18n-format'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
@@ -44,6 +45,13 @@ interface PhaseFormDialogProps {
   isSubmitting: boolean
 }
 
+const PHASE_FORM_DEFAULTS: PhaseFormValues = {
+  name: '',
+  description: '',
+  weight_percent: 0,
+  status: 'pending',
+}
+
 export function PhaseFormDialog({
   open,
   onOpenChange,
@@ -54,39 +62,31 @@ export function PhaseFormDialog({
 }: PhaseFormDialogProps) {
   const { t, locale } = useTranslation()
   const phaseFormSchema = useValidationSchema(createPhaseFormSchema)
-
-  const form = useForm<PhaseFormValues>({
-    resolver: zodResolver(phaseFormSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      weight_percent: 0,
-      status: 'pending',
-    },
-  })
-
-  const selectedStatus = useWatch({ control: form.control, name: 'status' })
   const maxWeight = phase
     ? remainingWeight + Number(phase.weight_percent)
     : remainingWeight
 
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({
+  const { form } = useFormDialog({
+    open,
+    resolver: zodResolver(phaseFormSchema),
+    defaultValues: PHASE_FORM_DEFAULTS,
+    getValues: () => ({
       name: phase?.name ?? '',
       description: phase?.description ?? '',
       weight_percent: phase?.weight_percent ?? Math.min(maxWeight, 0),
       status: phase?.status ?? 'pending',
-    })
-  }, [form, maxWeight, open, phase])
+    }),
+    resetDependencies: [phase, maxWeight],
+  })
+
+  const selectedStatus = useWatch({ control: form.control, name: 'status' })
 
   const handleSubmit = form.handleSubmit(async (values) => {
     if (values.weight_percent > maxWeight + 0.001) {
       form.setError('weight_percent', {
-        message: `Weight cannot exceed ${maxWeight.toFixed(1)}% for the remaining budget`,
+        message: t('validation.weightRemainingMax', {
+          remaining: maxWeight.toFixed(1),
+        }),
       })
       return
     }
@@ -114,11 +114,7 @@ export function PhaseFormDialog({
           <div className="space-y-2">
             <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
             <Input id="phase-name" {...form.register('name')} />
-            {form.formState.errors.name ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.name.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.name} />
           </div>
 
           <div className="space-y-2">
@@ -141,11 +137,7 @@ export function PhaseFormDialog({
                 step="0.1"
                 {...form.register('weight_percent', { valueAsNumber: true })}
               />
-              {form.formState.errors.weight_percent ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.weight_percent.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.weight_percent} />
             </div>
 
             <div className="space-y-2">

@@ -1,35 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
-import {
-  buildIlikePattern,
-  getPaginationRange,
-  type PaginatedResult,
-} from '@/lib/list-query'
+import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
-import type { Profile, Project, ProjectStatus } from '@/types/database'
+import { joinMappers } from '@/lib/supabase-joins'
+import type { ProjectListItem } from '@/types/joins'
+import { PROJECT_LIST_SELECT } from '@/types/joins'
+import type { Profile, ProjectStatus } from '@/types/database'
 import type { ProjectFormValues } from '@/lib/validations/project'
 import { toProjectPayload } from '@/lib/validations/project'
 
-export type ProjectListItem = Project & {
-  factories: { name: string; code: string } | null
-  proposer: { full_name: string } | null
-  assigned_pm: { full_name: string } | null
-}
-
-const PROJECT_LIST_SELECT = `
-  *,
-  factories (name, code),
-  proposer:profiles!proposed_by (full_name),
-  assigned_pm:profiles!assigned_pm_id (full_name)
-`
+export type { ProjectListItem } from '@/types/joins'
 
 export function useProjectsPage(params: ProjectsPageParams) {
   return useQuery({
     queryKey: queryKeys.projectsPage(params),
-    queryFn: async (): Promise<PaginatedResult<ProjectListItem>> => {
+    queryFn: async () => {
       const supabase = getSupabase()
-      const { from, to } = getPaginationRange(params.page, params.pageSize)
       const searchPattern = buildIlikePattern(params.search)
 
       let query = supabase
@@ -51,18 +38,12 @@ export function useProjectsPage(params: ProjectsPageParams) {
         query = query.eq('factory_id', params.factoryId)
       }
 
-      const { data, error, count } = await query.range(from, to)
-
-      if (error) {
-        throw error
-      }
-
-      return {
-        items: (data ?? []) as unknown as ProjectListItem[],
-        total: count ?? 0,
+      return fetchPaginatedList<ProjectListItem>({
         page: params.page,
         pageSize: params.pageSize,
-      }
+        query,
+        mapItems: joinMappers.projectListItem,
+      })
     },
   })
 }

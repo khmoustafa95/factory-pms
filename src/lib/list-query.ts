@@ -51,3 +51,41 @@ export function getShowingRange(
   const to = Math.min(page * pageSize, total)
   return { from, to }
 }
+
+type RangeQueryResult = {
+  data: unknown
+  error: Error | null
+  count: number | null
+}
+
+type RangeQueryable = {
+  range: (from: number, to: number) => PromiseLike<RangeQueryResult>
+}
+
+export async function fetchPaginatedList<T>({
+  page,
+  pageSize,
+  query,
+  mapItems,
+}: {
+  page: number
+  pageSize: number
+  query: RangeQueryable
+  mapItems?: (data: unknown) => T[]
+}): Promise<PaginatedResult<T>> {
+  const { from, to } = getPaginationRange(page, pageSize)
+  const { data, error, count } = await query.range(from, to)
+
+  if (error) {
+    throw error
+  }
+
+  const items = mapItems ? mapItems(data) : ((data ?? []) as T[])
+
+  return {
+    items,
+    total: count ?? 0,
+    page,
+    pageSize,
+  }
+}

@@ -2,14 +2,12 @@ import { Check, Layers, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { AdaptiveList } from '@/components/AdaptiveList'
-import { ListPagination } from '@/components/ListPagination'
-import { ListToolbar } from '@/components/ListToolbar'
-import { PageHeader } from '@/components/PageHeader'
+import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
-import { QueryState } from '@/components/QueryState'
+import { ListToolbar } from '@/components/ListToolbar'
+import { PageHeader } from '@/components/PageHeader'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -36,8 +34,11 @@ import type { ProjectsPageParams } from '@/lib/list-query-params'
 import {
   formatLocalizedBudget,
   formatLocalizedDate,
+  formatFactoryLabel,
   getProjectStatusLabel,
 } from '@/lib/i18n-format'
+import { buildFactoryFilterOptions } from '@/lib/list-filters'
+import { toastMutationError } from '@/lib/mutation-error'
 import {
   canEditProject,
   canReviewProject,
@@ -130,11 +131,7 @@ export function ProjectsPage() {
         toast.success(t('projects.draftCreated'))
       }
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.saveDraftFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.saveDraftFailed'))
       throw submitError
     }
   }
@@ -162,11 +159,7 @@ export function ProjectsPage() {
         toast.success(t('projects.proposalSubmitted'))
       }
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.submitFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.submitFailed'))
       throw submitError
     }
   }
@@ -182,11 +175,7 @@ export function ProjectsPage() {
       await submitProject.mutateAsync({ id: project.id, userId })
       toast.success(t('projects.proposalSubmitted'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.submitFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.submitFailed'))
     }
   }
 
@@ -201,11 +190,7 @@ export function ProjectsPage() {
       await approveProject.mutateAsync({ id: project.id, userId })
       toast.success(t('projects.proposalApproved'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.approveFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.approveFailed'))
     }
   }
 
@@ -226,11 +211,7 @@ export function ProjectsPage() {
       })
       toast.success(t('projects.proposalRejected'))
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projects.rejectFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projects.rejectFailed'))
       throw submitError
     }
   }
@@ -292,117 +273,224 @@ export function ProjectsPage() {
   )
 
   return (
-    <section className="space-y-6">
-      <PageHeader
-        title={t('projects.title')}
-        description={
-          canManageProposals
-            ? t('projects.managerDescription')
-            : isDirector
-              ? t('projects.directorDescription')
-              : t('projects.pmDescription')
-        }
-        actions={
-          canManageProposals ? (
-            <Button onClick={openCreate}>
-              <Plus className="size-4" />
-              {t('common.newProposal')}
-            </Button>
-          ) : undefined
-        }
-      />
-
-      <ListToolbar
-        search={listState.search}
-        onSearchChange={listState.setSearch}
-        searchPlaceholder={t('list.searchProjects')}
-        hasActiveFilters={listState.hasActiveFilters}
-        onClear={listState.clearAll}
-        filters={[
-          {
-            id: 'project-status-filter',
-            label: t('common.status'),
-            value: listState.filters.status,
-            onChange: (value) => listState.setFilter('status', value),
-            options: [
-              { value: 'all', label: t('list.allStatuses') },
-              ...PROJECT_STATUS_FILTERS.map((status) => ({
-                value: status,
-                label: getProjectStatusLabel(t, status),
-              })),
-            ],
-          },
-          ...(isDirector
-            ? [
-                {
-                  id: 'project-factory-filter',
-                  label: t('common.factory'),
-                  value: listState.filters.factoryId,
-                  onChange: (value: string) =>
-                    listState.setFilter('factoryId', value),
-                  options: [
-                    { value: 'all', label: t('list.allFactories') },
-                    ...factories.map((factory) => ({
-                      value: factory.id,
-                      label: `${factory.name} (${factory.code})`,
-                    })),
-                  ],
-                },
-              ]
-            : []),
-        ]}
-      />
-
-      <QueryState
-        isLoading={isLoading}
-        error={error}
-        loadingMessage={t('projects.loading')}
-        errorMessage={t('projects.loadFailed')}
-        onRetry={() => void refetch()}
-        isRetrying={isFetching}
-      >
-        <AdaptiveList
-          items={projects}
-          emptyMessage={
-            listState.hasActiveFilters
-              ? t('list.noResults')
-              : canManageProposals
-                ? t('projects.emptyManager')
-                : t('projects.emptyDefault')
+    <PaginatedListPage
+      header={
+        <PageHeader
+          title={t('projects.title')}
+          description={
+            canManageProposals
+              ? t('projects.managerDescription')
+              : isDirector
+                ? t('projects.directorDescription')
+                : t('projects.pmDescription')
           }
-          getKey={(project) => project.id}
-          renderMobileCard={(project) => (
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <p className="font-medium">
-                  {canViewWbs(project.status) ? (
-                    <Link
-                      className="hover:underline"
-                      to={`/projects/${project.id}`}
-                    >
-                      {project.title}
-                    </Link>
-                  ) : (
-                    project.title
-                  )}
-                </p>
+          actions={
+            canManageProposals ? (
+              <Button onClick={openCreate}>
+                <Plus className="size-4" />
+                {t('common.newProposal')}
+              </Button>
+            ) : undefined
+          }
+        />
+      }
+      toolbar={
+        <ListToolbar
+          search={listState.search}
+          onSearchChange={listState.setSearch}
+          searchPlaceholder={t('list.searchProjects')}
+          hasActiveFilters={listState.hasActiveFilters}
+          onClear={listState.clearAll}
+          filters={[
+            {
+              id: 'project-status-filter',
+              label: t('common.status'),
+              value: listState.filters.status,
+              onChange: (value) => listState.setFilter('status', value),
+              options: [
+                { value: 'all', label: t('list.allStatuses') },
+                ...PROJECT_STATUS_FILTERS.map((status) => ({
+                  value: status,
+                  label: getProjectStatusLabel(t, status),
+                })),
+              ],
+            },
+            ...(isDirector
+              ? [
+                  {
+                    id: 'project-factory-filter',
+                    label: t('common.factory'),
+                    value: listState.filters.factoryId,
+                    onChange: (value: string) =>
+                      listState.setFilter('factoryId', value),
+                    options: buildFactoryFilterOptions(
+                      factories,
+                      t('list.allFactories'),
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
+      }
+      items={projects}
+      total={total}
+      page={listState.page}
+      pageSize={listState.pageSize}
+      onPageChange={listState.setPage}
+      onPageSizeChange={listState.setPageSize}
+      emptyMessage={
+        listState.hasActiveFilters
+          ? t('list.noResults')
+          : canManageProposals
+            ? t('projects.emptyManager')
+            : t('projects.emptyDefault')
+      }
+      getKey={(project) => project.id}
+      renderMobileCard={(project) => (
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-medium">
+              {canViewWbs(project.status) ? (
+                <Link
+                  className="hover:underline"
+                  to={`/projects/${project.id}`}
+                >
+                  {project.title}
+                </Link>
+              ) : (
+                project.title
+              )}
+            </p>
+            <ProjectStatusBadge status={project.status} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
+              {t('common.budget')}:{' '}
+            </span>
+            {formatLocalizedBudget(
+              project.budget,
+              project.currency,
+              locale,
+              notAvailable,
+            )}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
+              {t('common.timeline')}:{' '}
+            </span>
+            {formatLocalizedDate(
+              project.proposed_start_date,
+              locale,
+              notAvailable,
+            )}{' '}
+            →{' '}
+            {formatLocalizedDate(
+              project.proposed_end_date,
+              locale,
+              notAvailable,
+            )}
+          </p>
+          {renderProjectActions(project)}
+        </div>
+      )}
+      query={{
+        isLoading,
+        error,
+        loadingMessage: t('projects.loading'),
+        errorMessage: t('projects.loadFailed'),
+        onRetry: () => void refetch(),
+        isRetrying: isFetching,
+      }}
+      footer={
+        <>
+          {canManageProposals ? (
+            <ProjectFormDialog
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+              project={editingProject}
+              factoryId={profile?.factory_id}
+              onSaveDraft={saveDraft}
+              onSubmitProposal={submitProposal}
+              isSubmitting={isSaving}
+            />
+          ) : null}
+
+          {isDirector ? (
+            <ProjectRejectDialog
+              open={rejectDialogOpen}
+              onOpenChange={setRejectDialogOpen}
+              projectTitle={rejectingProject?.title ?? null}
+              onSubmit={handleReject}
+              isSubmitting={rejectProject.isPending}
+            />
+          ) : null}
+        </>
+      }
+    >
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('common.title')}</TableHead>
+            {isDirector ? <TableHead>{t('common.factory')}</TableHead> : null}
+            <TableHead>{t('common.status')}</TableHead>
+            <TableHead>{t('common.budget')}</TableHead>
+            <TableHead>{t('common.timeline')}</TableHead>
+            {isDirector ? (
+              <TableHead>{t('projects.proposedBy')}</TableHead>
+            ) : null}
+            <TableHead>{t('projects.pm')}</TableHead>
+            <TableHead className="text-right">{t('common.actions')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {projects.map((project) => (
+            <TableRow key={project.id}>
+              <TableCell>
+                <div className="space-y-1">
+                  <p className="font-medium">
+                    {canViewWbs(project.status) ? (
+                      <Link
+                        className="hover:underline"
+                        to={`/projects/${project.id}`}
+                      >
+                        {project.title}
+                      </Link>
+                    ) : (
+                      project.title
+                    )}
+                  </p>
+                  {project.description ? (
+                    <p className="line-clamp-1 text-sm text-muted-foreground">
+                      {project.description}
+                    </p>
+                  ) : null}
+                  {project.status === 'rejected' && project.rejection_reason ? (
+                    <p className="text-sm text-destructive">
+                      {t('projects.rejectedPrefix')} {project.rejection_reason}
+                    </p>
+                  ) : null}
+                </div>
+              </TableCell>
+              {isDirector ? (
+                <TableCell>
+                  {project.factories
+                    ? formatFactoryLabel(project.factories)
+                    : notAvailable}
+                </TableCell>
+              ) : null}
+              <TableCell>
                 <ProjectStatusBadge status={project.status} />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {t('common.budget')}:{' '}
-                </span>
+              </TableCell>
+              <TableCell>
                 {formatLocalizedBudget(
                   project.budget,
                   project.currency,
                   locale,
                   notAvailable,
                 )}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {t('common.timeline')}:{' '}
-                </span>
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                 {formatLocalizedDate(
                   project.proposed_start_date,
                   locale,
@@ -414,139 +502,22 @@ export function ProjectsPage() {
                   locale,
                   notAvailable,
                 )}
-              </p>
-              {renderProjectActions(project)}
-            </div>
-          )}
-        >
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('common.title')}</TableHead>
-                {isDirector ? (
-                  <TableHead>{t('common.factory')}</TableHead>
-                ) : null}
-                <TableHead>{t('common.status')}</TableHead>
-                <TableHead>{t('common.budget')}</TableHead>
-                <TableHead>{t('common.timeline')}</TableHead>
-                {isDirector ? (
-                  <TableHead>{t('projects.proposedBy')}</TableHead>
-                ) : null}
-                <TableHead>{t('projects.pm')}</TableHead>
-                <TableHead className="text-right">
-                  {t('common.actions')}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="font-medium">
-                        {canViewWbs(project.status) ? (
-                          <Link
-                            className="hover:underline"
-                            to={`/projects/${project.id}`}
-                          >
-                            {project.title}
-                          </Link>
-                        ) : (
-                          project.title
-                        )}
-                      </p>
-                      {project.description ? (
-                        <p className="line-clamp-1 text-sm text-muted-foreground">
-                          {project.description}
-                        </p>
-                      ) : null}
-                      {project.status === 'rejected' &&
-                      project.rejection_reason ? (
-                        <p className="text-sm text-destructive">
-                          {t('projects.rejectedPrefix')}{' '}
-                          {project.rejection_reason}
-                        </p>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                  {isDirector ? (
-                    <TableCell>
-                      {project.factories
-                        ? `${project.factories.name} (${project.factories.code})`
-                        : notAvailable}
-                    </TableCell>
-                  ) : null}
-                  <TableCell>
-                    <ProjectStatusBadge status={project.status} />
-                  </TableCell>
-                  <TableCell>
-                    {formatLocalizedBudget(
-                      project.budget,
-                      project.currency,
-                      locale,
-                      notAvailable,
-                    )}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {formatLocalizedDate(
-                      project.proposed_start_date,
-                      locale,
-                      notAvailable,
-                    )}{' '}
-                    →{' '}
-                    {formatLocalizedDate(
-                      project.proposed_end_date,
-                      locale,
-                      notAvailable,
-                    )}
-                  </TableCell>
-                  {isDirector ? (
-                    <TableCell>
-                      {project.proposer?.full_name ?? notAvailable}
-                    </TableCell>
-                  ) : null}
-                  <TableCell>
-                    {project.assigned_pm?.full_name ?? notAvailable}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {renderProjectActions(project)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </AdaptiveList>
-
-        <ListPagination
-          page={listState.page}
-          pageSize={listState.pageSize}
-          total={total}
-          onPageChange={listState.setPage}
-          onPageSizeChange={listState.setPageSize}
-        />
-      </QueryState>
-
-      {canManageProposals ? (
-        <ProjectFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          project={editingProject}
-          factoryId={profile?.factory_id}
-          onSaveDraft={saveDraft}
-          onSubmitProposal={submitProposal}
-          isSubmitting={isSaving}
-        />
-      ) : null}
-
-      {isDirector ? (
-        <ProjectRejectDialog
-          open={rejectDialogOpen}
-          onOpenChange={setRejectDialogOpen}
-          projectTitle={rejectingProject?.title ?? null}
-          onSubmit={handleReject}
-          isSubmitting={rejectProject.isPending}
-        />
-      ) : null}
-    </section>
+              </TableCell>
+              {isDirector ? (
+                <TableCell>
+                  {project.proposer?.full_name ?? notAvailable}
+                </TableCell>
+              ) : null}
+              <TableCell>
+                {project.assigned_pm?.full_name ?? notAvailable}
+              </TableCell>
+              <TableCell className="text-right">
+                {renderProjectActions(project)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </PaginatedListPage>
   )
 }

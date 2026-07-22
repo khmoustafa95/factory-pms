@@ -1,43 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
-import {
-  buildIlikePattern,
-  getPaginationRange,
-  type PaginatedResult,
-} from '@/lib/list-query'
+import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { EscalationsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
-import type { Task } from '@/types/database'
+import { joinMappers } from '@/lib/supabase-joins'
+import type { EscalationItem } from '@/types/joins'
+import { ESCALATION_SELECT } from '@/types/joins'
 
-export type EscalationItem = Task & {
-  projects: {
-    id: string
-    title: string
-    factory_id: string
-    factories: { name: string; code: string } | null
-  } | null
-  phases: { name: string } | null
-  assignee: { full_name: string } | null
-}
-
-const ESCALATION_SELECT = `
-  *,
-  projects (
-    id,
-    title,
-    factory_id,
-    factories (name, code)
-  ),
-  phases (name),
-  assignee:profiles!assignee_id (full_name)
-`
+export type { EscalationItem } from '@/types/joins'
 
 export function useEscalationsPage(params: EscalationsPageParams) {
   return useQuery({
     queryKey: queryKeys.escalationsPage(params),
-    queryFn: async (): Promise<PaginatedResult<EscalationItem>> => {
+    queryFn: async () => {
       const supabase = getSupabase()
-      const { from, to } = getPaginationRange(params.page, params.pageSize)
       const searchPattern = buildIlikePattern(params.search)
       const useInnerProjectJoin = params.factoryId !== 'all'
 
@@ -62,56 +38,12 @@ export function useEscalationsPage(params: EscalationsPageParams) {
         query = query.eq('projects.factory_id', params.factoryId)
       }
 
-      const { data, error, count } = await query.range(from, to)
-
-      if (error) {
-        throw error
-      }
-
-      return {
-        items: (data ?? []) as unknown as EscalationItem[],
-        total: count ?? 0,
+      return fetchPaginatedList<EscalationItem>({
         page: params.page,
         pageSize: params.pageSize,
-      }
-    },
-  })
-}
-
-export type DashboardStats = {
-  factoryCount: number
-  activeProjectCount: number
-  averageProgress: number
-  blockedTaskCount: number
-}
-
-export function useDashboardStats() {
-  return useQuery({
-    queryKey: queryKeys.dashboard,
-    queryFn: async (): Promise<DashboardStats> => {
-      const supabase = getSupabase()
-      const { data, error } = await supabase.rpc('get_dashboard_stats')
-
-      if (error) {
-        throw error
-      }
-
-      const row = data?.[0]
-      if (!row) {
-        return {
-          factoryCount: 0,
-          activeProjectCount: 0,
-          averageProgress: 0,
-          blockedTaskCount: 0,
-        }
-      }
-
-      return {
-        factoryCount: Number(row.factory_count),
-        activeProjectCount: Number(row.active_project_count),
-        averageProgress: Number(row.average_progress),
-        blockedTaskCount: Number(row.blocked_task_count),
-      }
+        query,
+        mapItems: joinMappers.escalationItem,
+      })
     },
   })
 }

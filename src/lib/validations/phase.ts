@@ -14,3 +14,12 @@ export function createPhaseFormSchema(t: ValidationTranslator) {
 }
 
 export type PhaseFormValues = z.infer<ReturnType<typeof createPhaseFormSchema>>
+
+export function toPhasePayload(values: PhaseFormValues) {
+  return {
+    name: values.name,
+    description: values.description?.trim() ? values.description.trim() : null,
+    weight_percent: values.weight_percent,
+    status: values.status,
+  }
+}

@@ -31,6 +31,7 @@ import {
   type TaskListItem,
 } from '@/hooks/useTasks'
 import { formatProgress } from '@/lib/progress'
+import { toastMutationError } from '@/lib/mutation-error'
 import {
   canManageWbs,
   canViewWbs,
@@ -144,11 +145,7 @@ export function ProjectDetailPage() {
         toast.success(t('projectDetail.phaseAdded'))
       }
     } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : t('projectDetail.savePhaseFailed')
-      toast.error(message)
+      toastMutationError(submitError, t('projectDetail.savePhaseFailed'))
       throw submitError
     }
   }
@@ -158,11 +155,7 @@ export function ProjectDetailPage() {
       await deletePhase.mutateAsync(phase.id)
       toast.success(t('projectDetail.phaseDeleted'))
     } catch (submitError) {
-      toast.error(
-        submitError instanceof Error
-          ? submitError.message
-          : t('projectDetail.deletePhaseFailed'),
-      )
+      toastMutationError(submitError, t('projectDetail.deletePhaseFailed'))
     }
   }
 
@@ -180,11 +173,7 @@ export function ProjectDetailPage() {
         toast.success(t('projectDetail.taskAdded'))
       }
     } catch (submitError) {
-      toast.error(
-        submitError instanceof Error
-          ? submitError.message
-          : t('projectDetail.saveTaskFailed'),
-      )
+      toastMutationError(submitError, t('projectDetail.saveTaskFailed'))
       throw submitError
     }
   }
@@ -194,11 +183,7 @@ export function ProjectDetailPage() {
       await deleteTask.mutateAsync(task.id)
       toast.success(t('projectDetail.taskDeleted'))
     } catch (submitError) {
-      toast.error(
-        submitError instanceof Error
-          ? submitError.message
-          : t('projectDetail.deleteTaskFailed'),
-      )
+      toastMutationError(submitError, t('projectDetail.deleteTaskFailed'))
     }
   }
 

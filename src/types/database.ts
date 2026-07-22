@@ -420,3 +420,15 @@ export type Project = Database['public']['Tables']['projects']['Row']
 export type Phase = Database['public']['Tables']['phases']['Row']
 export type Task = Database['public']['Tables']['tasks']['Row']
 export type Comment = Database['public']['Tables']['comments']['Row']
+
+export type {
+  CommentListItem,
+  EscalationItem,
+  EscalationProject,
+  FactorySummary,
+  ProfileSummary,
+  ProfileWithFactory,
+  ProjectDetail,
+  ProjectListItem,
+  TaskListItem,
+} from '@/types/joins'

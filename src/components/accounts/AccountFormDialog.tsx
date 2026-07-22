@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
+import { FormCheckboxField } from '@/components/FormCheckboxField'
+import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,7 +23,8 @@ import {
 } from '@/components/ui/select'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactories } from '@/hooks/useFactories'
-import { getRoleLabel } from '@/lib/i18n-format'
+import { useFormDialog } from '@/hooks/useFormDialog'
+import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createAccountFormSchema,
@@ -34,6 +37,13 @@ const USER_ROLES = [
   'factory_manager',
   'project_manager',
 ] as const satisfies readonly UserRole[]
+
+const ACCOUNT_FORM_DEFAULTS: AccountFormValues = {
+  full_name: '',
+  role: 'project_manager',
+  factory_id: null,
+  is_active: true,
+}
 
 interface AccountFormDialogProps {
   open: boolean
@@ -61,14 +71,17 @@ export function AccountFormDialog({
   const { data: factories = [] } = useFactories()
   const accountFormSchema = useValidationSchema(createAccountFormSchema)
 
-  const form = useForm<AccountFormValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(accountFormSchema),
-    defaultValues: {
-      full_name: '',
-      role: 'project_manager',
-      factory_id: null,
-      is_active: true,
-    },
+    defaultValues: ACCOUNT_FORM_DEFAULTS,
+    getValues: () => ({
+      full_name: account?.full_name ?? '',
+      role: account?.role ?? 'project_manager',
+      factory_id: account?.factory_id ?? null,
+      is_active: account?.is_active ?? true,
+    }),
+    resetDependencies: [account],
   })
 
   const selectedRole = useWatch({ control: form.control, name: 'role' })
@@ -76,19 +89,7 @@ export function AccountFormDialog({
     control: form.control,
     name: 'factory_id',
   })
-
-  useEffect(() => {
-    if (!open || !account) {
-      return
-    }
-
-    form.reset({
-      full_name: account.full_name,
-      role: account.role,
-      factory_id: account.factory_id,
-      is_active: account.is_active,
-    })
-  }, [account, form, open])
+  const isActive = useWatch({ control: form.control, name: 'is_active' })
 
   useEffect(() => {
     if (selectedRole === 'company_director') {
@@ -96,10 +97,7 @@ export function AccountFormDialog({
     }
   }, [form, selectedRole])
 
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
-  })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -113,11 +111,7 @@ export function AccountFormDialog({
           <div className="space-y-2">
             <Label htmlFor="account-name">{t('accounts.fullName')}</Label>
             <Input id="account-name" {...form.register('full_name')} />
-            {form.formState.errors.full_name ? (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.full_name.message}
-              </p>
-            ) : null}
+            <FormFieldError error={form.formState.errors.full_name} />
           </div>
 
           <div className="space-y-2">
@@ -162,23 +156,21 @@ export function AccountFormDialog({
                     .filter((factory) => factory.is_active)
                     .map((factory) => (
                       <SelectItem key={factory.id} value={factory.id}>
-                        {factory.name} ({factory.code})
+                        {formatFactoryLabel(factory)}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
-              {form.formState.errors.factory_id ? (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.factory_id.message}
-                </p>
-              ) : null}
+              <FormFieldError error={form.formState.errors.factory_id} />
             </div>
           ) : null}
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" {...form.register('is_active')} />
-            {t('accounts.activeAccount')}
-          </label>
+          <FormCheckboxField
+            id="account-active"
+            label={t('accounts.activeAccount')}
+            checked={isActive}
+            onCheckedChange={(checked) => form.setValue('is_active', checked)}
+          />
 
           <DialogFooter>
             <Button

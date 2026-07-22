@@ -12,3 +12,5 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 - 2026-07-22 — FT-01 account provisioning via Supabase Auth dashboard + director edits `profiles` (no service-role signup from SPA).
 - 2026-07-22 — Lightweight custom i18n (`LocaleContext` + locale JSON) instead of react-i18next — small bundle, full control over RTL and typed keys; validation messages remain English until schema factories are added.
 - 2026-07-22 — Server-side progress via PostgreSQL trigger + RPCs for dashboard/activity — atomic progress updates, fewer client round-trips, RLS-scoped reads via `security invoker` on RPCs.
+- 2026-07-22 — Shared list/mutation helpers (`list-filters`, `toastMutationError`, `formatFactoryLabel`) over a generic `PaginatedListPage` — incremental DRY without a high-risk layout abstraction; i18n labels live in locale files only.
+- 2026-07-22 — `types/joins.ts` as canonical join-type layer with `fetchPaginatedList` + `joinMappers` — typed selects documented in one place until `supabase gen types` supports nested relations; hooks import from joins instead of inline casts.
