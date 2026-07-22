@@ -2,11 +2,11 @@
 
 ## Current focus
 
-**Code quality (phase 2)** — `PaginatedListPage`, `EscalationFormDialog`, shadcn Checkbox, centralized join casts. Next: apply migrations to live Supabase, E2E tests.
+**Code quality (complete)** — `fetchPaginatedList`, `useFormDialog`, centralized join types in `types/joins.ts`. Next: apply migrations to live Supabase, E2E tests.
 
 ## Recent changes
 
-- [2026-07-22] Follow-up refactor: `PaginatedListPage` for all list screens; `EscalationFormDialog`; `FormCheckboxField` + shadcn Checkbox; `form-utils` nullable select helpers; `supabase-joins` cast helpers; `FormFieldError` in remaining dialogs
+- [2026-07-22] Phase 3 refactor: `fetchPaginatedList`, `useFormDialog` (all form dialogs), `types/joins.ts` with select constants + `joinMappers`
 - [2026-07-22] Performance: DB trigger for `progress_percent`; RPCs `get_dashboard_stats()` + `get_project_activity()`; removed client `syncProjectProgress`
 - [2026-07-22] Security: `handle_new_user` reads role from `app_metadata` only; `is_auth_active()` in RLS; frontend blocks inactive login; signup disabled locally
 - [2026-07-22] Comprehensive `supabase/seed.sql`: all statuses, roles, blocked tasks, comments; demo accounts (`Demo123!`)

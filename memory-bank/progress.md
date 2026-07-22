@@ -34,6 +34,7 @@
 - [x] Motion animations: page transitions, staggered lists/cards, shimmer skeletons, tab/content fade
 - [x] Clean code refactor: shared mutation/list/filter helpers, removed dead label maps, i18n fix in PhaseFormDialog
 - [x] Clean code phase 2: `PaginatedListPage`, `EscalationFormDialog`, `FormCheckboxField`, `form-utils`, `supabase-joins`
+- [x] Clean code phase 3: `fetchPaginatedList`, `useFormDialog`, `types/joins.ts` canonical join types + select strings
 
 ## Backlog
 
@@ -46,6 +47,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 20)
+
+- `fetchPaginatedList` generic helper; all paginated hooks refactored
+- `useFormDialog` hook adopted by all 7 form dialogs (incl. dual-submit ProjectFormDialog)
+- `types/joins.ts`: canonical join row types, select string constants, `joinMappers`; re-exported from `database.ts`
+- Tests for `fetchPaginatedList` and `joinMappers`
 
 ### 2026-07-22 (session 19)
 
