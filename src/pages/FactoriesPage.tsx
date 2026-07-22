@@ -3,6 +3,8 @@ import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
+import { ListPagination } from '@/components/ListPagination'
+import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
@@ -18,20 +20,23 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import {
   useCreateFactory,
-  useFactories,
+  useFactoriesPage,
   useUpdateFactory,
 } from '@/hooks/useFactories'
+import { useListQueryState } from '@/hooks/useListQueryState'
 import type { Factory } from '@/types/database'
 
 export function FactoriesPage() {
   const { t } = useTranslation()
-  const {
-    data: factories = [],
-    isLoading,
-    error,
-    refetch,
-    isFetching,
-  } = useFactories()
+  const listState = useListQueryState({ status: 'all' })
+  const { data, isLoading, error, refetch, isFetching } = useFactoriesPage({
+    page: listState.page,
+    pageSize: listState.pageSize,
+    search: listState.debouncedSearch,
+    status: listState.filters.status as 'all' | 'active' | 'inactive',
+  })
+  const factories = data?.items ?? []
+  const total = data?.total ?? 0
   const createFactory = useCreateFactory()
   const updateFactory = useUpdateFactory()
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -82,6 +87,27 @@ export function FactoriesPage() {
         }
       />
 
+      <ListToolbar
+        search={listState.search}
+        onSearchChange={listState.setSearch}
+        searchPlaceholder={t('list.searchFactories')}
+        hasActiveFilters={listState.hasActiveFilters}
+        onClear={listState.clearAll}
+        filters={[
+          {
+            id: 'factory-status-filter',
+            label: t('common.status'),
+            value: listState.filters.status,
+            onChange: (value) => listState.setFilter('status', value),
+            options: [
+              { value: 'all', label: t('list.all') },
+              { value: 'active', label: t('list.activeOnly') },
+              { value: 'inactive', label: t('list.inactiveOnly') },
+            ],
+          },
+        ]}
+      />
+
       <QueryState
         isLoading={isLoading}
         error={error}
@@ -92,7 +118,11 @@ export function FactoriesPage() {
       >
         <AdaptiveList
           items={factories}
-          emptyMessage={t('factories.empty')}
+          emptyMessage={
+            listState.hasActiveFilters
+              ? t('list.noResults')
+              : t('factories.empty')
+          }
           getKey={(factory) => factory.id}
           renderMobileCard={(factory) => (
             <div className="space-y-3">
@@ -169,6 +199,14 @@ export function FactoriesPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
+
+        <ListPagination
+          page={listState.page}
+          pageSize={listState.pageSize}
+          total={total}
+          onPageChange={listState.setPage}
+          onPageSizeChange={listState.setPageSize}
+        />
       </QueryState>
 
       <FactoryFormDialog

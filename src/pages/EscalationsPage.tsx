@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
+import { ListPagination } from '@/components/ListPagination'
+import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
@@ -28,8 +30,11 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useCreateComment } from '@/hooks/useComments'
-import { useEscalations } from '@/hooks/useEscalations'
+import { useEscalationsPage } from '@/hooks/useEscalations'
+import { useFactories } from '@/hooks/useFactories'
+import { useListQueryState } from '@/hooks/useListQueryState'
 import { formatLocalizedDateTime } from '@/lib/i18n-format'
+import { isCompanyDirector } from '@/lib/roles'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createEscalationFormSchema,
@@ -40,14 +45,18 @@ import type { EscalationItem } from '@/hooks/useEscalations'
 
 export function EscalationsPage() {
   const { t, locale } = useTranslation()
-  const {
-    data: escalations = [],
-    isLoading,
-    error,
-    refetch,
-    isFetching,
-  } = useEscalations()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const isDirector = isCompanyDirector(profile?.role)
+  const listState = useListQueryState({ factoryId: 'all' })
+  const { data: factories = [] } = useFactories()
+  const { data, isLoading, error, refetch, isFetching } = useEscalationsPage({
+    page: listState.page,
+    pageSize: listState.pageSize,
+    search: listState.debouncedSearch,
+    factoryId: listState.filters.factoryId,
+  })
+  const escalations = data?.items ?? []
+  const total = data?.total ?? 0
   const [selectedTask, setSelectedTask] = useState<EscalationItem | null>(null)
   const createComment = useCreateComment('task', selectedTask?.id)
   const notAvailable = t('common.notAvailable')
@@ -96,6 +105,33 @@ export function EscalationsPage() {
         description={t('escalations.description')}
       />
 
+      <ListToolbar
+        search={listState.search}
+        onSearchChange={listState.setSearch}
+        searchPlaceholder={t('list.searchEscalations')}
+        hasActiveFilters={listState.hasActiveFilters}
+        onClear={listState.clearAll}
+        filters={
+          isDirector
+            ? [
+                {
+                  id: 'escalation-factory-filter',
+                  label: t('common.factory'),
+                  value: listState.filters.factoryId,
+                  onChange: (value) => listState.setFilter('factoryId', value),
+                  options: [
+                    { value: 'all', label: t('list.allFactories') },
+                    ...factories.map((factory) => ({
+                      value: factory.id,
+                      label: `${factory.name} (${factory.code})`,
+                    })),
+                  ],
+                },
+              ]
+            : undefined
+        }
+      />
+
       <QueryState
         isLoading={isLoading}
         error={error}
@@ -106,7 +142,11 @@ export function EscalationsPage() {
       >
         <AdaptiveList
           items={escalations}
-          emptyMessage={t('escalations.empty')}
+          emptyMessage={
+            listState.hasActiveFilters
+              ? t('list.noResults')
+              : t('escalations.empty')
+          }
           getKey={(task) => task.id}
           renderMobileCard={(task) => (
             <div className="space-y-3">
@@ -200,6 +240,14 @@ export function EscalationsPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
+
+        <ListPagination
+          page={listState.page}
+          pageSize={listState.pageSize}
+          total={total}
+          onPageChange={listState.setPage}
+          onPageSizeChange={listState.setPageSize}
+        />
       </QueryState>
 
       <Dialog

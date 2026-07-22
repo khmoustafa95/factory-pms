@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
+import {
+  buildIlikePattern,
+  getPaginationRange,
+  type PaginatedResult,
+} from '@/lib/list-query'
+import type { FactoriesPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
 import type { Factory } from '@/types/database'
 import type { FactoryFormValues } from '@/lib/validations/factory'
@@ -19,6 +25,47 @@ export function useFactories() {
       }
 
       return data
+    },
+  })
+}
+
+export function useFactoriesPage(params: FactoriesPageParams) {
+  return useQuery({
+    queryKey: queryKeys.factoriesPage(params),
+    queryFn: async (): Promise<PaginatedResult<Factory>> => {
+      const supabase = getSupabase()
+      const { from, to } = getPaginationRange(params.page, params.pageSize)
+      const searchPattern = buildIlikePattern(params.search)
+
+      let query = supabase
+        .from('factories')
+        .select('*', { count: 'exact' })
+        .order('name', { ascending: true })
+
+      if (searchPattern) {
+        query = query.or(
+          `name.ilike.${searchPattern},code.ilike.${searchPattern},location.ilike.${searchPattern}`,
+        )
+      }
+
+      if (params.status === 'active') {
+        query = query.eq('is_active', true)
+      } else if (params.status === 'inactive') {
+        query = query.eq('is_active', false)
+      }
+
+      const { data, error, count } = await query.range(from, to)
+
+      if (error) {
+        throw error
+      }
+
+      return {
+        items: data ?? [],
+        total: count ?? 0,
+        page: params.page,
+        pageSize: params.pageSize,
+      }
     },
   })
 }

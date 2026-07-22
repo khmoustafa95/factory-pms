@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { AdaptiveList } from '@/components/AdaptiveList'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
+import { ListPagination } from '@/components/ListPagination'
+import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +17,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
-import { useAccounts, useUpdateAccount } from '@/hooks/useAccounts'
+import { useAccountsPage, useUpdateAccount } from '@/hooks/useAccounts'
+import { useFactories } from '@/hooks/useFactories'
+import { useListQueryState } from '@/hooks/useListQueryState'
 import { getRoleLabel } from '@/lib/i18n-format'
 import type { Profile, UserRole } from '@/types/database'
 
@@ -25,13 +29,23 @@ type EditableAccount = Profile & {
 
 export function AccountsPage() {
   const { t } = useTranslation()
-  const {
-    data: accounts = [],
-    isLoading,
-    error,
-    refetch,
-    isFetching,
-  } = useAccounts()
+  const listState = useListQueryState({
+    role: 'all',
+    factoryId: 'all',
+    status: 'all',
+  })
+  const { data: factories = [] } = useFactories()
+  const { data, isLoading, error, refetch, isFetching } = useAccountsPage({
+    page: listState.page,
+    pageSize: listState.pageSize,
+    search: listState.debouncedSearch,
+    role: listState.filters.role as
+      'all' | 'company_director' | 'factory_manager' | 'project_manager',
+    factoryId: listState.filters.factoryId,
+    status: listState.filters.status as 'all' | 'active' | 'inactive',
+  })
+  const accounts = data?.items ?? []
+  const total = data?.total ?? 0
   const updateAccount = useUpdateAccount()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<EditableAccount | null>(
@@ -71,6 +85,61 @@ export function AccountsPage() {
         description={t('accounts.description')}
       />
 
+      <ListToolbar
+        search={listState.search}
+        onSearchChange={listState.setSearch}
+        searchPlaceholder={t('list.searchAccounts')}
+        hasActiveFilters={listState.hasActiveFilters}
+        onClear={listState.clearAll}
+        filters={[
+          {
+            id: 'account-role-filter',
+            label: t('accounts.role'),
+            value: listState.filters.role,
+            onChange: (value) => listState.setFilter('role', value),
+            options: [
+              { value: 'all', label: t('list.allRoles') },
+              {
+                value: 'company_director',
+                label: getRoleLabel(t, 'company_director'),
+              },
+              {
+                value: 'factory_manager',
+                label: getRoleLabel(t, 'factory_manager'),
+              },
+              {
+                value: 'project_manager',
+                label: getRoleLabel(t, 'project_manager'),
+              },
+            ],
+          },
+          {
+            id: 'account-factory-filter',
+            label: t('common.factory'),
+            value: listState.filters.factoryId,
+            onChange: (value) => listState.setFilter('factoryId', value),
+            options: [
+              { value: 'all', label: t('list.allFactories') },
+              ...factories.map((factory) => ({
+                value: factory.id,
+                label: `${factory.name} (${factory.code})`,
+              })),
+            ],
+          },
+          {
+            id: 'account-status-filter',
+            label: t('common.status'),
+            value: listState.filters.status,
+            onChange: (value) => listState.setFilter('status', value),
+            options: [
+              { value: 'all', label: t('list.all') },
+              { value: 'active', label: t('list.activeOnly') },
+              { value: 'inactive', label: t('list.inactiveOnly') },
+            ],
+          },
+        ]}
+      />
+
       <QueryState
         isLoading={isLoading}
         error={error}
@@ -81,7 +150,11 @@ export function AccountsPage() {
       >
         <AdaptiveList
           items={accounts}
-          emptyMessage={t('accounts.empty')}
+          emptyMessage={
+            listState.hasActiveFilters
+              ? t('list.noResults')
+              : t('accounts.empty')
+          }
           getKey={(account) => account.id}
           renderMobileCard={(account) => (
             <div className="space-y-3">
@@ -176,6 +249,14 @@ export function AccountsPage() {
             </TableBody>
           </Table>
         </AdaptiveList>
+
+        <ListPagination
+          page={listState.page}
+          pageSize={listState.pageSize}
+          total={total}
+          onPageChange={listState.setPage}
+          onPageSizeChange={listState.setPageSize}
+        />
       </QueryState>
 
       <AccountFormDialog
