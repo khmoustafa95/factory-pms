@@ -3,4 +3,6 @@ export const queryKeys = {
   factories: ['factories'] as const,
   accounts: ['accounts'] as const,
   projects: ['projects'] as const,
+  factoryProjectManagers: (factoryId: string | null | undefined) =>
+    ['factory-project-managers', factoryId] as const,
 }

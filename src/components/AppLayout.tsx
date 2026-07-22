@@ -1,4 +1,10 @@
-import { Building2, LayoutDashboard, LogOut, Users } from 'lucide-react'
+import {
+  Building2,
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  Users,
+} from 'lucide-react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -32,6 +38,10 @@ export function AppLayout() {
               <NavLink className={navLinkClass} to="/" end>
                 <LayoutDashboard className="size-4" />
                 Dashboard
+              </NavLink>
+              <NavLink className={navLinkClass} to="/projects">
+                <ClipboardList className="size-4" />
+                Projects
               </NavLink>
               {isDirector ? (
                 <>

@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Building2, ClipboardList, Users } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { isCompanyDirector, USER_ROLE_LABELS } from '@/lib/roles'
+import {
+  isCompanyDirector,
+  isFactoryManager,
+  USER_ROLE_LABELS,
+} from '@/lib/roles'
 import {
   Card,
   CardContent,
@@ -14,6 +18,8 @@ import { Button } from '@/components/ui/button'
 export function DashboardPage() {
   const { profile } = useAuth()
   const roleLabel = profile ? USER_ROLE_LABELS[profile.role] : 'User'
+  const isDirector = isCompanyDirector(profile?.role)
+  const isManager = isFactoryManager(profile?.role)
 
   return (
     <section className="space-y-8">
@@ -71,12 +77,16 @@ export function DashboardPage() {
               Projects
             </CardTitle>
             <CardDescription>
-              Proposals, approvals, and execution tracking (FT-02+).
+              {isManager
+                ? 'Submit project proposals for director approval.'
+                : isDirector
+                  ? 'Review proposals across all factories.'
+                  : 'Track projects assigned to you.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button disabled variant="secondary">
-              Coming in FT-02
+            <Button asChild variant={isDirector ? 'outline' : 'default'}>
+              <Link to="/projects">Open projects</Link>
             </Button>
           </CardContent>
         </Card>
