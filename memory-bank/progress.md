@@ -18,11 +18,11 @@
 - [x] FT-01 Factories & accounts (director CRUD + account role assignment)
 - [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
 - [x] FT-03 Approval workflow (director approve/reject with reason)
+- [x] FT-04 Phases & tasks WBS (phase weights, tasks, blocked reason)
 
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
-- [ ] FT-04 Phases & tasks (WBS)
 - [ ] FT-05 Kanban / Gantt / progress UI
 - [ ] FT-06 Comments
 - [ ] FT-07 Escalation / blocked
@@ -33,6 +33,10 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-22 (session 5)
+
+- FT-04: `/projects/:id` WBS page with phase CRUD, 100% weight validation, task CRUD, blocked reason
 
 ### 2026-07-22 (session 4)
 
