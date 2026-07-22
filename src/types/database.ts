@@ -333,6 +333,10 @@ export interface Database {
         Args: { p_project_id: string }
         Returns: boolean
       }
+      is_auth_active: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
     }
     Enums: {
       user_role: UserRole

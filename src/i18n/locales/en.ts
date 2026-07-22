@@ -105,6 +105,9 @@ export const en = {
     password: 'Password',
     signedInSuccess: 'Signed in successfully',
     signInFailed: 'Unable to sign in',
+    accountInactive:
+      'This account has been deactivated. Contact your company director.',
+    noProfile: 'Your profile is not set up yet. Contact your company director.',
     loadingSession: 'Loading session…',
     needAccount:
       'Need an account? Ask your company director to provision access in Supabase Auth, then assign your role from the Accounts screen.',
