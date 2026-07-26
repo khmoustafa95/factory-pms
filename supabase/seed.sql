@@ -39,10 +39,10 @@ insert into public.factories (id, name, code, location, is_active) values
   ('f3333333-3333-4333-8333-333333333333', 'Dammam Legacy Facility', 'DMM', 'Dammam, Saudi Arabia', false);
 
 -- ---------------------------------------------------------------------------
--- Auth users (disable profile trigger — factory roles need factory_id on insert)
+-- Auth users
+-- Profiles are created by on_auth_user_created from app_metadata (role +
+-- factory_id). Do not ALTER auth.users triggers — seed role is not owner.
 -- ---------------------------------------------------------------------------
-
-alter table auth.users disable trigger on_auth_user_created;
 
 insert into auth.users (
   instance_id,
@@ -69,8 +69,8 @@ insert into auth.users (
     'director@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Omar Al-Rashid"}',
+    '{"provider":"email","providers":["email"],"role":"company_director"}'::jsonb,
+    '{"full_name":"Omar Al-Rashid"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -83,8 +83,8 @@ insert into auth.users (
     'fm.riyadh@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Fatima Al-Harbi"}',
+    '{"provider":"email","providers":["email"],"role":"factory_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
+    '{"full_name":"Fatima Al-Harbi"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -97,8 +97,8 @@ insert into auth.users (
     'fm.jeddah@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Youssef Al-Ghamdi"}',
+    '{"provider":"email","providers":["email"],"role":"factory_manager","factory_id":"f2222222-2222-4222-8222-222222222222"}'::jsonb,
+    '{"full_name":"Youssef Al-Ghamdi"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -111,8 +111,8 @@ insert into auth.users (
     'pm.ahmed@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Ahmed Al-Mutairi"}',
+    '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
+    '{"full_name":"Ahmed Al-Mutairi"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -125,8 +125,8 @@ insert into auth.users (
     'pm.sara@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Sara Al-Qahtani"}',
+    '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
+    '{"full_name":"Sara Al-Qahtani"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -139,8 +139,8 @@ insert into auth.users (
     'pm.khalid@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Khalid Al-Dosari"}',
+    '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f2222222-2222-4222-8222-222222222222"}'::jsonb,
+    '{"full_name":"Khalid Al-Dosari"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -153,8 +153,8 @@ insert into auth.users (
     'inactive@demo.local',
     crypt('Demo123!', gen_salt('bf')),
     now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Inactive User"}',
+    '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
+    '{"full_name":"Inactive User"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -178,20 +178,10 @@ insert into auth.identities (
   ('a6666666-6666-4666-8666-666666666666', 'a6666666-6666-4666-8666-666666666666', '{"sub":"a6666666-6666-4666-8666-666666666666","email":"pm.khalid@demo.local"}'::jsonb, 'email', 'a6666666-6666-4666-8666-666666666666', now(), now(), now()),
   ('a7777777-7777-4777-8777-777777777777', 'a7777777-7777-4777-8777-777777777777', '{"sub":"a7777777-7777-4777-8777-777777777777","email":"inactive@demo.local"}'::jsonb, 'email', 'a7777777-7777-4777-8777-777777777777', now(), now(), now());
 
-alter table auth.users enable trigger on_auth_user_created;
-
--- ---------------------------------------------------------------------------
--- Profiles (all roles + inactive account)
--- ---------------------------------------------------------------------------
-
-insert into public.profiles (id, email, full_name, role, factory_id, is_active) values
-  ('a1111111-1111-4111-8111-111111111111', 'director@demo.local', 'Omar Al-Rashid', 'company_director', null, true),
-  ('a2222222-2222-4222-8222-222222222222', 'fm.riyadh@demo.local', 'Fatima Al-Harbi', 'factory_manager', 'f1111111-1111-4111-8111-111111111111', true),
-  ('a3333333-3333-4333-8333-333333333333', 'fm.jeddah@demo.local', 'Youssef Al-Ghamdi', 'factory_manager', 'f2222222-2222-4222-8222-222222222222', true),
-  ('a4444444-4444-4444-8444-444444444444', 'pm.ahmed@demo.local', 'Ahmed Al-Mutairi', 'project_manager', 'f1111111-1111-4111-8111-111111111111', true),
-  ('a5555555-5555-4555-8555-555555555555', 'pm.sara@demo.local', 'Sara Al-Qahtani', 'project_manager', 'f1111111-1111-4111-8111-111111111111', true),
-  ('a6666666-6666-4666-8666-666666666666', 'pm.khalid@demo.local', 'Khalid Al-Dosari', 'project_manager', 'f2222222-2222-4222-8222-222222222222', true),
-  ('a7777777-7777-4777-8777-777777777777', 'inactive@demo.local', 'Inactive User', 'project_manager', 'f1111111-1111-4111-8111-111111111111', false);
+-- Trigger creates active profiles; mark demo inactive account after insert.
+update public.profiles
+set is_active = false
+where id = 'a7777777-7777-4777-8777-777777777777';
 
 -- ---------------------------------------------------------------------------
 -- Projects — one row per project_status enum value

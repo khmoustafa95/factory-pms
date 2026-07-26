@@ -48,6 +48,20 @@
 
 ## Changelog
 
+### 2026-07-26 (session 22)
+
+- Login failed with "Email logins are disabled": `[auth.email] enable_signup = false` blocks email password login in GoTrue
+- Set `[auth.email] enable_signup = true` while keeping `[auth] enable_signup = false`; restarted local Supabase
+- After Auth 200, app still toast "Unable to sign in": public tables lacked `SELECT`/`INSERT`/`UPDATE`/`DELETE` for `authenticated`/`anon` (PostgREST 42501 on `profiles`)
+- Added + applied `20260726100000_grant_api_privileges.sql`; verified director token can read own profile
+
+### 2026-07-23 (session 21)
+
+- Local Supabase start: fixed helper-before-table order in initial migration (`profiles` / `projects` must exist before RLS helpers)
+- Seed: provision users via `raw_app_meta_data` role + factory_id (trigger creates profiles); removed `ALTER TABLE auth.users DISABLE TRIGGER` (seed role is not owner)
+- Synced `.env.development` publishable/anon key with `supabase start` JWT
+- Stack healthy: API `http://127.0.0.1:54321`, Studio `http://127.0.0.1:54323`
+
 ### 2026-07-22 (session 20)
 
 - `fetchPaginatedList` generic helper; all paginated hooks refactored

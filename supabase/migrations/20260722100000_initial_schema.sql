@@ -41,55 +41,6 @@ create type public.entity_type as enum (
 );
 
 -- ---------------------------------------------------------------------------
--- Helpers (RLS)
--- ---------------------------------------------------------------------------
-
-create or replace function public.get_auth_role()
-returns public.user_role
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select role from public.profiles where id = auth.uid();
-$$;
-
-create or replace function public.get_auth_factory_id()
-returns uuid
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select factory_id from public.profiles where id = auth.uid();
-$$;
-
-create or replace function public.is_company_director()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select public.get_auth_role() = 'company_director';
-$$;
-
-create or replace function public.is_assigned_pm(p_project_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.projects p
-    where p.id = p_project_id
-      and p.assigned_pm_id = auth.uid()
-  );
-$$;
-
--- ---------------------------------------------------------------------------
 -- Tables
 -- ---------------------------------------------------------------------------
 
@@ -208,6 +159,55 @@ create index tasks_project_id_idx on public.tasks (project_id);
 create index tasks_phase_id_idx on public.tasks (phase_id);
 create index tasks_status_idx on public.tasks (status);
 create index comments_entity_idx on public.comments (entity_type, entity_id);
+
+-- ---------------------------------------------------------------------------
+-- Helpers (RLS) — after tables they reference
+-- ---------------------------------------------------------------------------
+
+create or replace function public.get_auth_role()
+returns public.user_role
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select role from public.profiles where id = auth.uid();
+$$;
+
+create or replace function public.get_auth_factory_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select factory_id from public.profiles where id = auth.uid();
+$$;
+
+create or replace function public.is_company_director()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select public.get_auth_role() = 'company_director';
+$$;
+
+create or replace function public.is_assigned_pm(p_project_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.projects p
+    where p.id = p_project_id
+      and p.assigned_pm_id = auth.uid()
+  );
+$$;
 
 -- ---------------------------------------------------------------------------
 -- updated_at trigger
