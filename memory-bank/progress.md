@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
 - [x] Vite + React 19 + TypeScript + Tailwind v4 scaffold
 - [x] React Router + basic layout / home page
 - [x] Supabase client helper (`getSupabase` / `isSupabaseConfigured`) + Database stub
@@ -47,6 +48,18 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-26 (session 24)
+
+- Fixed ESLint: `form.watch` → `useWatch`; Auth `signIn`/`signOut` wrapped in `useCallback`; context files exempt from `react-refresh/only-export-components`; logo object URL via `useMemo` (no setState-in-effect)
+- `npm run verify` clean (0 errors, 0 warnings)
+
+### 2026-07-26 (session 23)
+
+- App shell: top header navigation → collapsible sidebar (`collapsible="icon"`)
+- Brand (logo + company name) in sidebar header; user block + theme/locale/sign-out in footer
+- Mobile: sheet drawer; desktop: icon collapse + rail + Ctrl/Cmd+B; RTL places sidebar on the right
+- Added `sidebar` / `sheet` UI primitives; `a11y.toggleSidebar` i18n
 
 ### 2026-07-26 (session 22)
 

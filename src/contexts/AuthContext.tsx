@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -141,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isConfigured])
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const supabase = getSupabase()
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -157,16 +158,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     await assertActiveProfile(supabase, data.user.id)
-  }
+  }, [])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const supabase = getSupabase()
     const { error } = await supabase.auth.signOut()
 
     if (error) {
       throw error
     }
-  }
+  }, [])
 
   const value = useMemo<AuthContextValue>(
     () => ({

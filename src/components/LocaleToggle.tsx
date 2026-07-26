@@ -12,7 +12,11 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import { LOCALES, type Locale } from '@/i18n/types'
 
-export function LocaleToggle() {
+type LocaleToggleProps = {
+  align?: 'start' | 'center' | 'end'
+}
+
+export function LocaleToggle({ align = 'end' }: LocaleToggleProps) {
   const { locale, setLocale, t } = useTranslation()
 
   return (
@@ -27,7 +31,7 @@ export function LocaleToggle() {
           <Languages className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-40">
+      <DropdownMenuContent align={align} className="min-w-40">
         <DropdownMenuLabel>{t('common.language')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup

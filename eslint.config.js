@@ -33,5 +33,12 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    files: ['src/contexts/**/*.{ts,tsx}'],
+    rules: {
+      // Providers co-export hooks; splitting would force noisy import churn
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   eslintConfigPrettier,
 )

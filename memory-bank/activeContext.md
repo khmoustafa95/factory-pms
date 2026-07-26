@@ -2,10 +2,15 @@
 
 ## Current focus
 
-**Local login end-to-end fixed** — Auth password login worked, but profile fetch failed with `42501` until API roles got table grants. Retry `director@demo.local` / `Demo123!`.
+**Lint clean** — ESLint warnings cleared (`useWatch`, Auth `useCallback`, context refresh override).
 
 ## Recent changes
 
+- [2026-07-26] Moved locale/theme toggles to physical top-left of the app top bar; sign-out stays in sidebar footer
+- [2026-07-26] Cleared ESLint warnings: `useWatch` in GeneralSettingsForm, `useCallback` for auth signIn/signOut, eslint override for context co-exported hooks; logo preview via `useMemo` + revoke cleanup
+- [2026-07-26] Replaced top `AppLayout` header nav with collapsible sidebar: logo + company name in header, icon-mode collapse (Ctrl/Cmd+B), mobile sheet, user footer with theme/locale/sign-out
+- [2026-07-26] Added shadcn `sidebar` / `sheet` / `tooltip` / `skeleton` + `useIsMobile` (`useSyncExternalStore`)
+- [2026-07-26] `AppBrand` supports `layout="sidebar"` and forwards link props for `asChild`
 - [2026-07-26] Added `20260726100000_grant_api_privileges.sql` — `authenticated`/`anon` lacked SELECT/INSERT/UPDATE/DELETE on public tables (only Dxtm), so post-login `profiles` read failed with generic "Unable to sign in"
 - [2026-07-26] Fixed login: `[auth.email] enable_signup` must be `true` (misleading name — false also blocks password login); global `[auth] enable_signup = false` still blocks new signups
 - [2026-07-23] Fixed DB bootstrap: helpers after tables in `20260722100000_initial_schema.sql`; seed uses `app_metadata` (no `ALTER auth.users` triggers); synced `.env.development` anon JWT
@@ -28,7 +33,8 @@
 
 1. Fill `.env.staging.local` / `.env.production.local` with remote Supabase keys
 2. Apply migrations to live Supabase project + verify RLS
-3. Optional: Arabic UI copy pass
+3. Optional: further shell polish (nav groups, breadcrumbs in top bar)
+4. Optional: Arabic UI copy pass
 
 ## Open questions
 

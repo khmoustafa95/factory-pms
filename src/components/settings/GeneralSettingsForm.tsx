@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ImageIcon, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useMemo } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
@@ -49,9 +49,12 @@ export function GeneralSettingsForm() {
     },
   })
 
-  const [filePreview, setFilePreview] = useState<string | null>(null)
-  const logoUrl = form.watch('logo_url')
-  const logoFile = form.watch('logo_file')
+  const logoUrl = useWatch({ control: form.control, name: 'logo_url' })
+  const logoFile = useWatch({ control: form.control, name: 'logo_file' })
+  const filePreview = useMemo(
+    () => (logoFile ? URL.createObjectURL(logoFile) : null),
+    [logoFile],
+  )
   const logoPreview = filePreview ?? logoUrl
 
   useEffect(() => {
@@ -72,18 +75,12 @@ export function GeneralSettingsForm() {
   }, [form, settings])
 
   useEffect(() => {
-    if (!logoFile) {
-      setFilePreview(null)
-      return
-    }
-
-    const objectUrl = URL.createObjectURL(logoFile)
-    setFilePreview(objectUrl)
-
     return () => {
-      URL.revokeObjectURL(objectUrl)
+      if (filePreview) {
+        URL.revokeObjectURL(filePreview)
+      }
     }
-  }, [logoFile])
+  }, [filePreview])
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

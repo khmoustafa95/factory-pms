@@ -392,6 +392,7 @@ export const en = {
     changeLanguage: 'Change language',
     changeTheme: 'Change theme',
     openMenu: 'Open navigation menu',
+    toggleSidebar: 'Toggle sidebar',
     moveTaskTo: 'Move task to {{status}}',
   },
 } as const

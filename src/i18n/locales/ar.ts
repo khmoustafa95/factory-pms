@@ -383,6 +383,7 @@ export const ar = {
     changeLanguage: 'تغيير اللغة',
     changeTheme: 'تغيير المظهر',
     openMenu: 'فتح قائمة التنقل',
+    toggleSidebar: 'طي أو توسيع الشريط الجانبي',
     moveTaskTo: 'نقل المهمة إلى {{status}}',
   },
 } as const

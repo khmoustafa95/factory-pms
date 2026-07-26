@@ -25,7 +25,11 @@ function getServerSnapshot() {
   return false
 }
 
-export function ThemeToggle() {
+type ThemeToggleProps = {
+  align?: 'start' | 'center' | 'end'
+}
+
+export function ThemeToggle({ align = 'end' }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme()
   const { t } = useTranslation()
   const mounted = useSyncExternalStore(
@@ -62,7 +66,7 @@ export function ThemeToggle() {
           <Icon className="size-4" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-40">
+      <DropdownMenuContent align={align} className="min-w-40">
         <DropdownMenuLabel>{t('common.theme')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup value={currentTheme} onValueChange={setTheme}>
