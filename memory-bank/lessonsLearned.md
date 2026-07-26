@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-07-26 — Supabase Realtime: `supabase.channel(sameTopic)` reuses the channel; calling `.on()` after `.subscribe()` throws and can take down the React tree via Error Boundary. Always use a unique channel name per effect instance (e.g. UUID suffix), and avoid duplicate hooks on the same topic in parent+child.
 - 2026-07-26 — Supabase Admin `createUser` often does not expose custom `app_metadata` keys to `on_auth_user_created`; put `user_role` + `factory_id` in `user_metadata` (and mirror into `app_metadata` after create). Do not use `auth.admin.signOut(userId)` — it expects a JWT; revoke via SQL on `auth.sessions` / `auth.refresh_tokens` (`refresh_tokens.user_id` is `varchar`).
 - 2026-07-26 — shadcn `add` may prompt to overwrite shared UI (`button`, `input`, `separator`) even with `--yes`; extract new files via `--view` / dry-run instead of overwriting. Prefer `useSyncExternalStore` for `useIsMobile` — `setState` inside `useEffect` fails `react-hooks/set-state-in-effect`.
 - 2026-07-22 — Prefer focused `.cursor/rules/*.mdc` files over a large always-on `.cursorrules`; omit chat ceremony (status prefixes, per-tool confidence scores) that burns tokens without improving code quality.

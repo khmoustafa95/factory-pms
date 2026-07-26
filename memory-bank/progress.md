@@ -49,6 +49,10 @@
 
 ## Changelog
 
+### 2026-07-26 (session 30)
+
+- Fixed Activity tab Error Boundary crash: Supabase Realtime throws if `.on()` is called on an already-subscribed channel topic; `ProjectActivityTab` + `CommentThread` both used `comments-project-{id}`. Unique channel names + removed duplicate subscribe.
+
 ### 2026-07-26 (session 29)
 
 - Account provisioning: Edge Function `manage-account` (create + reset password)

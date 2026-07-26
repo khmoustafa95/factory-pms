@@ -4,6 +4,10 @@ import { queryKeys } from '@/lib/query-keys'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 import type { EntityType } from '@/types/database'
 
+function uniqueChannelName(prefix: string): string {
+  return `${prefix}-${crypto.randomUUID()}`
+}
+
 export function useProjectRealtime(projectId: string | undefined) {
   const queryClient = useQueryClient()
 
@@ -14,7 +18,7 @@ export function useProjectRealtime(projectId: string | undefined) {
 
     const supabase = getSupabase()
     const channel = supabase
-      .channel(`project-${projectId}`)
+      .channel(uniqueChannelName(`project-${projectId}`))
       .on(
         'postgres_changes',
         {
@@ -73,7 +77,7 @@ export function useCommentsRealtime(
 
     const supabase = getSupabase()
     const channel = supabase
-      .channel(`comments-${entityType}-${entityId}`)
+      .channel(uniqueChannelName(`comments-${entityType}-${entityId}`))
       .on(
         'postgres_changes',
         {

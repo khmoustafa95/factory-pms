@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/card'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useProjectActivity } from '@/hooks/useComments'
-import { useCommentsRealtime } from '@/hooks/useRealtime'
 import { formatLocalizedDateTime, getRoleLabel } from '@/lib/i18n-format'
 import {
   ESCALATION_PREFIX,
@@ -61,7 +60,6 @@ export function ProjectActivityTab({
     refetch,
     isFetching,
   } = useProjectActivity(projectId)
-  useCommentsRealtime('project', projectId)
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
