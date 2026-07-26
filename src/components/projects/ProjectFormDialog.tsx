@@ -40,6 +40,8 @@ interface ProjectFormDialogProps {
   onOpenChange: (open: boolean) => void
   project?: Project | null
   factoryId: string | null | undefined
+  /** When false, only a Save action is shown (no draft/submit proposal). */
+  allowSubmitProposal?: boolean
   onSaveDraft: (values: ProjectFormValues) => Promise<void>
   onSubmitProposal: (values: ProjectFormValues) => Promise<void>
   isSubmitting: boolean
@@ -60,6 +62,7 @@ export function ProjectFormDialog({
   onOpenChange,
   project,
   factoryId,
+  allowSubmitProposal = true,
   onSaveDraft,
   onSubmitProposal,
   isSubmitting,
@@ -92,15 +95,24 @@ export function ProjectFormDialog({
   const closeDialog = () => onOpenChange(false)
   const saveDraft = createSubmitHandler(onSaveDraft, closeDialog)
   const submitProposal = createSubmitHandler(onSubmitProposal, closeDialog)
+  const isDetailsEdit = Boolean(project) && !allowSubmitProposal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {project ? t('projects.editProposal') : t('projects.newProposal')}
+            {isDetailsEdit
+              ? t('projects.editProject')
+              : project
+                ? t('projects.editProposal')
+                : t('projects.newProposal')}
           </DialogTitle>
-          <DialogDescription>{t('projects.formDescription')}</DialogDescription>
+          <DialogDescription>
+            {isDetailsEdit
+              ? t('projects.editDetailsDescription')
+              : t('projects.formDescription')}
+          </DialogDescription>
         </DialogHeader>
 
         <form key={locale} className="space-y-4">
@@ -202,23 +214,35 @@ export function ProjectFormDialog({
             >
               {t('common.cancel')}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={isSubmitting}
-              onClick={() => void saveDraft()}
-            >
-              {isSubmitting ? t('common.saving') : t('common.saveDraft')}
-            </Button>
-            <Button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => void submitProposal()}
-            >
-              {isSubmitting
-                ? t('common.submitting')
-                : t('common.submitProposal')}
-            </Button>
+            {allowSubmitProposal ? (
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isSubmitting}
+                  onClick={() => void saveDraft()}
+                >
+                  {isSubmitting ? t('common.saving') : t('common.saveDraft')}
+                </Button>
+                <Button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void submitProposal()}
+                >
+                  {isSubmitting
+                    ? t('common.submitting')
+                    : t('common.submitProposal')}
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => void saveDraft()}
+              >
+                {isSubmitting ? t('common.saving') : t('common.save')}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

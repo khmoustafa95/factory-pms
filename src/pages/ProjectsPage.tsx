@@ -40,7 +40,7 @@ import {
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
-  canEditProject,
+  canEditProjectDetails,
   canReviewProject,
   canSubmitProject,
 } from '@/lib/project-status'
@@ -109,7 +109,7 @@ export function ProjectsPage() {
     return profile.factory_id
   }
 
-  const saveDraft = async (values: ProjectFormValues) => {
+  const saveProject = async (values: ProjectFormValues) => {
     const factoryId = ensureFactoryContext()
     const userId = user?.id
 
@@ -120,7 +120,11 @@ export function ProjectsPage() {
     try {
       if (editingProject) {
         await updateProject.mutateAsync({ id: editingProject.id, values })
-        toast.success(t('projects.draftUpdated'))
+        toast.success(
+          canSubmitProject(editingProject.status)
+            ? t('projects.draftUpdated')
+            : t('projects.updated'),
+        )
       } else {
         await createProject.mutateAsync({
           factoryId,
@@ -131,7 +135,12 @@ export function ProjectsPage() {
         toast.success(t('projects.draftCreated'))
       }
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.saveDraftFailed'))
+      toastMutationError(
+        submitError,
+        editingProject && !canSubmitProject(editingProject.status)
+          ? t('projects.updateFailed')
+          : t('projects.saveDraftFailed'),
+      )
       throw submitError
     }
   }
@@ -254,7 +263,7 @@ export function ProjectsPage() {
           </Button>
         </>
       ) : null}
-      {canManageProposals && canEditProject(project.status) ? (
+      {canManageProposals && canEditProjectDetails(project.status) ? (
         <Button size="sm" variant="outline" onClick={() => openEdit(project)}>
           {t('common.edit')}
         </Button>
@@ -410,7 +419,10 @@ export function ProjectsPage() {
               onOpenChange={setDialogOpen}
               project={editingProject}
               factoryId={profile?.factory_id}
-              onSaveDraft={saveDraft}
+              allowSubmitProposal={
+                !editingProject || canSubmitProject(editingProject.status)
+              }
+              onSaveDraft={saveProject}
               onSubmitProposal={submitProposal}
               isSubmitting={isSaving}
             />

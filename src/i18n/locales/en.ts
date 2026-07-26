@@ -174,6 +174,8 @@ export const en = {
     notLinkedToFactory: 'Your account is not linked to a factory',
     draftUpdated: 'Draft updated',
     draftCreated: 'Draft created',
+    updated: 'Project updated',
+    updateFailed: 'Unable to update project',
     saveDraftFailed: 'Unable to save draft',
     proposalSubmitted: 'Proposal submitted for approval',
     submitFailed: 'Unable to submit proposal',
@@ -182,9 +184,12 @@ export const en = {
     proposalRejected: 'Proposal rejected',
     rejectFailed: 'Unable to reject proposal',
     editProposal: 'Edit project proposal',
+    editProject: 'Edit project',
     newProposal: 'New project proposal',
     formDescription:
       'Capture scope, budget, and timeline for director approval.',
+    editDetailsDescription:
+      'Update project title, description, budget, dates, and assigned project manager.',
     currency: 'Currency',
     proposedStart: 'Proposed start',
     proposedEnd: 'Proposed end',

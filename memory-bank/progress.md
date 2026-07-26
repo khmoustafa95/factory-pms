@@ -49,6 +49,10 @@
 
 ## Changelog
 
+### 2026-07-26 (session 31)
+
+- Factory manager can edit project details (not only draft/rejected): list Edit + detail-page Edit; form Save-only mode for non-proposal statuses; `useUpdateProject` allows proposed/approved/in_progress/paused
+
 ### 2026-07-26 (session 30)
 
 - Fixed Activity tab Error Boundary crash: Supabase Realtime throws if `.on()` is called on an already-subscribed channel topic; `ProjectActivityTab` + `CommentThread` both used `comments-project-{id}`. Unique channel names + removed duplicate subscribe.

@@ -130,7 +130,14 @@ export function useUpdateProject() {
         .from('projects')
         .update(toProjectPayload(values))
         .eq('id', id)
-        .in('status', ['draft', 'rejected'])
+        .in('status', [
+          'draft',
+          'proposed',
+          'approved',
+          'rejected',
+          'in_progress',
+          'paused',
+        ])
         .select('*')
         .single()
 
@@ -140,8 +147,11 @@ export function useUpdateProject() {
 
       return data
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
     },
   })
 }

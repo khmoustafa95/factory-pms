@@ -7,6 +7,7 @@ import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
 import { PageHeader } from '@/components/PageHeader'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
+import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
 import { ProjectProgressOverview } from '@/components/progress/ProjectProgressOverview'
@@ -23,6 +24,7 @@ import {
   usePhases,
   useUpdatePhase,
 } from '@/hooks/usePhases'
+import { useUpdateProject } from '@/hooks/useProjects'
 import { useProjectRealtime } from '@/hooks/useRealtime'
 import {
   useCreateTask,
@@ -33,6 +35,8 @@ import {
 } from '@/hooks/useTasks'
 import { formatProgress } from '@/lib/progress'
 import { toastMutationError } from '@/lib/mutation-error'
+import { canEditProjectDetails } from '@/lib/project-status'
+import { isFactoryManager } from '@/lib/roles'
 import {
   canManageWbs,
   canViewWbs,
@@ -40,6 +44,7 @@ import {
   sumPhaseWeights,
 } from '@/lib/wbs'
 import type { PhaseFormValues } from '@/lib/validations/phase'
+import type { ProjectFormValues } from '@/lib/validations/project'
 import type { TaskFormValues } from '@/lib/validations/task'
 import type { Phase } from '@/types/database'
 
@@ -86,12 +91,14 @@ export function ProjectDetailPage() {
   const createTask = useCreateTask(projectId)
   const updateTask = useUpdateTask(projectId)
   const deleteTask = useDeleteTask(projectId)
+  const updateProject = useUpdateProject()
 
   const [phaseDialogOpen, setPhaseDialogOpen] = useState(false)
   const [editingPhase, setEditingPhase] = useState<Phase | null>(null)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TaskListItem | null>(null)
   const [activePhaseId, setActivePhaseId] = useState<string | null>(null)
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false)
 
   const tasksByPhase = useMemo(() => {
     const grouped = new Map<string, TaskListItem[]>()
@@ -110,9 +117,28 @@ export function ProjectDetailPage() {
   const weightsValid = isPhaseWeightSumValid(phases)
   const remainingWeight = Math.max(0, 100 - totalWeight)
   const canManage = project ? canManageWbs(project, profile) : false
+  const canEditDetails =
+    isFactoryManager(profile?.role) &&
+    Boolean(profile?.factory_id) &&
+    project !== undefined &&
+    canEditProjectDetails(project.status)
 
   if (!isProjectLoading && project && !canViewWbs(project.status)) {
     return <Navigate to="/projects" replace />
+  }
+
+  const handleSaveProjectDetails = async (values: ProjectFormValues) => {
+    if (!project) {
+      return
+    }
+
+    try {
+      await updateProject.mutateAsync({ id: project.id, values })
+      toast.success(t('projects.updated'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.updateFailed'))
+      throw submitError
+    }
   }
 
   const openCreatePhase = () => {
@@ -227,6 +253,18 @@ export function ProjectDetailPage() {
                 </span>
               </span>
             }
+            actions={
+              canEditDetails ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setProjectDialogOpen(true)}
+                >
+                  {t('common.edit')}
+                </Button>
+              ) : undefined
+            }
             description={
               <span className="flex flex-col gap-2">
                 {project.description ? (
@@ -325,6 +363,19 @@ export function ProjectDetailPage() {
             </TabsContent>
           </Tabs>
         </QueryState>
+      ) : null}
+
+      {project && canEditDetails ? (
+        <ProjectFormDialog
+          open={projectDialogOpen}
+          onOpenChange={setProjectDialogOpen}
+          project={project}
+          factoryId={project.factory_id}
+          allowSubmitProposal={false}
+          onSaveDraft={handleSaveProjectDetails}
+          onSubmitProposal={handleSaveProjectDetails}
+          isSubmitting={updateProject.isPending}
+        />
       ) : null}
 
       {project && canManage ? (
