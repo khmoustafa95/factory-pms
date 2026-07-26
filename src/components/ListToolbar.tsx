@@ -39,19 +39,19 @@ export function ListToolbar({
   const { t } = useTranslation()
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+    <div className="app-panel space-y-3 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
         <div className="flex-1 space-y-1.5">
           <Label htmlFor="list-search">{t('list.search')}</Label>
           <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground ltr:left-2.5 rtl:right-2.5" />
+            <Search className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="list-search"
               type="search"
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder={searchPlaceholder}
-              className="ltr:pl-8 rtl:pr-8"
+              className="ps-8"
             />
           </div>
         </div>

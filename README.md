@@ -26,6 +26,8 @@ Or one command: `npm run start:local`
 
 Local Studio: http://127.0.0.1:54323
 
+Demo login accounts (password shared): see [`supabase/demo-accounts.md`](supabase/demo-accounts.md).
+
 ### Staging / production
 
 1. Copy `.env.staging` or `.env.production` to `.env.<mode>.local` (gitignored).

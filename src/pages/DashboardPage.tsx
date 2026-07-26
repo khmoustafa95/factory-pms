@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Building2, ClipboardList, Users, AlertTriangle } from 'lucide-react'
 import { StaggerGroup } from '@/components/motion'
+import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
@@ -32,20 +33,16 @@ export function DashboardPage() {
   } = useDashboardStats()
 
   return (
-    <section className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {t('dashboard.title')}
-        </h1>
-        <p className="max-w-2xl text-muted-foreground">
-          {t('dashboard.welcome', {
-            name: profile
-              ? t('dashboard.welcomeName', { name: profile.full_name })
-              : '',
-            role: roleLabel,
-          })}
-        </p>
-      </div>
+    <section className="space-y-6">
+      <PageHeader
+        title={t('dashboard.title')}
+        description={t('dashboard.welcome', {
+          name: profile
+            ? t('dashboard.welcomeName', { name: profile.full_name })
+            : '',
+          role: roleLabel,
+        })}
+      />
 
       <QueryState
         isLoading={isLoading}
@@ -57,38 +54,40 @@ export function DashboardPage() {
       >
         {stats ? (
           <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card size="sm">
               <CardHeader className="pb-2">
                 <CardDescription>
                   {t('dashboard.activeFactories')}
                 </CardDescription>
-                <CardTitle className="text-3xl">{stats.factoryCount}</CardTitle>
+                <CardTitle className="text-3xl font-semibold tabular-nums">
+                  {stats.factoryCount}
+                </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card size="sm">
               <CardHeader className="pb-2">
                 <CardDescription>
                   {t('dashboard.activeProjects')}
                 </CardDescription>
-                <CardTitle className="text-3xl">
+                <CardTitle className="text-3xl font-semibold tabular-nums">
                   {stats.activeProjectCount}
                 </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card size="sm">
               <CardHeader className="pb-2">
                 <CardDescription>
                   {t('dashboard.averageProgress')}
                 </CardDescription>
-                <CardTitle className="text-3xl">
+                <CardTitle className="text-3xl font-semibold tabular-nums">
                   {formatProgress(stats.averageProgress)}
                 </CardTitle>
               </CardHeader>
             </Card>
-            <Card>
+            <Card size="sm">
               <CardHeader className="pb-2">
                 <CardDescription>{t('dashboard.blockedTasks')}</CardDescription>
-                <CardTitle className="text-3xl text-destructive">
+                <CardTitle className="text-3xl font-semibold tabular-nums text-destructive">
                   {stats.blockedTaskCount}
                 </CardTitle>
               </CardHeader>
@@ -102,13 +101,13 @@ export function DashboardPage() {
         ) : null}
       </QueryState>
 
-      <StaggerGroup className="grid gap-4 md:grid-cols-3">
+      <StaggerGroup className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {isCompanyDirector(profile?.role) ? (
           <>
-            <Card>
+            <Card interactive>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Building2 className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Building2 className="size-4 text-muted-foreground" />
                   {t('dashboard.factoriesTitle')}
                 </CardTitle>
                 <CardDescription>
@@ -116,16 +115,16 @@ export function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild>
+                <Button asChild variant="outline" size="sm">
                   <Link to="/factories">{t('common.openFactories')}</Link>
                 </Button>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card interactive>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Users className="size-5" />
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Users className="size-4 text-muted-foreground" />
                   {t('dashboard.accountsTitle')}
                 </CardTitle>
                 <CardDescription>
@@ -133,7 +132,7 @@ export function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild variant="outline">
+                <Button asChild variant="outline" size="sm">
                   <Link to="/accounts">{t('common.manageAccounts')}</Link>
                 </Button>
               </CardContent>
@@ -141,10 +140,10 @@ export function DashboardPage() {
           </>
         ) : null}
 
-        <Card>
+        <Card interactive>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <AlertTriangle className="size-5" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <AlertTriangle className="size-4 text-muted-foreground" />
               {t('dashboard.escalationsTitle')}
             </CardTitle>
             <CardDescription>
@@ -152,16 +151,16 @@ export function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link to="/escalations">{t('common.openEscalations')}</Link>
             </Button>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card interactive>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <ClipboardList className="size-5" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardList className="size-4 text-muted-foreground" />
               {t('dashboard.projectsTitle')}
             </CardTitle>
             <CardDescription>
@@ -173,7 +172,7 @@ export function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild variant={isDirector ? 'outline' : 'default'}>
+            <Button asChild variant="outline" size="sm">
               <Link to="/projects">{t('common.openProjects')}</Link>
             </Button>
           </CardContent>

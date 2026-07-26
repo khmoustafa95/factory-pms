@@ -1,4 +1,3 @@
-import { AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -70,12 +69,7 @@ export function EscalationsPage() {
     <PaginatedListPage
       header={
         <PageHeader
-          title={
-            <span className="flex items-center gap-2">
-              <AlertTriangle className="size-8 text-destructive" />
-              {t('escalations.title')}
-            </span>
-          }
+          title={t('escalations.title')}
           description={t('escalations.description')}
         />
       }
@@ -146,7 +140,11 @@ export function EscalationsPage() {
             </span>
             {task.blocked_reason ?? notAvailable}
           </p>
-          <Button size="sm" onClick={() => setSelectedTask(task)}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSelectedTask(task)}
+          >
             {t('common.escalate')}
           </Button>
         </div>
@@ -182,7 +180,7 @@ export function EscalationsPage() {
             <TableHead>{t('common.factory')}</TableHead>
             <TableHead>{t('escalations.blockedReason')}</TableHead>
             <TableHead>{t('common.updated')}</TableHead>
-            <TableHead className="text-right">{t('common.actions')}</TableHead>
+            <TableHead className="text-end">{t('common.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -219,8 +217,12 @@ export function EscalationsPage() {
               <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                 {formatLocalizedDateTime(task.updated_at, locale)}
               </TableCell>
-              <TableCell className="text-right">
-                <Button size="sm" onClick={() => setSelectedTask(task)}>
+              <TableCell className="text-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedTask(task)}
+                >
                   {t('common.escalate')}
                 </Button>
               </TableCell>

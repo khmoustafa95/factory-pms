@@ -440,7 +440,7 @@ export function ProjectsPage() {
               <TableHead>{t('projects.proposedBy')}</TableHead>
             ) : null}
             <TableHead>{t('projects.pm')}</TableHead>
-            <TableHead className="text-right">{t('common.actions')}</TableHead>
+            <TableHead className="text-end">{t('common.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -511,7 +511,7 @@ export function ProjectsPage() {
               <TableCell>
                 {project.assigned_pm?.full_name ?? notAvailable}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-end">
                 {renderProjectActions(project)}
               </TableCell>
             </TableRow>

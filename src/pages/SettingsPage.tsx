@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTranslation } from '@/contexts/LocaleContext'
 
 export function SettingsPage() {
-  const { t } = useTranslation()
+  const { t, dir } = useTranslation()
 
   return (
     <section className="space-y-6">
@@ -13,8 +13,8 @@ export function SettingsPage() {
         description={t('settings.description')}
       />
 
-      <Tabs defaultValue="general">
-        <TabsList>
+      <Tabs defaultValue="general" dir={dir}>
+        <TabsList className="justify-start">
           <TabsTrigger value="general">{t('settings.generalTab')}</TabsTrigger>
         </TabsList>
         <TabsContent value="general" className="mt-6">

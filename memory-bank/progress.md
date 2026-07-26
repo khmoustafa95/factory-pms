@@ -16,7 +16,7 @@
 - [x] Supabase migration SQL (DDL, enums, RLS, Realtime) in `supabase/migrations/`
 - [x] Typed `src/types/database.ts` matching migration
 - [x] Auth UI + session handling + role-aware routing
-- [x] FT-01 Factories & accounts (director CRUD + account role assignment)
+- [x] FT-01 Factories & accounts (director CRUD + account create/password reset via Edge Function; FM manages PMs)
 - [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
 - [x] FT-03 Approval workflow (director approve/reject with reason)
 - [x] Env scripts: Vite modes (local/staging/production) + Supabase local CLI scripts
@@ -48,6 +48,35 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-26 (session 29)
+
+- Account provisioning: Edge Function `manage-account` (create + reset password)
+- Migrations: FM can update PM profiles; `handle_new_user` reads `user_metadata`; `revoke_user_sessions` for forced logout
+- UI: Accounts page for director + factory manager; create account; generate password dialog; session revoke on reset
+- Verified locally: director creates FM/PM; FM creates PM only; reset returns new password after session revoke
+
+### 2026-07-26 (session 28)
+
+- RBAC capability audit vs user requirements:
+  - Director: all projects ✅, create factories ✅, edit accounts only (no create / no password reset) ⚠️
+  - Factory manager: cannot access Accounts page; RLS read-only on profiles; can assign PMs on projects ⚠️/❌
+  - Project manager: multi-project via `assigned_pm_id` ✅
+  - Password generate + force logout of target session: not implemented ❌
+
+### 2026-07-26 (session 27)
+
+- RTL pass: logical alignment (`text-start`/`text-end`/`ps`/`pe`), ProgressBar fills from inline-start, explicit `dir` on sidebar/inset/tabs, locale bootstrap script in `index.html`, back arrow by direction
+
+### 2026-07-26 (session 26)
+
+- App shell polish (Linear/Notion-inspired): sign-out as sidebar menu item aligned with nav; compact top bar; `PageHeader` + `app-panel` across lists
+- Dashboard / Project detail / Escalations headers unified; Card `interactive` only for clickable tiles; dark `--sidebar-primary` neutralized
+
+### 2026-07-26 (session 25)
+
+- `supabase/seed.sql`: all demo text in Arabic; password `demo123456`
+- Added `supabase/demo-accounts.md` as the easy-reference credentials file; linked from README
 
 ### 2026-07-26 (session 24)
 

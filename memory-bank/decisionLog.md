@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-07-26 — Account provisioning via `manage-account` Edge Function (service role) + SPA Accounts UI — directors create FM/PM; factory managers create PM for their factory; password reset calls `revoke_user_sessions`. Auth Admin `app_metadata` custom keys are unreliable on insert — `handle_new_user` also reads `user_metadata.user_role` / `factory_id`.
+- 2026-07-26 — App chrome follows Linear/Notion patterns: soft sidebar active state, user block + sign-out as menu rows (not outline CTA), single `PageHeader` + `app-panel` surface for list chrome, utilities in top bar end.
 - 2026-07-26 — App chrome uses shadcn `Sidebar` (`collapsible="icon"`) instead of a top nav bar — more space for content, persists collapse via cookie, RTL `side="right"`, mobile Sheet; brand stays in `SidebarHeader`.
 - 2026-07-26 — Local auth: keep `[auth] enable_signup = false` (no public registration) and `[auth.email] enable_signup = true` so email/password login works for provisioned/seeded users. GoTrue treats the email flag as “email provider enabled,” not signup-only.
 - 2026-07-26 — Always `GRANT` table CRUD to `anon`/`authenticated`/`service_role` in migrations (plus default privileges). RLS policies assume those role grants exist; missing grants break login after Auth succeeds.

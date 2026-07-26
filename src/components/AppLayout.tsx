@@ -36,15 +36,25 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { isCompanyDirector } from '@/lib/roles'
+import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import { getRoleLabel } from '@/lib/i18n-format'
-import { cn } from '@/lib/utils'
 
 interface NavItem {
   to: string
   label: string
   icon: LucideIcon
   end?: boolean
+}
+
+function profileInitials(fullName: string) {
+  return (
+    fullName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || '?'
+  )
 }
 
 function AppSidebarNavItem({ item }: { item: NavItem }) {
@@ -83,8 +93,6 @@ function AppSidebarNavItem({ item }: { item: NavItem }) {
 function AppSidebar({ navItems }: { navItems: NavItem[] }) {
   const { profile, signOut } = useAuth()
   const { t, dir } = useTranslation()
-  const { state } = useSidebar()
-  const collapsed = state === 'collapsed'
 
   const handleSignOut = async () => {
     await signOut()
@@ -95,14 +103,15 @@ function AppSidebar({ navItems }: { navItems: NavItem[] }) {
       side={dir === 'rtl' ? 'right' : 'left'}
       collapsible="icon"
       variant="sidebar"
+      dir={dir}
     >
-      <SidebarHeader className="border-b border-sidebar-border">
+      <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               asChild
-              className="data-[slot=sidebar-menu-button]:p-2!"
+              className="data-[slot=sidebar-menu-button]:px-2!"
             >
               <AppBrand layout="sidebar" linkToHome showFullName />
             </SidebarMenuButton>
@@ -110,9 +119,11 @@ function AppSidebar({ navItems }: { navItems: NavItem[] }) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>{t('common.navigation')}</SidebarGroupLabel>
+      <SidebarContent className="px-2 py-2">
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-2">
+            {t('common.navigation')}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -123,50 +134,47 @@ function AppSidebar({ navItems }: { navItems: NavItem[] }) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="gap-2 border-t border-sidebar-border">
+      <SidebarFooter className="gap-1 border-t border-sidebar-border p-2">
         {profile ? (
-          <div
-            className={cn(
-              'flex items-center gap-2 rounded-lg px-2 py-1.5',
-              collapsed && 'justify-center px-0',
-            )}
-          >
-            <div
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground"
+          <div className="flex h-12 items-center gap-2 overflow-hidden rounded-md px-2 text-sm group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2!">
+            <span
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent text-xs font-semibold text-sidebar-accent-foreground"
               aria-hidden
             >
-              {profile.full_name
-                .split(/\s+/)
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((part) => part[0]?.toUpperCase() ?? '')
-                .join('') || '?'}
-            </div>
-            <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-              <p className="truncate text-sm font-medium leading-tight">
-                {profile.full_name}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
+              {profileInitials(profile.full_name)}
+            </span>
+            <span className="grid min-w-0 flex-1 text-start leading-tight group-data-[collapsible=icon]:hidden">
+              <span className="truncate font-medium">{profile.full_name}</span>
+              <span className="truncate text-xs text-muted-foreground">
                 {getRoleLabel(t, profile.role)}
-              </p>
-            </div>
+              </span>
+            </span>
           </div>
         ) : null}
 
-        <div className={cn(collapsed && 'flex justify-center')}>
-          <Button
-            size={collapsed ? 'icon-sm' : 'sm'}
-            variant="outline"
-            onClick={handleSignOut}
-            aria-label={t('common.signOut')}
-            className={cn(!collapsed && 'w-full gap-1.5')}
-          >
-            <LogOut className="size-4" />
-            <span className="group-data-[collapsible=icon]:hidden">
-              {t('common.signOut')}
-            </span>
-          </Button>
-        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              tooltip={{
+                children: t('common.signOut'),
+                side: dir === 'rtl' ? 'left' : 'right',
+              }}
+            >
+              <button
+                type="button"
+                dir={dir}
+                aria-label={t('common.signOut')}
+                onClick={() => {
+                  void handleSignOut()
+                }}
+              >
+                <LogOut />
+                <span>{t('common.signOut')}</span>
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
 
       <SidebarRail />
@@ -184,7 +192,7 @@ function AppSidebarToggle() {
       type="button"
       variant="ghost"
       size="icon-sm"
-      className="size-8"
+      className="size-8 text-muted-foreground"
       aria-label={t('a11y.toggleSidebar')}
       onClick={toggleSidebar}
     >
@@ -195,29 +203,33 @@ function AppSidebarToggle() {
 
 function AppTopBar() {
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/95 pe-4 ps-20 backdrop-blur supports-backdrop-filter:bg-background/80">
-      <div className="absolute left-4 top-1/2 flex -translate-y-1/2 items-center gap-1">
-        <LocaleToggle align="start" />
-        <ThemeToggle align="start" />
-      </div>
+    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/90 px-3 backdrop-blur supports-backdrop-filter:bg-background/75 sm:px-4">
       <AppSidebarToggle />
-      <Separator orientation="vertical" className="me-1 h-4" />
-      <span className="truncate text-sm text-muted-foreground md:hidden">
+      <Separator orientation="vertical" className="hidden h-4 sm:block" />
+      <span className="min-w-0 flex-1 truncate text-sm font-medium text-muted-foreground md:hidden">
         <AppBrand showFullName={false} />
       </span>
+      <div className="ms-auto flex items-center gap-1">
+        <LocaleToggle />
+        <ThemeToggle />
+      </div>
     </header>
   )
 }
 
 export function AppLayout() {
   const { profile } = useAuth()
-  const { t } = useTranslation()
+  const { t, dir } = useTranslation()
   const isDirector = isCompanyDirector(profile?.role)
+  const canManageAccounts = isDirector || isFactoryManager(profile?.role)
 
   const navItems: NavItem[] = [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard, end: true },
     { to: '/projects', label: t('nav.projects'), icon: ClipboardList },
     { to: '/escalations', label: t('nav.escalations'), icon: AlertTriangle },
+    ...(canManageAccounts
+      ? [{ to: '/accounts', label: t('nav.accounts'), icon: Users }]
+      : []),
     ...(isDirector
       ? [
           {
@@ -225,7 +237,6 @@ export function AppLayout() {
             label: t('nav.factories'),
             icon: Building2,
           },
-          { to: '/accounts', label: t('nav.accounts'), icon: Users },
           { to: '/settings', label: t('nav.settings'), icon: Settings },
         ]
       : []),
@@ -243,19 +254,19 @@ export function AppLayout() {
 
         <AppSidebar navItems={navItems} />
 
-        <SidebarInset>
+        <SidebarInset dir={dir} className="bg-background">
           <AppTopBar />
 
-          <main
+          <div
             id="main-content"
             tabIndex={-1}
             aria-label={t('a11y.mainContent')}
-            className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10"
+            className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 text-start sm:px-6 lg:px-8"
           >
             <PageTransition>
               <Outlet />
             </PageTransition>
-          </main>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

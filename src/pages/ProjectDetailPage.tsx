@@ -1,9 +1,10 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
 import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
+import { PageHeader } from '@/components/PageHeader'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
@@ -45,7 +46,8 @@ import type { Phase } from '@/types/database'
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { profile } = useAuth()
-  const { t } = useTranslation()
+  const { t, dir } = useTranslation()
+  const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft
   const {
     data: project,
     isLoading: isProjectLoading,
@@ -191,61 +193,67 @@ export function ProjectDetailPage() {
 
   return (
     <section className="space-y-6">
-      <div className="space-y-4">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link to="/projects">
-            <ArrowLeft className="size-4" />
-            {t('projectDetail.backToProjects')}
-          </Link>
-        </Button>
-
-        <QueryState
-          isLoading={isProjectLoading}
-          error={projectError}
-          loadingMessage={t('projectDetail.loading')}
-          errorMessage={t('projectDetail.loadFailed')}
-          onRetry={() => void refetchProject()}
-          isRetrying={isProjectFetching}
-        >
-          {project ? (
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-semibold tracking-tight">
-                  {project.title}
-                </h1>
+      <QueryState
+        isLoading={isProjectLoading}
+        error={projectError}
+        loadingMessage={t('projectDetail.loading')}
+        errorMessage={t('projectDetail.loadFailed')}
+        onRetry={() => void refetchProject()}
+        isRetrying={isProjectFetching}
+      >
+        {project ? (
+          <PageHeader
+            leading={
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="-ms-2 h-8 w-fit text-muted-foreground"
+              >
+                <Link to="/projects">
+                  <BackIcon className="size-4" />
+                  {t('projectDetail.backToProjects')}
+                </Link>
+              </Button>
+            }
+            title={
+              <span className="flex flex-wrap items-center gap-3">
+                <span>{project.title}</span>
                 <ProjectStatusBadge status={project.status} />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm font-normal text-muted-foreground">
                   {t('projectDetail.progressLabel', {
                     value: formatProgress(Number(project.progress_percent)),
                   })}
                 </span>
-              </div>
-              {project.description ? (
-                <p className="max-w-3xl text-muted-foreground">
-                  {project.description}
-                </p>
-              ) : null}
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                {project.factories ? (
-                  <span>
-                    {t('projectDetail.factoryLabel', {
-                      name: project.factories.name,
-                      code: project.factories.code,
-                    })}
-                  </span>
+              </span>
+            }
+            description={
+              <span className="flex flex-col gap-2">
+                {project.description ? (
+                  <span>{project.description}</span>
                 ) : null}
-                {project.assigned_pm ? (
-                  <span>
-                    {t('projectDetail.pmLabel', {
-                      name: project.assigned_pm.full_name,
-                    })}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-        </QueryState>
-      </div>
+                <span className="flex flex-wrap gap-x-4 gap-y-1">
+                  {project.factories ? (
+                    <span>
+                      {t('projectDetail.factoryLabel', {
+                        name: project.factories.name,
+                        code: project.factories.code,
+                      })}
+                    </span>
+                  ) : null}
+                  {project.assigned_pm ? (
+                    <span>
+                      {t('projectDetail.pmLabel', {
+                        name: project.assigned_pm.full_name,
+                      })}
+                    </span>
+                  ) : null}
+                </span>
+              </span>
+            }
+          />
+        ) : null}
+      </QueryState>
 
       {project && projectId ? (
         <QueryState
@@ -256,7 +264,7 @@ export function ProjectDetailPage() {
           onRetry={refetchWbs}
           isRetrying={isWbsFetching}
         >
-          <Tabs defaultValue="overview">
+          <Tabs defaultValue="overview" dir={dir}>
             <TabsList className="w-full justify-start overflow-x-auto">
               <TabsTrigger value="overview">
                 {t('projectDetail.tabs.overview')}

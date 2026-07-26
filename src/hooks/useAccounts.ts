@@ -7,9 +7,72 @@ import { queryKeys } from '@/lib/query-keys'
 import { joinMappers } from '@/lib/supabase-joins'
 import type { ProfileWithFactory } from '@/types/joins'
 import { PROFILE_WITH_FACTORY_SELECT } from '@/types/joins'
-import type { AccountFormValues } from '@/lib/validations/account'
+import type {
+  AccountCreateFormValues,
+  AccountFormValues,
+} from '@/lib/validations/account'
 
 export type { ProfileWithFactory } from '@/types/joins'
+
+export type ManageAccountResult = {
+  user_id: string
+  password: string
+  email?: string
+}
+
+function getFunctionsErrorMessage(error: unknown, fallback: string): string {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'context' in error &&
+    error.context instanceof Response
+  ) {
+    return fallback
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
+
+async function invokeManageAccount(
+  body: Record<string, unknown>,
+): Promise<ManageAccountResult> {
+  const supabase = getSupabase()
+  const { data, error } = await supabase.functions.invoke('manage-account', {
+    body,
+  })
+
+  if (error) {
+    let message = getFunctionsErrorMessage(error, 'Request failed')
+
+    if (error.context instanceof Response) {
+      try {
+        const payload = (await error.context.json()) as { error?: string }
+        if (payload.error) {
+          message = payload.error
+        }
+      } catch {
+        // keep fallback message
+      }
+    }
+
+    throw new Error(message)
+  }
+
+  const result = data as ManageAccountResult | { error?: string } | null
+  if (!result || typeof result !== 'object' || !('password' in result)) {
+    throw new Error(
+      result && 'error' in result && result.error
+        ? result.error
+        : 'Unexpected response',
+    )
+  }
+
+  return result
+}
 
 export function useAccountsPage(params: AccountsPageParams) {
   return useQuery({
@@ -44,6 +107,37 @@ export function useAccountsPage(params: AccountsPageParams) {
         pageSize: params.pageSize,
         query,
         mapItems: joinMappers.profileWithFactory,
+      })
+    },
+  })
+}
+
+export function useCreateAccount() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (values: AccountCreateFormValues) => {
+      return invokeManageAccount({
+        action: 'create',
+        email: values.email,
+        full_name: values.full_name,
+        role: values.role,
+        factory_id: values.factory_id,
+        is_active: values.is_active,
+      })
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.accounts })
+    },
+  })
+}
+
+export function useResetAccountPassword() {
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      return invokeManageAccount({
+        action: 'reset_password',
+        user_id: userId,
       })
     },
   })

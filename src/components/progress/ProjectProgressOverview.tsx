@@ -56,7 +56,7 @@ export function ProjectProgressOverview({
                     label={`${phase.name} (${phase.weight_percent}%)`}
                     value={phaseProgress}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-start text-xs text-muted-foreground">
                     {t('progress.tasksComplete', {
                       done: doneCount,
                       total: phaseTasks.length,

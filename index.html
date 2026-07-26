@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Projects Management</title>
+    <script>
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('pms-locale')
+          var locale =
+            stored === 'ar' || stored === 'en'
+              ? stored
+              : navigator.language.toLowerCase().startsWith('ar')
+                ? 'ar'
+                : 'en'
+          document.documentElement.lang = locale
+          document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr'
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

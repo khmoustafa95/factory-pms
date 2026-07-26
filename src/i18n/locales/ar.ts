@@ -48,6 +48,7 @@ export const ar = {
     reject: 'رفض',
     escalate: 'تصعيد',
     addFactory: 'إضافة مصنع',
+    addAccount: 'إضافة حساب',
     addPhase: 'إضافة مرحلة',
     addTask: 'إضافة مهمة',
     wbs: 'هيكل العمل',
@@ -127,7 +128,7 @@ export const ar = {
     noProfile: 'لم يتم إعداد ملفك الشخصي بعد. تواصل مع مدير الشركة.',
     loadingSession: 'جاري تحميل الجلسة…',
     needAccount:
-      'تحتاج حساباً؟ اطلب من مدير الشركة إنشاء وصول في Supabase Auth، ثم تعيين دورك من شاشة الحسابات.',
+      'تحتاج حساباً؟ اطلب من مدير الشركة أو مدير المصنع إنشاء حساب من شاشة الحسابات.',
     supabaseNotConfigured:
       'لم يتم إعداد Supabase. انسخ .env.example إلى .env.local وأضف مفاتيح المشروع.',
     accessDenied: 'الوصول مرفوض',
@@ -310,16 +311,36 @@ export const ar = {
   accounts: {
     title: 'الحسابات',
     description:
-      'أنشئ المستخدمين في Supabase Auth، ثم عيّن أدوارهم ونطاق المصنع هنا. يرى مديرو الشركة جميع الحسابات.',
+      'أنشئ مدراء المصانع ومدراء المشاريع، وحدّث بياناتهم، وولّد كلمات مرور جديدة.',
+    descriptionFactoryManager:
+      'أنشئ وأدر حسابات مدراء المشاريع لمصنعك. توليد كلمة مرور جديدة يسجّل خروجهم من كل الجلسات.',
     loading: 'جاري تحميل الحسابات…',
     loadFailed: 'فشل تحميل الحسابات',
-    empty: 'لم يتم العثور على حسابات. أنشئ المستخدمين في Supabase Auth أولاً.',
+    empty: 'لا توجد حسابات بعد. أنشئ أول حساب للبدء.',
+    created: 'تم إنشاء الحساب',
+    createFailed: 'تعذر إنشاء الحساب',
     updated: 'تم تحديث الحساب',
     updateFailed: 'تعذر تحديث الحساب',
     editAccount: 'تعديل الحساب',
+    newAccount: 'حساب جديد',
+    createAccount: 'إنشاء الحساب',
+    createDescription:
+      'سيتم توليد كلمة مرور مؤقتة. شاركها مع المستخدم بشكل آمن.',
     fullName: 'الاسم الكامل',
     role: 'الدور',
     activeAccount: 'حساب نشط',
+    resetPassword: 'كلمة مرور جديدة',
+    resetPasswordTitle: 'توليد كلمة مرور جديدة؟',
+    resetPasswordDescription:
+      'سيتم إنشاء كلمة مرور جديدة لـ {{name}} ({{email}}) وتسجيل خروجه من جميع الجلسات.',
+    confirmResetPassword: 'توليد كلمة المرور',
+    passwordReset: 'تم توليد كلمة المرور — تم تسجيل خروج المستخدم',
+    passwordResetFailed: 'تعذر توليد كلمة المرور',
+    generatedPasswordTitle: 'كلمة المرور المؤقتة',
+    generatedPasswordDescription: 'انسخ كلمة المرور الآن. لن تظهر مرة أخرى.',
+    copyPassword: 'نسخ كلمة المرور',
+    passwordCopied: 'تم نسخ كلمة المرور',
+    passwordCopyFailed: 'تعذر نسخ كلمة المرور',
   },
   settings: {
     title: 'الإعدادات',

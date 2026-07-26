@@ -157,7 +157,7 @@ export function FactoriesPage() {
             <TableHead>{t('common.code')}</TableHead>
             <TableHead>{t('common.location')}</TableHead>
             <TableHead>{t('common.status')}</TableHead>
-            <TableHead className="text-right">{t('common.actions')}</TableHead>
+            <TableHead className="text-end">{t('common.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -169,7 +169,7 @@ export function FactoriesPage() {
               <TableCell>
                 <ActiveStatusBadge isActive={factory.is_active} />
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-end">
                 <Button
                   size="sm"
                   variant="outline"

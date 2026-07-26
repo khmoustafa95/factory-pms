@@ -48,6 +48,7 @@ export const en = {
     reject: 'Reject',
     escalate: 'Escalate',
     addFactory: 'Add factory',
+    addAccount: 'Add account',
     addPhase: 'Add phase',
     addTask: 'Add task',
     wbs: 'WBS',
@@ -128,7 +129,7 @@ export const en = {
     noProfile: 'Your profile is not set up yet. Contact your company director.',
     loadingSession: 'Loading session…',
     needAccount:
-      'Need an account? Ask your company director to provision access in Supabase Auth, then assign your role from the Accounts screen.',
+      'Need an account? Ask your company director or factory manager to create one from the Accounts screen.',
     supabaseNotConfigured:
       'Supabase is not configured. Copy .env.example to .env.local and add your project keys.',
     accessDenied: 'Access denied',
@@ -318,16 +319,37 @@ export const en = {
   accounts: {
     title: 'Accounts',
     description:
-      'Provision users in Supabase Auth, then assign their role and factory scope here. Company directors see every account.',
+      'Create factory managers and project managers, update their details, and generate new passwords.',
+    descriptionFactoryManager:
+      'Create and manage project manager accounts for your factory. Generating a new password signs them out everywhere.',
     loading: 'Loading accounts…',
     loadFailed: 'Failed to load accounts',
-    empty: 'No accounts found. Create users in Supabase Auth first.',
+    empty: 'No accounts yet. Create the first account to get started.',
+    created: 'Account created',
+    createFailed: 'Unable to create account',
     updated: 'Account updated',
     updateFailed: 'Unable to update account',
     editAccount: 'Edit account',
+    newAccount: 'New account',
+    createAccount: 'Create account',
+    createDescription:
+      'A temporary password will be generated. Share it securely with the user.',
     fullName: 'Full name',
     role: 'Role',
     activeAccount: 'Active account',
+    resetPassword: 'New password',
+    resetPasswordTitle: 'Generate new password?',
+    resetPasswordDescription:
+      'This will create a new password for {{name}} ({{email}}) and sign them out of all sessions.',
+    confirmResetPassword: 'Generate password',
+    passwordReset: 'Password generated — user signed out',
+    passwordResetFailed: 'Unable to generate password',
+    generatedPasswordTitle: 'Temporary password',
+    generatedPasswordDescription:
+      'Copy this password now. It will not be shown again.',
+    copyPassword: 'Copy password',
+    passwordCopied: 'Password copied',
+    passwordCopyFailed: 'Unable to copy password',
   },
   settings: {
     title: 'Settings',

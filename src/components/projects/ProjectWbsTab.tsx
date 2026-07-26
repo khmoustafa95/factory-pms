@@ -149,7 +149,7 @@ export function ProjectWbsTab({
                               <TableHead>{t('wbs.assignee')}</TableHead>
                               <TableHead>{t('wbs.dueDate')}</TableHead>
                               {canManage ? (
-                                <TableHead className="text-right">
+                                <TableHead className="text-end">
                                   {t('common.actions')}
                                 </TableHead>
                               ) : null}
@@ -185,7 +185,7 @@ export function ProjectWbsTab({
                                   )}
                                 </TableCell>
                                 {canManage ? (
-                                  <TableCell className="text-right">
+                                  <TableCell className="text-end">
                                     <div className="flex justify-end gap-2">
                                       <Button
                                         size="sm"

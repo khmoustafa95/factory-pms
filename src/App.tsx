@@ -72,9 +72,17 @@ export default function App() {
               />
               <Route path="escalations" element={<EscalationsPage />} />
             </Route>
+            <Route
+              element={
+                <RoleRoute
+                  allowedRoles={['company_director', 'factory_manager']}
+                />
+              }
+            >
+              <Route path="accounts" element={<AccountsPage />} />
+            </Route>
             <Route element={<RoleRoute allowedRoles={['company_director']} />}>
               <Route path="factories" element={<FactoriesPage />} />
-              <Route path="accounts" element={<AccountsPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Route>

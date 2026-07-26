@@ -21,6 +21,8 @@ src/
 - `isSupabaseConfigured()` — UI / env checks
 - `getSupabase()` — lazy singleton client typed with `Database`
 - Types live in `src/types/database.ts` (stub until `supabase gen types`)
+- Account provisioning: Edge Function `supabase/functions/manage-account` (create user + reset password + `revoke_user_sessions`)
+- Role helpers: `src/lib/account-permissions.ts` (who may create/manage which roles)
 
 ## UI helpers
 

@@ -376,6 +376,10 @@ export interface Database {
         Args: Record<string, never>
         Returns: boolean
       }
+      revoke_user_sessions: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       get_dashboard_stats: {
         Args: Record<string, never>
         Returns: {

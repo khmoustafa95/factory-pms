@@ -2,7 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -54,7 +54,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const t = useMemo(() => createTranslator(translations[locale]), [locale])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.lang = locale
     document.documentElement.dir = dir
   }, [dir, locale])

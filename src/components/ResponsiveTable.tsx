@@ -8,12 +8,7 @@ interface ResponsiveTableProps {
 
 export function ResponsiveTable({ children, className }: ResponsiveTableProps) {
   return (
-    <div
-      className={cn(
-        'overflow-hidden rounded-lg border border-border bg-card',
-        className,
-      )}
-    >
+    <div className={cn('app-panel overflow-hidden', className)}>
       <div className="overflow-x-auto">
         <div className="min-w-[640px]">{children}</div>
       </div>
