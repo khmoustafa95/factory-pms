@@ -10,7 +10,7 @@ export function ResponsiveTable({ children, className }: ResponsiveTableProps) {
   return (
     <div className={cn('app-panel overflow-hidden', className)}>
       <div className="overflow-x-auto">
-        <div className="min-w-[640px]">{children}</div>
+        <div className="min-w-160">{children}</div>
       </div>
     </div>
   )

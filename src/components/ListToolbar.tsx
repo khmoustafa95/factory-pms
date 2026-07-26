@@ -44,7 +44,7 @@ export function ListToolbar({
         <div className="flex-1 space-y-1.5">
           <Label htmlFor="list-search">{t('list.search')}</Label>
           <div className="relative">
-            <Search className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute inset-s-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="list-search"
               type="search"
