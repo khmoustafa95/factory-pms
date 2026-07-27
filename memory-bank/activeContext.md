@@ -6,6 +6,7 @@
 
 ## Recent changes
 
+- [2026-07-27] Staging deploy guide: `docs/staging-deployment.md` (free Supabase + Cloudflare/Vercel); `public/_redirects` for SPA routing; README link
 - [2026-07-27] UX terminology update: renamed user-facing "Escalations" labels to "Critical alerts" / "التنبيهات الحرجة" across nav, dashboard, actions, dialog copy, and validation messages (no logic/schema changes)
 - [2026-07-27] Consolidated 12 migrations → 8: merged `handle_new_user` patches, FM profile policy, `revoke_user_sessions` fix; moved `grant_api_privileges` last with explicit revokes on internal SECURITY DEFINER functions
 - [2026-07-27] Security: removed SVG logo uploads (public bucket XSS risk); `is_auth_active()` on currencies/app_settings director policies

@@ -218,6 +218,12 @@
 
 - `AdaptiveList` on Factories, Accounts, Escalations, Projects list pages — mobile cards + desktop tables; empty state handled by `AdaptiveList`
 
+### 2026-07-27
+
+- [x] `docs/staging-deployment.md` — Arabic staging deploy guide (free Supabase + Cloudflare Pages / Vercel)
+- [x] `public/_redirects` for SPA client-side routing on static hosts
+- [x] README link to staging deployment doc
+
 ### 2026-07-22 (session 9)
 
 - Project detail i18n: `ProjectDetailPage`, `ProjectWbsTab`, `ProjectProgressOverview`, `ProjectTimeline`, `ProjectActivityTab`, `CommentThread`, `TaskKanbanBoard`
