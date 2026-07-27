@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Codebase audit & migration consolidation** — security hardening, integration fixes, merged DB migrations.
+**Developer onboarding docs** — Arabic React learning guide from project codebase.
 
 ## Recent changes
 
+- [2026-07-27] Added `docs/react-learning-guide-ar.md` — comprehensive Arabic tutorial (React basics → project patterns, libraries, diagrams, feature workflow); README Documentation section
 - [2026-07-27] Staging deploy guide: `docs/staging-deployment.md` (free Supabase + Cloudflare/Vercel); `public/_redirects` for SPA routing; README link
 - [2026-07-27] UX terminology update: renamed user-facing "Escalations" labels to "Critical alerts" / "التنبيهات الحرجة" across nav, dashboard, actions, dialog copy, and validation messages (no logic/schema changes)
 - [2026-07-27] Consolidated 12 migrations → 8: merged `handle_new_user` patches, FM profile policy, `revoke_user_sessions` fix; moved `grant_api_privileges` last with explicit revokes on internal SECURITY DEFINER functions

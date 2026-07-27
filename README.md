@@ -41,6 +41,13 @@ npm run build:staging        # build for staging
 npm run build:production     # build for production (same as npm run build)
 ```
 
+## Documentation
+
+| Guide                                                                | Description                                                           |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [`docs/react-learning-guide-ar.md`](docs/react-learning-guide-ar.md) | Arabic React tutorial grounded in this codebase (beginner → advanced) |
+| [`docs/staging-deployment.md`](docs/staging-deployment.md)           | Staging deploy (free Supabase + Cloudflare/Vercel)                    |
+
 ## Scripts
 
 | Command                     | Description                                        |
