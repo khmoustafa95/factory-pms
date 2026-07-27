@@ -54,7 +54,8 @@ import { formatLocalizedBudget, formatLocalizedDate } from '@/lib/i18n-format'
 import { formatProgress } from '@/lib/progress'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
-  canApproveAsAssignedPm,
+  canApproveAsDirector,
+  canDiscussProposal,
   canEditProjectDetails,
   canManageProjectAttachments,
   isProposalReviewStatus,
@@ -153,9 +154,10 @@ export function ProjectDetailPage() {
     Boolean(profile?.factory_id) &&
     project !== undefined &&
     canEditProjectDetails(project.status)
-  const canReviewAsPm = project
-    ? canApproveAsAssignedPm(project, profile)
+  const canReviewAsDirector = project
+    ? canApproveAsDirector(project, profile)
     : false
+  const canCommentOnProposal = canDiscussProposal(profile)
   const canManageAttachments =
     canEditDetails &&
     project !== undefined &&
@@ -325,7 +327,7 @@ export function ProjectDetailPage() {
             }
             actions={
               <div className="flex flex-wrap gap-2">
-                {canReviewAsPm ? (
+                {canReviewAsDirector ? (
                   <>
                     <Button
                       type="button"
@@ -367,7 +369,7 @@ export function ProjectDetailPage() {
                 ) : null}
                 {project.status === 'proposed' ? (
                   <span className="text-sm text-muted-foreground">
-                    {t('projects.awaitingPmReview')}
+                    {t('projects.awaitingDirectorReview')}
                   </span>
                 ) : null}
                 {project.status === 'rejected' && project.rejection_reason ? (
@@ -461,12 +463,17 @@ export function ProjectDetailPage() {
                   {t('projects.proposalDiscussionDescription')}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
+                {!canCommentOnProposal ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t('projects.discussionParticipantsOnly')}
+                  </p>
+                ) : null}
                 <CommentThread
                   entityType="project"
                   entityId={projectId}
                   title=""
-                  canComment={Boolean(profile)}
+                  canComment={canCommentOnProposal}
                 />
               </CardContent>
             </Card>
@@ -569,7 +576,7 @@ export function ProjectDetailPage() {
         />
       ) : null}
 
-      {canReviewAsPm ? (
+      {canReviewAsDirector ? (
         <ProjectRejectDialog
           open={rejectDialogOpen}
           onOpenChange={setRejectDialogOpen}

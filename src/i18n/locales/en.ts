@@ -152,22 +152,21 @@ export const en = {
     escalationsDescription: 'Review blocked tasks and notify leadership.',
     projectsTitle: 'Projects',
     projectsManagerDescription:
-      'Submit project proposals for project manager review.',
+      'Submit project proposals for company director review.',
     projectsDirectorDescription:
-      'Monitor factory proposals and approved projects across the company.',
-    projectsPmDescription:
-      'Review assigned proposals, discuss details, then approve or reject.',
+      'Discuss proposals with factory managers, then approve or reject.',
+    projectsPmDescription: 'Track projects assigned to you after approval.',
     loading: 'Loading dashboard…',
     loadFailed: 'Failed to load dashboard stats',
   },
   projects: {
     title: 'Projects',
     managerDescription:
-      'Create project proposals with supporting files and assign a project manager for review.',
+      'Create project proposals with supporting files, discuss them with the company director, and assign a project manager for execution after approval.',
     directorDescription:
-      'Monitor proposals and project progress across all factories.',
+      'Discuss submitted proposals with factory managers, then approve or reject them.',
     pmDescription:
-      'Review assigned proposals, discuss details with the factory manager, then approve or reject.',
+      'View projects assigned to you. Proposal discussion and approval are handled by the company director.',
     loading: 'Loading projects…',
     loadFailed: 'Failed to load projects',
     emptyManager: 'No proposals yet. Create your first project proposal.',
@@ -181,7 +180,7 @@ export const en = {
     updated: 'Project updated',
     updateFailed: 'Unable to update project',
     saveDraftFailed: 'Unable to save draft',
-    proposalSubmitted: 'Proposal submitted for project manager review',
+    proposalSubmitted: 'Proposal submitted for company director review',
     submitFailed: 'Unable to submit proposal',
     proposalApproved: 'Proposal approved',
     approveFailed: 'Unable to approve proposal',
@@ -195,7 +194,7 @@ export const en = {
     editProject: 'Edit project',
     newProposal: 'New project proposal',
     formDescription:
-      'Capture scope, budget, timeline, and supporting files for project manager review.',
+      'Capture scope, budget, timeline, and supporting files for company director review.',
     editDetailsDescription:
       'Update project title, description, budget, dates, and assigned project manager.',
     currency: 'Currency',
@@ -208,9 +207,11 @@ export const en = {
       'Provide a reason so the factory manager can revise and resubmit.',
     proposalDiscussion: 'Discussion',
     proposalDiscussionDescription:
-      'Comment on budget, workforce, timeline, and other proposal details before approval.',
+      'Conversation between the company director and the factory manager about budget, workforce, timeline, and other proposal details before approval.',
     proposalSummary: 'Proposal summary',
-    awaitingPmReview: 'Awaiting project manager review',
+    awaitingDirectorReview: 'Awaiting company director review',
+    discussionParticipantsOnly:
+      'Only the company director and factory manager can post in this discussion.',
     attachments: {
       title: 'Supporting files',
       description:

@@ -18,7 +18,7 @@
 - [x] Auth UI + session handling + role-aware routing
 - [x] FT-01 Factories & accounts (director CRUD + account create/password reset via Edge Function; FM manages PMs)
 - [x] FT-02 Project proposals (factory manager draft/submit + supporting files; role-scoped list)
-- [x] FT-03 Approval workflow (assigned PM approve/reject with reason; discussion comments)
+- [x] FT-03 Approval workflow (director approve/reject with reason; director↔FM discussion on proposal)
 - [x] Env scripts: Vite modes (local/staging/production) + Supabase local CLI scripts
 - [x] i18n: Arabic + English, RTL, locale persistence, translated UI copy
 - [x] Theme: light / dark / system toggle with next-themes
@@ -48,6 +48,12 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-27 (session 34)
+
+- Proposal discussion is between **company director** and **factory manager** only (`canDiscussProposal`); PM can view but not post
+- Approval/reject UI restored to **company director** (`canApproveAsDirector`)
+- i18n copy updated for director review + director–FM discussion (ar/en)
 
 ### 2026-07-27 (session 33)
 

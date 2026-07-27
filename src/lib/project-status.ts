@@ -1,5 +1,5 @@
 import type { Profile, Project, ProjectStatus } from '@/types/database'
-import { isProjectManager } from '@/lib/roles'
+import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 
 /** Proposal workflow: drafts and rejected proposals can be rewritten/resubmitted. */
 export const PROPOSAL_EDITABLE_STATUSES: ProjectStatus[] = ['draft', 'rejected']
@@ -41,18 +41,30 @@ export function isProposalReviewStatus(status: ProjectStatus): boolean {
   return PROPOSAL_REVIEW_STATUSES.includes(status)
 }
 
-/** Assigned project manager may approve or reject a proposed project. */
-export function canApproveAsAssignedPm(
-  project: Pick<Project, 'status' | 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+/** Company director may approve or reject a proposed project. */
+export function canApproveAsDirector(
+  project: Pick<Project, 'status'>,
+  profile: Pick<Profile, 'role'> | null | undefined,
 ): boolean {
-  if (!profile || !isProjectManager(profile.role)) {
+  if (!profile || !isCompanyDirector(profile.role)) {
     return false
   }
 
-  return (
-    canReviewProject(project.status) && project.assigned_pm_id === profile.id
-  )
+  return canReviewProject(project.status)
+}
+
+/**
+ * Proposal discussion is between company director and factory manager.
+ * (Assigned PM may view the proposal but does not participate in this thread.)
+ */
+export function canDiscussProposal(
+  profile: Pick<Profile, 'role'> | null | undefined,
+): boolean {
+  if (!profile) {
+    return false
+  }
+
+  return isCompanyDirector(profile.role) || isFactoryManager(profile.role)
 }
 
 /** Factory managers may manage supporting files while the project is editable. */

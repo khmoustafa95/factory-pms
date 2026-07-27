@@ -41,7 +41,7 @@ import {
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
-  canApproveAsAssignedPm,
+  canApproveAsDirector,
   canEditProjectDetails,
   canReviewProject,
   canSubmitProject,
@@ -284,7 +284,7 @@ export function ProjectsPage() {
   }
 
   const renderProjectActions = (project: ProjectListItem) => {
-    const canReviewAsPm = canApproveAsAssignedPm(project, profile)
+    const canReviewAsDirector = canApproveAsDirector(project, profile)
 
     return (
       <div className="flex flex-wrap gap-2">
@@ -298,7 +298,7 @@ export function ProjectsPage() {
             {projectDetailLabel(project.status)}
           </Link>
         </Button>
-        {canReviewAsPm ? (
+        {canReviewAsDirector ? (
           <>
             <Button
               size="sm"
