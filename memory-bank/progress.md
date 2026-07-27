@@ -51,6 +51,11 @@
 
 ## Changelog
 
+### 2026-07-27 (session 37)
+
+- Added `docs/react-learning-guide-ar.md` — Arabic educational guide for beginners: programming/React basics, project structure, providers, routing, auth, TanStack Query, forms, UI, i18n/RTL, errors/realtime, feature workflow, best practices; mermaid diagrams; code snippets from app
+- README: Documentation section linking learning guide + staging deploy doc
+
 ### 2026-07-27 (session 36)
 
 - Terminology update only (no behavior changes): user-facing "Escalations" renamed to "Critical alerts" (`التنبيهات الحرجة`) in `ar/en` locale copy (nav, dashboard cards, action labels, dialog text, and validation messages)
