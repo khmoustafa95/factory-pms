@@ -83,8 +83,8 @@ export default function App() {
             </Route>
             <Route element={<RoleRoute allowedRoles={['company_director']} />}>
               <Route path="factories" element={<FactoriesPage />} />
-              <Route path="settings" element={<SettingsPage />} />
             </Route>
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

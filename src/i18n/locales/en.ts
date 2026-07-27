@@ -6,6 +6,7 @@ export const en = {
     close: 'Close',
     edit: 'Edit',
     delete: 'Delete',
+    remove: 'Remove',
     actions: 'Actions',
     status: 'Status',
     name: 'Name',
@@ -151,19 +152,22 @@ export const en = {
     escalationsDescription: 'Review blocked tasks and notify leadership.',
     projectsTitle: 'Projects',
     projectsManagerDescription:
-      'Submit project proposals for director approval.',
-    projectsDirectorDescription: 'Approve or reject submitted proposals.',
-    projectsPmDescription: 'Track projects assigned to you.',
+      'Submit project proposals for project manager review.',
+    projectsDirectorDescription:
+      'Monitor factory proposals and approved projects across the company.',
+    projectsPmDescription:
+      'Review assigned proposals, discuss details, then approve or reject.',
     loading: 'Loading dashboard…',
     loadFailed: 'Failed to load dashboard stats',
   },
   projects: {
     title: 'Projects',
     managerDescription:
-      'Create project proposals and submit them for company director approval.',
+      'Create project proposals with supporting files and assign a project manager for review.',
     directorDescription:
-      'Review submitted proposals and approve or reject them with feedback.',
-    pmDescription: 'View projects assigned to you.',
+      'Monitor proposals and project progress across all factories.',
+    pmDescription:
+      'Review assigned proposals, discuss details with the factory manager, then approve or reject.',
     loading: 'Loading projects…',
     loadFailed: 'Failed to load projects',
     emptyManager: 'No proposals yet. Create your first project proposal.',
@@ -177,17 +181,21 @@ export const en = {
     updated: 'Project updated',
     updateFailed: 'Unable to update project',
     saveDraftFailed: 'Unable to save draft',
-    proposalSubmitted: 'Proposal submitted for approval',
+    proposalSubmitted: 'Proposal submitted for project manager review',
     submitFailed: 'Unable to submit proposal',
     proposalApproved: 'Proposal approved',
     approveFailed: 'Unable to approve proposal',
     proposalRejected: 'Proposal rejected',
     rejectFailed: 'Unable to reject proposal',
+    pmRequiredToSubmit:
+      'Assign a project manager before submitting the proposal',
+    openProposal: 'Open',
+    reviewProposal: 'Review',
     editProposal: 'Edit project proposal',
     editProject: 'Edit project',
     newProposal: 'New project proposal',
     formDescription:
-      'Capture scope, budget, and timeline for director approval.',
+      'Capture scope, budget, timeline, and supporting files for project manager review.',
     editDetailsDescription:
       'Update project title, description, budget, dates, and assigned project manager.',
     currency: 'Currency',
@@ -198,6 +206,33 @@ export const en = {
     rejectionReason: 'Rejection reason',
     rejectDescription:
       'Provide a reason so the factory manager can revise and resubmit.',
+    proposalDiscussion: 'Discussion',
+    proposalDiscussionDescription:
+      'Comment on budget, workforce, timeline, and other proposal details before approval.',
+    proposalSummary: 'Proposal summary',
+    awaitingPmReview: 'Awaiting project manager review',
+    attachments: {
+      title: 'Supporting files',
+      description:
+        'Budget details, workforce plans, and other documents attached to this proposal.',
+      formHint:
+        'Optional: upload budget sheets, required workforce counts, or other supporting documents (max 10 MB each).',
+      addFiles: 'Add files',
+      upload: 'Upload files',
+      optional: 'No files selected yet',
+      clearPending: 'Clear selected files',
+      empty: 'No supporting files yet.',
+      uploaded: 'Files uploaded',
+      uploadFailed: 'Unable to upload files',
+      deleted: 'File deleted',
+      deleteFailed: 'Unable to delete file',
+      download: 'Download',
+      delete: 'Delete',
+      downloadFailed: 'Unable to download file',
+      loadFailed: 'Failed to load attachments',
+      invalidFile:
+        'File type or size is not allowed (PDF, Office, CSV, images, or text — max 10 MB)',
+    },
   },
   projectDetail: {
     backToProjects: 'Back to projects',
@@ -377,6 +412,32 @@ export const en = {
     saved: 'Settings saved',
     saveFailed: 'Unable to save settings',
     logoRemoved: 'Logo removed',
+    accountTab: 'Account',
+    currenciesTab: 'Currencies',
+    account: {
+      title: 'Account information',
+      description: 'View and edit your account details.',
+      fullName: 'Full name',
+      role: 'Role',
+      saved: 'Account details saved',
+    },
+    currencies: {
+      title: 'Currencies',
+      description: 'Manage available currencies for projects.',
+      add: 'Add currency',
+      addTitle: 'Add new currency',
+      editTitle: 'Edit currency',
+      code: 'Currency code',
+      nameEn: 'Name (English)',
+      nameAr: 'Name (Arabic)',
+      symbol: 'Symbol',
+      created: 'Currency added',
+      updated: 'Currency updated',
+      deleted: 'Currency deleted',
+      defaultSet: 'Default currency set',
+      setDefault: 'Set as default',
+      empty: 'No currencies yet. Add one to get started.',
+    },
   },
   errors: {
     generic: 'Something went wrong',

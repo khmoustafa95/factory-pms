@@ -17,6 +17,8 @@ export const queryKeys = {
   projectsPage: (params: ProjectsPageParams) =>
     ['projects', 'page', params] as const,
   project: (projectId: string | undefined) => ['project', projectId] as const,
+  projectAttachments: (projectId: string | undefined) =>
+    ['project-attachments', projectId] as const,
   phases: (projectId: string | undefined) => ['phases', projectId] as const,
   tasks: (projectId: string | undefined) => ['tasks', projectId] as const,
   comments: (entityType: string, entityId: string | undefined) =>
@@ -28,6 +30,7 @@ export const queryKeys = {
     ['escalations', 'page', params] as const,
   dashboard: ['dashboard'] as const,
   appSettings: ['app-settings'] as const,
+  currencies: ['currencies'] as const,
   factoryProjectManagers: (factoryId: string | null | undefined) =>
     ['factory-project-managers', factoryId] as const,
 }

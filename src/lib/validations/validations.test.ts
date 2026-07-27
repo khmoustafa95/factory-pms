@@ -40,7 +40,7 @@ describe('localized validation schemas', () => {
     const t = createTranslator(ar)
     const result = createProjectFormSchema(t).safeParse({
       title: 'مشروع',
-      currency: 'SAR',
+      currency: 'USD',
       assigned_pm_id: null,
       proposed_start_date: '2026-12-01',
       proposed_end_date: '2026-01-01',

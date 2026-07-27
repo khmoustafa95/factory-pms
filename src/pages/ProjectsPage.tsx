@@ -1,4 +1,4 @@
-import { Check, Layers, Plus, Send, X } from 'lucide-react'
+import { Check, Eye, Layers, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { uploadProjectAttachments } from '@/hooks/useProjectAttachments'
 import {
   useApproveProject,
   useCreateProject,
@@ -40,14 +41,16 @@ import {
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
+  canApproveAsAssignedPm,
   canEditProjectDetails,
   canReviewProject,
   canSubmitProject,
+  isProposalReviewStatus,
 } from '@/lib/project-status'
 import type { ProjectRejectValues } from '@/lib/validations/approval'
 import { canViewWbs } from '@/lib/wbs'
 import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
-import type { ProjectFormValues } from '@/lib/validations/project'
+import type { ProjectFormSubmitPayload } from '@/components/projects/ProjectFormDialog'
 import type { Project, ProjectStatus } from '@/types/database'
 
 const PROJECT_STATUS_FILTERS: ProjectStatus[] = [
@@ -109,7 +112,28 @@ export function ProjectsPage() {
     return profile.factory_id
   }
 
-  const saveProject = async (values: ProjectFormValues) => {
+  const ensureAssignedPm = (assignedPmId: string | null): boolean => {
+    if (assignedPmId) {
+      return true
+    }
+
+    toast.error(t('projects.pmRequiredToSubmit'))
+    return false
+  }
+
+  const uploadFilesForProject = async (projectId: string, files: File[]) => {
+    if (!user?.id || files.length === 0) {
+      return
+    }
+
+    await uploadProjectAttachments({
+      projectId,
+      userId: user.id,
+      files,
+    })
+  }
+
+  const saveProject = async ({ values, files }: ProjectFormSubmitPayload) => {
     const factoryId = ensureFactoryContext()
     const userId = user?.id
 
@@ -120,18 +144,20 @@ export function ProjectsPage() {
     try {
       if (editingProject) {
         await updateProject.mutateAsync({ id: editingProject.id, values })
+        await uploadFilesForProject(editingProject.id, files)
         toast.success(
           canSubmitProject(editingProject.status)
             ? t('projects.draftUpdated')
             : t('projects.updated'),
         )
       } else {
-        await createProject.mutateAsync({
+        const created = await createProject.mutateAsync({
           factoryId,
           userId,
           values,
           status: 'draft',
         })
+        await uploadFilesForProject(created.id, files)
         toast.success(t('projects.draftCreated'))
       }
     } catch (submitError) {
@@ -145,7 +171,10 @@ export function ProjectsPage() {
     }
   }
 
-  const submitProposal = async (values: ProjectFormValues) => {
+  const submitProposal = async ({
+    values,
+    files,
+  }: ProjectFormSubmitPayload) => {
     const factoryId = ensureFactoryContext()
     const userId = user?.id
 
@@ -153,18 +182,24 @@ export function ProjectsPage() {
       return
     }
 
+    if (!ensureAssignedPm(values.assigned_pm_id)) {
+      throw new Error('PM_REQUIRED')
+    }
+
     try {
       if (editingProject) {
         await updateProject.mutateAsync({ id: editingProject.id, values })
+        await uploadFilesForProject(editingProject.id, files)
         await submitProject.mutateAsync({ id: editingProject.id, userId })
         toast.success(t('projects.proposalSubmitted'))
       } else {
-        await createProject.mutateAsync({
+        const created = await createProject.mutateAsync({
           factoryId,
           userId,
           values,
           status: 'proposed',
         })
+        await uploadFilesForProject(created.id, files)
         toast.success(t('projects.proposalSubmitted'))
       }
     } catch (submitError) {
@@ -177,6 +212,10 @@ export function ProjectsPage() {
     const userId = user?.id
 
     if (!userId) {
+      return
+    }
+
+    if (!ensureAssignedPm(project.assigned_pm_id)) {
       return
     }
 
@@ -232,54 +271,72 @@ export function ProjectsPage() {
 
   const isReviewing = approveProject.isPending || rejectProject.isPending
 
-  const renderProjectActions = (project: ProjectListItem) => (
-    <div className="flex flex-wrap gap-2">
-      {canViewWbs(project.status) ? (
+  const projectDetailLabel = (status: ProjectStatus) => {
+    if (canReviewProject(status)) {
+      return t('projects.reviewProposal')
+    }
+
+    if (isProposalReviewStatus(status)) {
+      return t('projects.openProposal')
+    }
+
+    return t('common.wbs')
+  }
+
+  const renderProjectActions = (project: ProjectListItem) => {
+    const canReviewAsPm = canApproveAsAssignedPm(project, profile)
+
+    return (
+      <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
           <Link to={`/projects/${project.id}`}>
-            <Layers className="size-4" />
-            {t('common.wbs')}
+            {canViewWbs(project.status) ? (
+              <Layers className="size-4" />
+            ) : (
+              <Eye className="size-4" />
+            )}
+            {projectDetailLabel(project.status)}
           </Link>
         </Button>
-      ) : null}
-      {isDirector && canReviewProject(project.status) ? (
-        <>
+        {canReviewAsPm ? (
+          <>
+            <Button
+              size="sm"
+              onClick={() => void handleApprove(project)}
+              disabled={isReviewing}
+            >
+              <Check className="size-4" />
+              {t('common.approve')}
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => openReject(project)}
+              disabled={isReviewing}
+            >
+              <X className="size-4" />
+              {t('common.reject')}
+            </Button>
+          </>
+        ) : null}
+        {canManageProposals && canEditProjectDetails(project.status) ? (
+          <Button size="sm" variant="outline" onClick={() => openEdit(project)}>
+            {t('common.edit')}
+          </Button>
+        ) : null}
+        {canManageProposals && canSubmitProject(project.status) ? (
           <Button
             size="sm"
-            onClick={() => void handleApprove(project)}
-            disabled={isReviewing}
+            onClick={() => void handleQuickSubmit(project)}
+            disabled={submitProject.isPending}
           >
-            <Check className="size-4" />
-            {t('common.approve')}
+            <Send className="size-4" />
+            {t('common.submit')}
           </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            onClick={() => openReject(project)}
-            disabled={isReviewing}
-          >
-            <X className="size-4" />
-            {t('common.reject')}
-          </Button>
-        </>
-      ) : null}
-      {canManageProposals && canEditProjectDetails(project.status) ? (
-        <Button size="sm" variant="outline" onClick={() => openEdit(project)}>
-          {t('common.edit')}
-        </Button>
-      ) : null}
-      {canManageProposals && canSubmitProject(project.status) ? (
-        <Button
-          size="sm"
-          onClick={() => void handleQuickSubmit(project)}
-          disabled={submitProject.isPending}
-        >
-          <Send className="size-4" />
-          {t('common.submit')}
-        </Button>
-      ) : null}
-    </div>
-  )
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <PaginatedListPage
@@ -360,16 +417,9 @@ export function ProjectsPage() {
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium">
-              {canViewWbs(project.status) ? (
-                <Link
-                  className="hover:underline"
-                  to={`/projects/${project.id}`}
-                >
-                  {project.title}
-                </Link>
-              ) : (
-                project.title
-              )}
+              <Link className="hover:underline" to={`/projects/${project.id}`}>
+                {project.title}
+              </Link>
             </p>
             <ProjectStatusBadge status={project.status} />
           </div>
@@ -428,15 +478,13 @@ export function ProjectsPage() {
             />
           ) : null}
 
-          {isDirector ? (
-            <ProjectRejectDialog
-              open={rejectDialogOpen}
-              onOpenChange={setRejectDialogOpen}
-              projectTitle={rejectingProject?.title ?? null}
-              onSubmit={handleReject}
-              isSubmitting={rejectProject.isPending}
-            />
-          ) : null}
+          <ProjectRejectDialog
+            open={rejectDialogOpen}
+            onOpenChange={setRejectDialogOpen}
+            projectTitle={rejectingProject?.title ?? null}
+            onSubmit={handleReject}
+            isSubmitting={rejectProject.isPending}
+          />
         </>
       }
     >
@@ -461,16 +509,12 @@ export function ProjectsPage() {
               <TableCell>
                 <div className="space-y-1">
                   <p className="font-medium">
-                    {canViewWbs(project.status) ? (
-                      <Link
-                        className="hover:underline"
-                        to={`/projects/${project.id}`}
-                      >
-                        {project.title}
-                      </Link>
-                    ) : (
-                      project.title
-                    )}
+                    <Link
+                      className="hover:underline"
+                      to={`/projects/${project.id}`}
+                    >
+                      {project.title}
+                    </Link>
                   </p>
                   {project.description ? (
                     <p className="line-clamp-1 text-sm text-muted-foreground">

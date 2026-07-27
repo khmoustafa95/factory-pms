@@ -1,19 +1,32 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
+import { CommentThread } from '@/components/comments/CommentThread'
 import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
 import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
 import { PageHeader } from '@/components/PageHeader'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
-import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
+import { ProjectAttachmentsPanel } from '@/components/projects/ProjectAttachmentsPanel'
+import {
+  ProjectFormDialog,
+  type ProjectFormSubmitPayload,
+} from '@/components/projects/ProjectFormDialog'
+import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
 import { ProjectProgressOverview } from '@/components/progress/ProjectProgressOverview'
 import { TaskFormDialog } from '@/components/tasks/TaskFormDialog'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
@@ -24,7 +37,11 @@ import {
   usePhases,
   useUpdatePhase,
 } from '@/hooks/usePhases'
-import { useUpdateProject } from '@/hooks/useProjects'
+import {
+  useApproveProject,
+  useRejectProject,
+  useUpdateProject,
+} from '@/hooks/useProjects'
 import { useProjectRealtime } from '@/hooks/useRealtime'
 import {
   useCreateTask,
@@ -33,10 +50,17 @@ import {
   useUpdateTask,
   type TaskListItem,
 } from '@/hooks/useTasks'
+import { formatLocalizedBudget, formatLocalizedDate } from '@/lib/i18n-format'
 import { formatProgress } from '@/lib/progress'
 import { toastMutationError } from '@/lib/mutation-error'
-import { canEditProjectDetails } from '@/lib/project-status'
+import {
+  canApproveAsAssignedPm,
+  canEditProjectDetails,
+  canManageProjectAttachments,
+  isProposalReviewStatus,
+} from '@/lib/project-status'
 import { isFactoryManager } from '@/lib/roles'
+import type { ProjectRejectValues } from '@/lib/validations/approval'
 import {
   canManageWbs,
   canViewWbs,
@@ -44,14 +68,13 @@ import {
   sumPhaseWeights,
 } from '@/lib/wbs'
 import type { PhaseFormValues } from '@/lib/validations/phase'
-import type { ProjectFormValues } from '@/lib/validations/project'
 import type { TaskFormValues } from '@/lib/validations/task'
 import type { Phase } from '@/types/database'
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { profile } = useAuth()
-  const { t, dir } = useTranslation()
+  const { profile, user } = useAuth()
+  const { t, locale, dir } = useTranslation()
   const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft
   const {
     data: project,
@@ -76,9 +99,14 @@ export function ProjectDetailPage() {
   } = useTasks(projectId)
   useProjectRealtime(projectId)
 
-  const isWbsLoading = isPhasesLoading || isTasksLoading
-  const wbsError = phasesError ?? tasksError
-  const isWbsFetching = isPhasesFetching || isTasksFetching
+  const isProposalMode = project
+    ? isProposalReviewStatus(project.status)
+    : false
+  const showWbs = project ? canViewWbs(project.status) : false
+
+  const isWbsLoading = showWbs && (isPhasesLoading || isTasksLoading)
+  const wbsError = showWbs ? (phasesError ?? tasksError) : null
+  const isWbsFetching = showWbs && (isPhasesFetching || isTasksFetching)
 
   const refetchWbs = () => {
     void refetchPhases()
@@ -92,6 +120,8 @@ export function ProjectDetailPage() {
   const updateTask = useUpdateTask(projectId)
   const deleteTask = useDeleteTask(projectId)
   const updateProject = useUpdateProject()
+  const approveProject = useApproveProject()
+  const rejectProject = useRejectProject()
 
   const [phaseDialogOpen, setPhaseDialogOpen] = useState(false)
   const [editingPhase, setEditingPhase] = useState<Phase | null>(null)
@@ -99,6 +129,7 @@ export function ProjectDetailPage() {
   const [editingTask, setEditingTask] = useState<TaskListItem | null>(null)
   const [activePhaseId, setActivePhaseId] = useState<string | null>(null)
   const [projectDialogOpen, setProjectDialogOpen] = useState(false)
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
 
   const tasksByPhase = useMemo(() => {
     const grouped = new Map<string, TaskListItem[]>()
@@ -122,12 +153,19 @@ export function ProjectDetailPage() {
     Boolean(profile?.factory_id) &&
     project !== undefined &&
     canEditProjectDetails(project.status)
+  const canReviewAsPm = project
+    ? canApproveAsAssignedPm(project, profile)
+    : false
+  const canManageAttachments =
+    canEditDetails &&
+    project !== undefined &&
+    canManageProjectAttachments(project.status)
+  const notAvailable = t('common.notAvailable')
+  const isReviewing = approveProject.isPending || rejectProject.isPending
 
-  if (!isProjectLoading && project && !canViewWbs(project.status)) {
-    return <Navigate to="/projects" replace />
-  }
-
-  const handleSaveProjectDetails = async (values: ProjectFormValues) => {
+  const handleSaveProjectDetails = async ({
+    values,
+  }: ProjectFormSubmitPayload) => {
     if (!project) {
       return
     }
@@ -137,6 +175,36 @@ export function ProjectDetailPage() {
       toast.success(t('projects.updated'))
     } catch (submitError) {
       toastMutationError(submitError, t('projects.updateFailed'))
+      throw submitError
+    }
+  }
+
+  const handleApprove = async () => {
+    if (!project || !user?.id) {
+      return
+    }
+
+    try {
+      await approveProject.mutateAsync({ id: project.id, userId: user.id })
+      toast.success(t('projects.proposalApproved'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.approveFailed'))
+    }
+  }
+
+  const handleReject = async (values: ProjectRejectValues) => {
+    if (!project) {
+      return
+    }
+
+    try {
+      await rejectProject.mutateAsync({
+        id: project.id,
+        rejectionReason: values.rejection_reason,
+      })
+      toast.success(t('projects.proposalRejected'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.rejectFailed'))
       throw submitError
     }
   }
@@ -246,29 +314,66 @@ export function ProjectDetailPage() {
               <span className="flex flex-wrap items-center gap-3">
                 <span>{project.title}</span>
                 <ProjectStatusBadge status={project.status} />
-                <span className="text-sm font-normal text-muted-foreground">
-                  {t('projectDetail.progressLabel', {
-                    value: formatProgress(Number(project.progress_percent)),
-                  })}
-                </span>
+                {showWbs ? (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {t('projectDetail.progressLabel', {
+                      value: formatProgress(Number(project.progress_percent)),
+                    })}
+                  </span>
+                ) : null}
               </span>
             }
             actions={
-              canEditDetails ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setProjectDialogOpen(true)}
-                >
-                  {t('common.edit')}
-                </Button>
-              ) : undefined
+              <div className="flex flex-wrap gap-2">
+                {canReviewAsPm ? (
+                  <>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={isReviewing}
+                      onClick={() => void handleApprove()}
+                    >
+                      <Check className="size-4" />
+                      {t('common.approve')}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      disabled={isReviewing}
+                      onClick={() => setRejectDialogOpen(true)}
+                    >
+                      <X className="size-4" />
+                      {t('common.reject')}
+                    </Button>
+                  </>
+                ) : null}
+                {canEditDetails ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setProjectDialogOpen(true)}
+                  >
+                    {t('common.edit')}
+                  </Button>
+                ) : null}
+              </div>
             }
             description={
               <span className="flex flex-col gap-2">
                 {project.description ? (
                   <span>{project.description}</span>
+                ) : null}
+                {project.status === 'proposed' ? (
+                  <span className="text-sm text-muted-foreground">
+                    {t('projects.awaitingPmReview')}
+                  </span>
+                ) : null}
+                {project.status === 'rejected' && project.rejection_reason ? (
+                  <span className="text-sm text-destructive">
+                    {t('projects.rejectedPrefix')} {project.rejection_reason}
+                  </span>
                 ) : null}
                 <span className="flex flex-wrap gap-x-4 gap-y-1">
                   {project.factories ? (
@@ -293,7 +398,83 @@ export function ProjectDetailPage() {
         ) : null}
       </QueryState>
 
-      {project && projectId ? (
+      {project && projectId && isProposalMode ? (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('projects.proposalSummary')}</CardTitle>
+              <CardDescription>{t('projects.formDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('common.budget')}
+                </span>
+                <span className="font-medium">
+                  {formatLocalizedBudget(
+                    project.budget,
+                    project.currency,
+                    locale,
+                    notAvailable,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('common.timeline')}
+                </span>
+                <span className="font-medium">
+                  {formatLocalizedDate(
+                    project.proposed_start_date,
+                    locale,
+                    notAvailable,
+                  )}{' '}
+                  →{' '}
+                  {formatLocalizedDate(
+                    project.proposed_end_date,
+                    locale,
+                    notAvailable,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.pm')}
+                </span>
+                <span className="font-medium">
+                  {project.assigned_pm?.full_name ?? notAvailable}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <ProjectAttachmentsPanel
+            projectId={projectId}
+            canManage={canManageAttachments}
+          />
+
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('projects.proposalDiscussion')}</CardTitle>
+                <CardDescription>
+                  {t('projects.proposalDiscussionDescription')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CommentThread
+                  entityType="project"
+                  entityId={projectId}
+                  title=""
+                  canComment={Boolean(profile)}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      ) : null}
+
+      {project && projectId && showWbs ? (
         <QueryState
           isLoading={isWbsLoading}
           error={wbsError}
@@ -318,6 +499,9 @@ export function ProjectDetailPage() {
               </TabsTrigger>
               <TabsTrigger value="activity">
                 {t('projectDetail.tabs.activity')}
+              </TabsTrigger>
+              <TabsTrigger value="attachments">
+                {t('projects.attachments.title')}
               </TabsTrigger>
             </TabsList>
 
@@ -361,6 +545,13 @@ export function ProjectDetailPage() {
                 canComment={canManage || Boolean(profile)}
               />
             </TabsContent>
+
+            <TabsContent value="attachments" className="mt-4">
+              <ProjectAttachmentsPanel
+                projectId={projectId}
+                canManage={canManageAttachments}
+              />
+            </TabsContent>
           </Tabs>
         </QueryState>
       ) : null}
@@ -375,6 +566,16 @@ export function ProjectDetailPage() {
           onSaveDraft={handleSaveProjectDetails}
           onSubmitProposal={handleSaveProjectDetails}
           isSubmitting={updateProject.isPending}
+        />
+      ) : null}
+
+      {canReviewAsPm ? (
+        <ProjectRejectDialog
+          open={rejectDialogOpen}
+          onOpenChange={setRejectDialogOpen}
+          projectTitle={project?.title ?? null}
+          onSubmit={handleReject}
+          isSubmitting={rejectProject.isPending}
         />
       ) : null}
 

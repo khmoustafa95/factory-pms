@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { FormFieldError } from '@/components/FormFieldError'
+import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -22,6 +24,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useActiveCurrencies } from '@/hooks/useCurrencies'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
@@ -35,6 +38,11 @@ import {
 } from '@/lib/validations/project'
 import type { Project } from '@/types/database'
 
+export interface ProjectFormSubmitPayload {
+  values: ProjectFormValues
+  files: File[]
+}
+
 interface ProjectFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -42,8 +50,8 @@ interface ProjectFormDialogProps {
   factoryId: string | null | undefined
   /** When false, only a Save action is shown (no draft/submit proposal). */
   allowSubmitProposal?: boolean
-  onSaveDraft: (values: ProjectFormValues) => Promise<void>
-  onSubmitProposal: (values: ProjectFormValues) => Promise<void>
+  onSaveDraft: (payload: ProjectFormSubmitPayload) => Promise<void>
+  onSubmitProposal: (payload: ProjectFormSubmitPayload) => Promise<void>
   isSubmitting: boolean
 }
 
@@ -51,7 +59,7 @@ const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
   title: '',
   description: '',
   budget: '',
-  currency: 'SAR',
+  currency: 'USD',
   proposed_start_date: undefined,
   proposed_end_date: undefined,
   assigned_pm_id: null,
@@ -68,8 +76,10 @@ export function ProjectFormDialog({
   isSubmitting,
 }: ProjectFormDialogProps) {
   const { t, locale } = useTranslation()
+  const { data: currencies = [] } = useActiveCurrencies()
   const { data: projectManagers = [] } = useFactoryProjectManagers(factoryId)
   const projectFormSchema = useValidationSchema(createProjectFormSchema)
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
 
   const { form, createSubmitHandler } = useFormDialog({
     open,
@@ -79,7 +89,7 @@ export function ProjectFormDialog({
       title: project?.title ?? '',
       description: project?.description ?? '',
       budget: project?.budget != null ? String(project.budget) : '',
-      currency: project?.currency ?? 'SAR',
+      currency: project?.currency ?? 'USD',
       proposed_start_date: project?.proposed_start_date ?? undefined,
       proposed_end_date: project?.proposed_end_date ?? undefined,
       assigned_pm_id: project?.assigned_pm_id ?? null,
@@ -87,18 +97,39 @@ export function ProjectFormDialog({
     resetDependencies: [project],
   })
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setPendingFiles([])
+    }
+    onOpenChange(nextOpen)
+  }
+
+  const selectedCurrency = useWatch({
+    control: form.control,
+    name: 'currency',
+  })
   const selectedPmId = useWatch({
     control: form.control,
     name: 'assigned_pm_id',
   })
 
-  const closeDialog = () => onOpenChange(false)
-  const saveDraft = createSubmitHandler(onSaveDraft, closeDialog)
-  const submitProposal = createSubmitHandler(onSubmitProposal, closeDialog)
+  const closeDialog = () => {
+    setPendingFiles([])
+    onOpenChange(false)
+  }
+
+  const saveDraft = createSubmitHandler(
+    (values) => onSaveDraft({ values, files: pendingFiles }),
+    closeDialog,
+  )
+  const submitProposal = createSubmitHandler(
+    (values) => onSubmitProposal({ values, files: pendingFiles }),
+    closeDialog,
+  )
   const isDetailsEdit = Boolean(project) && !allowSubmitProposal
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
@@ -148,13 +179,28 @@ export function ProjectFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="project-currency">{t('projects.currency')}</Label>
-              <Input
-                id="project-currency"
-                className="uppercase"
-                maxLength={3}
-                {...form.register('currency')}
-              />
+              <Label>{t('projects.currency')}</Label>
+              <Select
+                value={selectedCurrency}
+                onValueChange={(value) =>
+                  form.setValue('currency', value, { shouldDirty: true })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.id} value={c.code}>
+                      {c.code}
+                      {c.symbol ? ` (${c.symbol})` : ''}
+                    </SelectItem>
+                  ))}
+                  {currencies.length === 0 ? (
+                    <SelectItem value="USD">USD ($)</SelectItem>
+                  ) : null}
+                </SelectContent>
+              </Select>
               <FormFieldError error={form.formState.errors.currency} />
             </div>
           </div>
@@ -204,7 +250,20 @@ export function ProjectFormDialog({
                 ))}
               </SelectContent>
             </Select>
+            {allowSubmitProposal ? (
+              <p className="text-xs text-muted-foreground">
+                {t('projects.pmRequiredToSubmit')}
+              </p>
+            ) : null}
           </div>
+
+          {allowSubmitProposal ? (
+            <ProposalFilePicker
+              files={pendingFiles}
+              onChange={setPendingFiles}
+              disabled={isSubmitting}
+            />
+          ) : null}
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button

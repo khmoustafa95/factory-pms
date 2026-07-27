@@ -315,6 +315,93 @@ export interface Database {
         }
         Relationships: []
       }
+      currencies: {
+        Row: {
+          id: string
+          code: string
+          name_en: string
+          name_ar: string
+          symbol: string
+          is_default: boolean
+          is_active: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          name_en: string
+          name_ar: string
+          symbol?: string
+          is_default?: boolean
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          code?: string
+          name_en?: string
+          name_ar?: string
+          symbol?: string
+          is_default?: boolean
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_attachments: {
+        Row: {
+          id: string
+          project_id: string
+          uploaded_by: string
+          file_name: string
+          storage_path: string
+          mime_type: string | null
+          file_size_bytes: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          uploaded_by: string
+          file_name: string
+          storage_path: string
+          mime_type?: string | null
+          file_size_bytes?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          uploaded_by?: string
+          file_name?: string
+          storage_path?: string
+          mime_type?: string | null
+          file_size_bytes?: number | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_attachments_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'project_attachments_uploaded_by_fkey'
+            columns: ['uploaded_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       comments: {
         Row: {
           id: string
@@ -424,6 +511,11 @@ export type Project = Database['public']['Tables']['projects']['Row']
 export type Phase = Database['public']['Tables']['phases']['Row']
 export type Task = Database['public']['Tables']['tasks']['Row']
 export type Comment = Database['public']['Tables']['comments']['Row']
+export type Currency = Database['public']['Tables']['currencies']['Row']
+export type CurrencyInsert =
+  Database['public']['Tables']['currencies']['Insert']
+export type CurrencyUpdate =
+  Database['public']['Tables']['currencies']['Update']
 
 export type {
   CommentListItem,

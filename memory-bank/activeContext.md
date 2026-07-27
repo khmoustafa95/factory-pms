@@ -2,16 +2,17 @@
 
 ## Current focus
 
-**Factory manager project editing** — FM can update project details beyond draft/rejected (list + detail).
+**PM-centric proposal review** — Factory manager submits proposals with supporting files; assigned project manager discusses and approves/rejects.
 
 ## Recent changes
 
-- [2026-07-26] Factory managers can edit project info (title, description, budget, dates, PM) for all statuses except completed; edit on list + detail page
-- [2026-07-26] Fixed Activity tab crash: unique Realtime channel names + removed duplicate `useCommentsRealtime` in `ProjectActivityTab`
-- [2026-07-26] Implemented account create/reset: Edge Function `manage-account`, RLS for FM→PM updates, Accounts UI for director + factory manager, `revoke_user_sessions` on password reset
-- [2026-07-26] Audited RBAC vs requested capabilities
-- [2026-07-26] Fixed RTL alignment across app
-- [2026-07-26] Design system / sidebar / seed / login fixes (see progress changelog)
+- [2026-07-27] Proposal approval actor moved from company director → assigned project manager
+- [2026-07-27] Added `project_attachments` table + private `project-attachments` storage bucket
+- [2026-07-27] Proposal detail view for draft/proposed/rejected (summary, files, comment discussion)
+- [2026-07-27] Submit requires `assigned_pm_id`; DB check `projects_proposed_requires_pm`
+- [2026-07-27] Changed default currency from SAR to USD; seed data from Saudi → Syrian (Damascus, Aleppo, Homs)
+- [2026-07-27] Added `currencies` table with migration, RLS, full CRUD hooks
+- [2026-07-27] Settings page: Account tab (all roles), General tab + Currencies tab (director only)
 
 ## Next steps (concrete)
 
@@ -22,3 +23,4 @@
 ## Open questions
 
 - Hosting target (Vercel vs Netlify)
+- Whether company director should retain a secondary approve override (currently view-only for proposals; RLS still allows director ALL)

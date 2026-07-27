@@ -17,8 +17,8 @@
 - [x] Typed `src/types/database.ts` matching migration
 - [x] Auth UI + session handling + role-aware routing
 - [x] FT-01 Factories & accounts (director CRUD + account create/password reset via Edge Function; FM manages PMs)
-- [x] FT-02 Project proposals (factory manager draft/submit; role-scoped list)
-- [x] FT-03 Approval workflow (director approve/reject with reason)
+- [x] FT-02 Project proposals (factory manager draft/submit + supporting files; role-scoped list)
+- [x] FT-03 Approval workflow (assigned PM approve/reject with reason; discussion comments)
 - [x] Env scripts: Vite modes (local/staging/production) + Supabase local CLI scripts
 - [x] i18n: Arabic + English, RTL, locale persistence, translated UI copy
 - [x] Theme: light / dark / system toggle with next-themes
@@ -48,6 +48,24 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-27 (session 33)
+
+- PM proposal review workflow: FM submits with supporting files + required assigned PM; PM reviews detail (summary, attachments, comments) then approve/reject
+- Migration `20260727110000_project_proposal_attachments.sql`: `project_attachments`, private storage bucket, `can_access_project()`, PM update on `proposed`, `projects_proposed_requires_pm`
+- UI: proposal detail mode on `/projects/:id` for draft/proposed/rejected; list approve/reject for assigned PM (not director)
+- Seed: proposed solar project assigned to Ahmed PM
+- i18n: updated proposal copy (ar/en) for PM review + attachments
+
+### 2026-07-27 (session 32)
+
+- Changed default currency SAR → USD; seed data localized to Syria (Damascus, Aleppo, Homs factories)
+- Added `currencies` table (migration `20260727100000_currencies_table.sql`) with RLS (director CRUD, all read)
+- Settings page now accessible to all roles; default tab is Account (view/edit full name, read-only email/role)
+- Director-only tabs: General (branding), Currencies (add/edit/delete/set default)
+- ProjectFormDialog currency field uses Select from active currencies instead of free text input
+- Added `useCurrencies`, `useActiveCurrencies`, `useCreateCurrency`, `useUpdateCurrency`, `useDeleteCurrency` hooks
+- i18n: added `settings.account.*`, `settings.currencies.*` keys for ar/en
 
 ### 2026-07-26 (session 31)
 

@@ -105,7 +105,9 @@ export function CommentThread({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      {title ? (
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      ) : null}
 
       <QueryState
         isLoading={isLoading}

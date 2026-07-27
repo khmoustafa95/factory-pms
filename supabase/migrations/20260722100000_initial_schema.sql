@@ -80,7 +80,7 @@ create table public.projects (
   description text,
   status public.project_status not null default 'draft',
   budget numeric(14, 2),
-  currency text not null default 'SAR',
+  currency text not null default 'USD',
   proposed_start_date date,
   proposed_end_date date,
   actual_start_date date,

@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-07-27 — Proposal approval is owned by the **assigned project manager** (not company director). Supporting files live in private Storage bucket `project-attachments` + `project_attachments` rows; signed URLs for download. Proposed status requires `assigned_pm_id` (DB check). Director retains ALL RLS for oversight but UI review actions are PM-only.
 - 2026-07-26 — Account provisioning via `manage-account` Edge Function (service role) + SPA Accounts UI — directors create FM/PM; factory managers create PM for their factory; password reset calls `revoke_user_sessions`. Auth Admin `app_metadata` custom keys are unreliable on insert — `handle_new_user` also reads `user_metadata.user_role` / `factory_id`.
 - 2026-07-26 — App chrome follows Linear/Notion patterns: soft sidebar active state, user block + sign-out as menu rows (not outline CTA), single `PageHeader` + `app-panel` surface for list chrome, utilities in top bar end.
 - 2026-07-26 — App chrome uses shadcn `Sidebar` (`collapsible="icon"`) instead of a top nav bar — more space for content, persists collapse via cookie, RTL `side="right"`, mobile Sheet; brand stays in `SidebarHeader`.

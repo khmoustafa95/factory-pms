@@ -237,9 +237,9 @@ export function AppLayout() {
             label: t('nav.factories'),
             icon: Building2,
           },
-          { to: '/settings', label: t('nav.settings'), icon: Settings },
         ]
       : []),
+    { to: '/settings', label: t('nav.settings'), icon: Settings },
   ]
 
   return (

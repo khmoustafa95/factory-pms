@@ -211,8 +211,11 @@ export function useApproveProject() {
 
       return data
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
     },
   })
 }
@@ -248,8 +251,11 @@ export function useRejectProject() {
 
       return data
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
     },
   })
 }
