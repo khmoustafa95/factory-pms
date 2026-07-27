@@ -37,6 +37,8 @@
 - [x] Clean code phase 2: `PaginatedListPage`, `EscalationFormDialog`, `FormCheckboxField`, `form-utils`, `supabase-joins`
 - [x] Clean code phase 3: `fetchPaginatedList`, `useFormDialog`, `types/joins.ts` canonical join types + select strings
 
+- [x] Codebase audit: migration consolidation, security hardening, integration/cache fixes
+
 ## Backlog
 
 - [ ] Apply migration to live Supabase project + verify RLS
@@ -48,6 +50,22 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-07-27 (session 36)
+
+- Terminology update only (no behavior changes): user-facing "Escalations" renamed to "Critical alerts" (`التنبيهات الحرجة`) in `ar/en` locale copy (nav, dashboard cards, action labels, dialog text, and validation messages)
+- `npm run verify` passed (typecheck + lint)
+
+### 2026-07-27 (session 35)
+
+- **Migration consolidation (12 → 8):** merged `handle_new_user` chain into `20260722110000`; FM profile policy into same; `revoke_user_sessions` → `20260727120000`; `grant_api_privileges` → `20260727130000` (last, with revokes on `recalculate_project_progress` + trigger fns)
+- **Security:** `grant_api_privileges` no longer re-exposes internal recalc functions; anon limited to `app_settings`/`currencies` SELECT; SVG removed from logo MIME allowlist; `is_auth_active()` on currencies + app_settings director policies
+- **Proposal backfill:** proposed projects without factory PM revert to `draft` instead of failing CHECK constraint
+- **Auth:** `refreshProfile()`; `isLoading` during `onAuthStateChange` (fixes login bounce); profile set on `signIn`
+- **Integration:** attachment upload invalidates cache; factory mutations invalidate paginated list; activity tab `canComment` uses `canManage`; dashboard accounts card for factory managers
+- **Performance:** `usePhases`/`useTasks`/`useProjectRealtime` gated when WBS hidden; narrowed realtime invalidation (no global projects/escalations on every task tick)
+- **Cleanup:** removed dead `HomePage.tsx`, unused `canEditProject()`; comment/escalation max length validation; settings tabs error/retry UI
+- `npm run verify` + `npm test` clean (27 tests)
 
 ### 2026-07-27 (session 34)
 

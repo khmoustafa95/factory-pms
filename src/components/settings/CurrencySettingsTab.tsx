@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { QueryState } from '@/components/QueryState'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,7 +45,13 @@ type CurrencyFormValues = z.infer<typeof currencySchema>
 
 export function CurrencySettingsTab() {
   const { t, locale } = useTranslation()
-  const { data: currencies = [], isLoading } = useCurrencies()
+  const {
+    data: currencies = [],
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useCurrencies()
   const createCurrency = useCreateCurrency()
   const updateCurrency = useUpdateCurrency()
   const deleteCurrency = useDeleteCurrency()
@@ -172,79 +179,84 @@ export function CurrencySettingsTab() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">
-              {t('common.loading')}
-            </p>
-          ) : currencies.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t('settings.currencies.empty')}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {currencies.map((currency) => (
-                <div
-                  key={currency.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-sm font-medium">
-                      {currency.code}
-                    </span>
-                    {currency.symbol ? (
-                      <span className="text-muted-foreground">
-                        ({currency.symbol})
+          <QueryState
+            isLoading={isLoading}
+            error={error}
+            onRetry={() => void refetch()}
+            isRetrying={isFetching}
+            loadingMessage={t('common.loading')}
+            errorMessage={t('settings.currencies.loadFailed')}
+          >
+            {currencies.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t('settings.currencies.empty')}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {currencies.map((currency) => (
+                  <div
+                    key={currency.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-sm font-medium">
+                        {currency.code}
                       </span>
-                    ) : null}
-                    <span className="text-sm">
-                      {locale === 'ar' ? currency.name_ar : currency.name_en}
-                    </span>
-                    {currency.is_default ? (
-                      <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                    ) : null}
-                    {!currency.is_active ? (
-                      <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                        {t('common.inactive')}
+                      {currency.symbol ? (
+                        <span className="text-muted-foreground">
+                          ({currency.symbol})
+                        </span>
+                      ) : null}
+                      <span className="text-sm">
+                        {locale === 'ar' ? currency.name_ar : currency.name_en}
                       </span>
-                    ) : null}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {!currency.is_default ? (
+                      {currency.is_default ? (
+                        <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                      ) : null}
+                      {!currency.is_active ? (
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                          {t('common.inactive')}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {!currency.is_default ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          disabled={isMutating}
+                          onClick={() => void handleSetDefault(currency)}
+                          title={t('settings.currencies.setDefault')}
+                        >
+                          <Star className="size-4" />
+                        </Button>
+                      ) : null}
                       <Button
                         variant="ghost"
                         size="icon"
                         className="size-8"
-                        disabled={isMutating}
-                        onClick={() => void handleSetDefault(currency)}
-                        title={t('settings.currencies.setDefault')}
+                        onClick={() => openEdit(currency)}
                       >
-                        <Star className="size-4" />
+                        <Pencil className="size-4" />
                       </Button>
-                    ) : null}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => openEdit(currency)}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    {!currency.is_default ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-destructive"
-                        disabled={isMutating}
-                        onClick={() => void handleDelete(currency)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    ) : null}
+                      {!currency.is_default ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 text-destructive"
+                          disabled={isMutating}
+                          onClick={() => void handleDelete(currency)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </QueryState>
         </CardContent>
       </Card>
 

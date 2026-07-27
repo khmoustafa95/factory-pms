@@ -75,7 +75,7 @@ export function useCreateFactory() {
       return data
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.factories })
+      await queryClient.invalidateQueries({ queryKey: ['factories'] })
     },
   })
 }
@@ -106,7 +106,7 @@ export function useUpdateFactory() {
       return data
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.factories })
+      await queryClient.invalidateQueries({ queryKey: ['factories'] })
     },
   })
 }

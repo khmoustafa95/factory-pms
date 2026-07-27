@@ -1,6 +1,7 @@
 import { Check, Eye, Layers, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
@@ -20,6 +21,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { uploadProjectAttachments } from '@/hooks/useProjectAttachments'
+import { queryKeys } from '@/lib/query-keys'
 import {
   useApproveProject,
   useCreateProject,
@@ -66,6 +68,7 @@ const PROJECT_STATUS_FILTERS: ProjectStatus[] = [
 export function ProjectsPage() {
   const { t, locale } = useTranslation()
   const { profile, user } = useAuth()
+  const queryClient = useQueryClient()
   const listState = useListQueryState({ status: 'all', factoryId: 'all' })
   const { data: factories = [] } = useFactories()
   const { data, isLoading, error, refetch, isFetching } = useProjectsPage({
@@ -130,6 +133,9 @@ export function ProjectsPage() {
       projectId,
       userId: user.id,
       files,
+    })
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.projectAttachments(projectId),
     })
   }
 

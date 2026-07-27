@@ -84,26 +84,27 @@ export function ProjectDetailPage() {
     refetch: refetchProject,
     isFetching: isProjectFetching,
   } = useProject(projectId)
+
+  const isProposalMode = project
+    ? isProposalReviewStatus(project.status)
+    : false
+  const showWbs = project ? canViewWbs(project.status) : false
+
   const {
     data: phases = [],
     isLoading: isPhasesLoading,
     error: phasesError,
     refetch: refetchPhases,
     isFetching: isPhasesFetching,
-  } = usePhases(projectId)
+  } = usePhases(projectId, showWbs)
   const {
     data: tasks = [],
     isLoading: isTasksLoading,
     error: tasksError,
     refetch: refetchTasks,
     isFetching: isTasksFetching,
-  } = useTasks(projectId)
-  useProjectRealtime(projectId)
-
-  const isProposalMode = project
-    ? isProposalReviewStatus(project.status)
-    : false
-  const showWbs = project ? canViewWbs(project.status) : false
+  } = useTasks(projectId, showWbs)
+  useProjectRealtime(projectId, showWbs)
 
   const isWbsLoading = showWbs && (isPhasesLoading || isTasksLoading)
   const wbsError = showWbs ? (phasesError ?? tasksError) : null
@@ -549,7 +550,7 @@ export function ProjectDetailPage() {
             <TabsContent value="activity" className="mt-4">
               <ProjectActivityTab
                 projectId={projectId}
-                canComment={canManage || Boolean(profile)}
+                canComment={canManage}
               />
             </TabsContent>
 

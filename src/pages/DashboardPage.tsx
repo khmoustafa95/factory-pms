@@ -102,42 +102,42 @@ export function DashboardPage() {
       </QueryState>
 
       <StaggerGroup className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {isCompanyDirector(profile?.role) ? (
-          <>
-            <Card interactive>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Building2 className="size-4 text-muted-foreground" />
-                  {t('dashboard.factoriesTitle')}
-                </CardTitle>
-                <CardDescription>
-                  {t('dashboard.factoriesDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/factories">{t('common.openFactories')}</Link>
-                </Button>
-              </CardContent>
-            </Card>
+        {isDirector ? (
+          <Card interactive>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Building2 className="size-4 text-muted-foreground" />
+                {t('dashboard.factoriesTitle')}
+              </CardTitle>
+              <CardDescription>
+                {t('dashboard.factoriesDescription')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/factories">{t('common.openFactories')}</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
-            <Card interactive>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Users className="size-4 text-muted-foreground" />
-                  {t('dashboard.accountsTitle')}
-                </CardTitle>
-                <CardDescription>
-                  {t('dashboard.accountsDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/accounts">{t('common.manageAccounts')}</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </>
+        {isDirector || isManager ? (
+          <Card interactive>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="size-4 text-muted-foreground" />
+                {t('dashboard.accountsTitle')}
+              </CardTitle>
+              <CardDescription>
+                {t('dashboard.accountsDescription')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/accounts">{t('common.manageAccounts')}</Link>
+              </Button>
+            </CardContent>
+          </Card>
         ) : null}
 
         <Card interactive>

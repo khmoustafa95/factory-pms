@@ -21,16 +21,12 @@ export const PROJECT_DETAILS_EDITABLE_STATUSES: ProjectStatus[] = [
   'paused',
 ]
 
-export function canEditProject(status: ProjectStatus): boolean {
+export function canSubmitProject(status: ProjectStatus): boolean {
   return PROPOSAL_EDITABLE_STATUSES.includes(status)
 }
 
 export function canEditProjectDetails(status: ProjectStatus): boolean {
   return PROJECT_DETAILS_EDITABLE_STATUSES.includes(status)
-}
-
-export function canSubmitProject(status: ProjectStatus): boolean {
-  return status === 'draft' || status === 'rejected'
 }
 
 export function canReviewProject(status: ProjectStatus): boolean {

@@ -17,8 +17,8 @@ as $$
   );
 $$;
 
--- Role comes from app_metadata (admin/service-role only), never user_metadata.
--- Factory-scoped roles require factory_id in app_metadata at provision time.
+-- Role/factory from app_metadata and user_metadata (Edge Function provisioning).
+-- Avoid colliding with Auth JWT `role` claim (authenticated).
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -26,20 +26,44 @@ security definer
 set search_path = public
 as $$
 declare
+  v_role_text text;
   v_role public.user_role;
   v_factory_id uuid;
 begin
-  v_role := coalesce(
-    nullif(new.raw_app_meta_data ->> 'role', '')::public.user_role,
+  v_role_text := coalesce(
+    nullif(new.raw_app_meta_data ->> 'user_role', ''),
+    nullif(new.raw_user_meta_data ->> 'user_role', ''),
+    nullif(new.raw_user_meta_data ->> 'role', ''),
+    case
+      when (new.raw_app_meta_data ->> 'role') in (
+        'company_director',
+        'factory_manager',
+        'project_manager'
+      ) then new.raw_app_meta_data ->> 'role'
+      else null
+    end,
     'project_manager'
   );
 
-  v_factory_id := nullif(new.raw_app_meta_data ->> 'factory_id', '')::uuid;
+  if v_role_text not in (
+    'company_director',
+    'factory_manager',
+    'project_manager'
+  ) then
+    v_role := 'project_manager';
+  else
+    v_role := v_role_text::public.user_role;
+  end if;
+
+  v_factory_id := coalesce(
+    nullif(new.raw_app_meta_data ->> 'factory_id', '')::uuid,
+    nullif(new.raw_user_meta_data ->> 'factory_id', '')::uuid
+  );
 
   if v_role = 'company_director' then
     v_factory_id := null;
   elsif v_factory_id is null then
-    raise exception 'User provisioning requires factory_id in app_metadata for role %', v_role
+    raise exception 'User provisioning requires factory_id in metadata for role %', v_role
       using errcode = 'check_violation';
   end if;
 
@@ -326,3 +350,22 @@ drop policy if exists "Authors delete own comments" on public.comments;
 create policy "Authors delete own comments"
   on public.comments for delete
   using (public.is_auth_active() and author_id = auth.uid());
+
+-- Factory managers may update project-manager profiles in their factory.
+drop policy if exists "Factory managers manage factory project managers"
+  on public.profiles;
+
+create policy "Factory managers manage factory project managers"
+  on public.profiles for update
+  using (
+    public.is_auth_active()
+    and public.get_auth_role() = 'factory_manager'
+    and role = 'project_manager'
+    and factory_id = public.get_auth_factory_id()
+  )
+  with check (
+    public.is_auth_active()
+    and public.get_auth_role() = 'factory_manager'
+    and role = 'project_manager'
+    and factory_id = public.get_auth_factory_id()
+  );

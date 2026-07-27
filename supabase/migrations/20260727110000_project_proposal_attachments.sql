@@ -30,7 +30,7 @@ comment on table public.project_attachments is
   'Supporting files for project proposals (budget sheets, workforce plans, etc.)';
 
 -- Proposed projects must have an assigned PM so they can review/approve.
--- Backfill any existing proposed rows that lack a PM (assign first factory PM).
+-- Backfill existing proposed rows; revert to draft when no PM exists in the factory.
 update public.projects p
 set assigned_pm_id = (
   select pr.id
@@ -42,7 +42,19 @@ set assigned_pm_id = (
   limit 1
 )
 where p.status = 'proposed'
-  and p.assigned_pm_id is null;
+  and p.assigned_pm_id is null
+  and exists (
+    select 1
+    from public.profiles pr
+    where pr.factory_id = p.factory_id
+      and pr.role = 'project_manager'
+      and pr.is_active = true
+  );
+
+update public.projects
+set status = 'draft'
+where status = 'proposed'
+  and assigned_pm_id is null;
 
 alter table public.projects
   drop constraint if exists projects_proposed_requires_pm;

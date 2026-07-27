@@ -42,8 +42,8 @@ create policy "Company directors can update app settings"
   on public.app_settings
   for update
   to authenticated
-  using (public.is_company_director())
-  with check (public.is_company_director());
+  using (public.is_company_director() and public.is_auth_active())
+  with check (public.is_company_director() and public.is_auth_active());
 
 -- Public bucket for app logo and other branding assets
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -52,7 +52,7 @@ values (
   'app-assets',
   true,
   2097152,
-  array['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+  array['image/png', 'image/jpeg', 'image/webp']
 )
 on conflict (id) do nothing;
 
@@ -69,6 +69,7 @@ create policy "Company directors can upload app assets"
   with check (
     bucket_id = 'app-assets'
     and public.is_company_director()
+    and public.is_auth_active()
   );
 
 create policy "Company directors can update app assets"
@@ -78,10 +79,12 @@ create policy "Company directors can update app assets"
   using (
     bucket_id = 'app-assets'
     and public.is_company_director()
+    and public.is_auth_active()
   )
   with check (
     bucket_id = 'app-assets'
     and public.is_company_director()
+    and public.is_auth_active()
   );
 
 create policy "Company directors can delete app assets"
@@ -91,4 +94,5 @@ create policy "Company directors can delete app assets"
   using (
     bucket_id = 'app-assets'
     and public.is_company_director()
+    and public.is_auth_active()
   );

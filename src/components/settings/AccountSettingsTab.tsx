@@ -26,7 +26,7 @@ type AccountFormValues = z.infer<typeof accountSchema>
 
 export function AccountSettingsTab() {
   const { t } = useTranslation()
-  const { profile, user } = useAuth()
+  const { profile, user, refreshProfile } = useAuth()
 
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
@@ -50,6 +50,7 @@ export function AccountSettingsTab() {
         .eq('id', user.id)
 
       if (error) throw error
+      await refreshProfile()
       toast.success(t('settings.account.saved'))
     } catch (error) {
       const message =

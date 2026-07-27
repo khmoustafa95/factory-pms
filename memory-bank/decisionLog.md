@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-07-27 — Squashed iterative `20260726` migrations into base security/auth migrations; `grant_api_privileges` runs **last** with explicit `REVOKE EXECUTE` on `recalculate_project_progress` and trigger helpers — blanket function grants had re-opened SECURITY DEFINER internals to authenticated clients.
+- 2026-07-27 — Disallow SVG in `app-assets` public bucket — SVG in public storage is an XSS/phishing vector when opened directly; raster formats only (PNG/JPEG/WebP).
 - 2026-07-27 — Proposal **discussion** is company director ↔ factory manager; **approval** is by company director. Assigned PM is required on submit for execution after approval (not the proposal discussant/approver). Supporting files remain in `project-attachments`.
 - 2026-07-26 — Account provisioning via `manage-account` Edge Function (service role) + SPA Accounts UI — directors create FM/PM; factory managers create PM for their factory; password reset calls `revoke_user_sessions`. Auth Admin `app_metadata` custom keys are unreliable on insert — `handle_new_user` also reads `user_metadata.user_role` / `factory_id`.
 - 2026-07-26 — App chrome follows Linear/Notion patterns: soft sidebar active state, user block + sign-out as menu rows (not outline CTA), single `PageHeader` + `app-panel` surface for list chrome, utilities in top bar end.

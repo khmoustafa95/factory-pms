@@ -20,6 +20,7 @@ interface AuthContextValue {
   isConfigured: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -115,10 +116,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (!isMounted) {
+        return
+      }
+
+      setIsLoading(true)
       setSession(nextSession)
 
       if (!nextSession?.user) {
         setProfile(null)
+        setIsLoading(false)
         return
       }
 
@@ -132,6 +139,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isMounted) {
             setSession(null)
             setProfile(null)
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setIsLoading(false)
           }
         })
     })
@@ -157,8 +169,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new AuthError('NO_PROFILE')
     }
 
-    await assertActiveProfile(supabase, data.user.id)
+    const nextProfile = await assertActiveProfile(supabase, data.user.id)
+    setProfile(nextProfile)
   }, [])
+
+  const refreshProfile = useCallback(async () => {
+    if (!isConfigured) {
+      return
+    }
+
+    const userId = session?.user?.id
+    if (!userId) {
+      return
+    }
+
+    const nextProfile = await fetchProfile(userId)
+    setProfile(nextProfile)
+  }, [isConfigured, session?.user?.id])
 
   const signOut = useCallback(async () => {
     const supabase = getSupabase()
@@ -178,8 +205,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isConfigured,
       signIn,
       signOut,
+      refreshProfile,
     }),
-    [session, profile, isLoading, isConfigured, signIn, signOut],
+    [
+      session,
+      profile,
+      isLoading,
+      isConfigured,
+      signIn,
+      signOut,
+      refreshProfile,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

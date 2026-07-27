@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -31,7 +32,13 @@ import {
 export function GeneralSettingsForm() {
   const { t } = useTranslation()
   const { user } = useAuth()
-  const { data: settings, isLoading } = useAppSettings()
+  const {
+    data: settings,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useAppSettings()
   const updateSettings = useUpdateAppSettings()
   const removeLogo = useRemoveAppLogo()
   const appSettingsSchema = useValidationSchema(createAppSettingsFormSchema)
@@ -126,14 +133,16 @@ export function GeneralSettingsForm() {
 
   if (isLoading || !settings) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('settings.generalTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
-        </CardContent>
-      </Card>
+      <QueryState
+        isLoading={isLoading}
+        error={error}
+        onRetry={() => void refetch()}
+        isRetrying={isFetching}
+        loadingMessage={t('common.loading')}
+        errorMessage={t('settings.loadFailed')}
+      >
+        {null}
+      </QueryState>
     )
   }
 

@@ -3,7 +3,11 @@ import type { ValidationTranslator } from '@/lib/validations/types'
 
 export function createCommentFormSchema(t: ValidationTranslator) {
   return z.object({
-    body: z.string().trim().min(1, t('validation.commentRequired')),
+    body: z
+      .string()
+      .trim()
+      .min(1, t('validation.commentRequired'))
+      .max(4000, t('validation.commentMaxLength')),
   })
 }
 
@@ -13,7 +17,11 @@ export type CommentFormValues = z.infer<
 
 export function createEscalationFormSchema(t: ValidationTranslator) {
   return z.object({
-    message: z.string().trim().min(3, t('validation.escalationMin')),
+    message: z
+      .string()
+      .trim()
+      .min(3, t('validation.escalationMin'))
+      .max(2000, t('validation.escalationMaxLength')),
   })
 }
 

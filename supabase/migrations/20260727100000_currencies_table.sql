@@ -19,28 +19,24 @@ alter table public.currencies enable row level security;
 
 -- Everyone can read currencies
 create policy "currencies_select" on public.currencies
-  for select to authenticated using (true);
+  for select to authenticated
+  using (public.is_auth_active());
 
 -- Only directors can manage currencies
 create policy "currencies_insert" on public.currencies
   for insert to authenticated
-  with check (public.is_company_director());
+  with check (public.is_company_director() and public.is_auth_active());
 
 create policy "currencies_update" on public.currencies
   for update to authenticated
-  using (public.is_company_director())
-  with check (public.is_company_director());
+  using (public.is_company_director() and public.is_auth_active())
+  with check (public.is_company_director() and public.is_auth_active());
 
 create policy "currencies_delete" on public.currencies
   for delete to authenticated
-  using (public.is_company_director());
+  using (public.is_company_director() and public.is_auth_active());
 
--- Grant API privileges
-grant select on public.currencies to authenticated;
-grant insert, update, delete on public.currencies to authenticated;
-grant select on public.currencies to anon;
-
--- Change default currency from SAR to USD in projects table
+-- Set projects.currency default to USD
 alter table public.projects alter column currency set default 'USD';
 
 -- Seed USD as the default currency

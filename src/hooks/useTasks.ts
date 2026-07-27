@@ -25,10 +25,10 @@ async function invalidateTaskQueries(
   }
 }
 
-export function useTasks(projectId: string | undefined) {
+export function useTasks(projectId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: queryKeys.tasks(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async (): Promise<TaskListItem[]> => {
       const supabase = getSupabase()
       const { data, error } = await supabase

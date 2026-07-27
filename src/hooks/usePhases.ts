@@ -5,10 +5,10 @@ import type { Phase } from '@/types/database'
 import type { PhaseFormValues } from '@/lib/validations/phase'
 import { toPhasePayload } from '@/lib/validations/phase'
 
-export function usePhases(projectId: string | undefined) {
+export function usePhases(projectId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: queryKeys.phases(projectId),
-    enabled: Boolean(projectId),
+    enabled: Boolean(projectId) && enabled,
     queryFn: async (): Promise<Phase[]> => {
       const supabase = getSupabase()
       const { data, error } = await supabase

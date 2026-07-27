@@ -8,11 +8,14 @@ function uniqueChannelName(prefix: string): string {
   return `${prefix}-${crypto.randomUUID()}`
 }
 
-export function useProjectRealtime(projectId: string | undefined) {
+export function useProjectRealtime(
+  projectId: string | undefined,
+  enabled = true,
+) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!projectId || !isSupabaseConfigured()) {
+    if (!projectId || !enabled || !isSupabaseConfigured()) {
       return
     }
 
@@ -34,10 +37,6 @@ export function useProjectRealtime(projectId: string | undefined) {
           void queryClient.invalidateQueries({
             queryKey: queryKeys.project(projectId),
           })
-          void queryClient.invalidateQueries({ queryKey: queryKeys.projects })
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.escalations,
-          })
         },
       )
       .on(
@@ -52,7 +51,6 @@ export function useProjectRealtime(projectId: string | undefined) {
           void queryClient.invalidateQueries({
             queryKey: queryKeys.project(projectId),
           })
-          void queryClient.invalidateQueries({ queryKey: queryKeys.projects })
           void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard })
         },
       )
@@ -61,7 +59,7 @@ export function useProjectRealtime(projectId: string | undefined) {
     return () => {
       void supabase.removeChannel(channel)
     }
-  }, [projectId, queryClient])
+  }, [enabled, projectId, queryClient])
 }
 
 export function useCommentsRealtime(

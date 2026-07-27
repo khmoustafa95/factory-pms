@@ -2,12 +2,7 @@ import { z } from 'zod'
 import type { ValidationTranslator } from '@/lib/validations/types'
 
 const MAX_LOGO_SIZE_BYTES = 2 * 1024 * 1024
-const ALLOWED_LOGO_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/svg+xml',
-] as const
+const ALLOWED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp'] as const
 
 export function createAppSettingsFormSchema(t: ValidationTranslator) {
   return z.object({
