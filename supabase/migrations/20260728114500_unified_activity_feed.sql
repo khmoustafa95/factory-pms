@@ -1,6 +1,8 @@
 -- Unified project activity feed: comments + status transitions.
 
-create or replace function public.get_project_activity(p_project_id uuid)
+drop function if exists public.get_project_activity(uuid);
+
+create function public.get_project_activity(p_project_id uuid)
 returns table (
   id uuid,
   activity_kind text,

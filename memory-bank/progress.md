@@ -151,6 +151,11 @@
 - Updated Supabase function typing in `src/types/database.ts` for the new RPC
 - Validation: `npm run verify` and `npm run build` both passed
 
+### 2026-07-28 (session 50)
+
+- Fixed `20260728114500_unified_activity_feed.sql` migration failure (`42P13 cannot change return type`) by dropping `public.get_project_activity(uuid)` before recreating it with the unified feed return columns
+- Confirmed local DB migration push succeeds: `npx supabase db push --local` applied `20260728114500_unified_activity_feed.sql` and `20260728120000_create_comment_rpc.sql`
+
 ### 2026-07-27 (session 35)
 
 - **Migration consolidation (12 → 8):** merged `handle_new_user` chain into `20260722110000`; FM profile policy into same; `revoke_user_sessions` → `20260727120000`; `grant_api_privileges` → `20260727130000` (last, with revokes on `recalculate_project_progress` + trigger fns)

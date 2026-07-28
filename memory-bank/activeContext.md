@@ -6,6 +6,7 @@
 
 ## Recent changes
 
+- [2026-07-28] Fixed migration compatibility for `get_project_activity`: dropped the old function signature before recreating the unified return shape; `supabase db push --local` now applies `20260728114500` and `20260728120000` successfully
 - [2026-07-28] Comment write path moved to RPC: added `create_comment(entity_type, entity_id, body)` using `auth.uid()` and switched frontend comment mutations to `.rpc('create_comment')` (removed client-side `authorId`)
 - [2026-07-28] Unified project activity stream: `get_project_activity` now returns comments + `project_status_transitions` in one chronological feed (`activity_kind` discriminator) and `ProjectActivityTab` renders a single timeline
 - [2026-07-28] Audit trail implemented: added `project_status_transitions` table + RLS and extended `transition_project_status` to append immutable status-change records (from/to, actor, role, reason, timestamp)
