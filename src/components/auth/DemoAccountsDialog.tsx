@@ -1,5 +1,6 @@
 import { Copy, Info } from 'lucide-react'
 import { toast } from 'sonner'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,10 +19,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { getAppEnv } from '@/lib/app-env'
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from '@/lib/demo-accounts'
 
 export function DemoAccountsDialog() {
   const { t } = useTranslation()
+  const isStaging = getAppEnv() === 'staging'
 
   const copyToClipboard = async (value: string, label: string) => {
     try {
@@ -47,6 +50,12 @@ export function DemoAccountsDialog() {
             {t('auth.demoAccounts.description')}
           </DialogDescription>
         </DialogHeader>
+
+        {isStaging ? (
+          <StatusMessage variant="warning">
+            {t('auth.demoAccounts.stagingSetupHint')}
+          </StatusMessage>
+        ) : null}
 
         <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
           <div>

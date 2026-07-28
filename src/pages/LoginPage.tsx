@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { DemoAccountsDialog } from '@/components/auth/DemoAccountsDialog'
 import { FadeIn } from '@/components/motion'
@@ -24,17 +24,40 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
+import { shouldShowDemoAccounts } from '@/lib/app-env'
 import {
   createLoginFormSchema,
   type LoginFormValues,
 } from '@/lib/validations/account'
 
 export function LoginPage() {
-  const { signIn, isConfigured, session, profile, isLoading } = useAuth()
+  const { signIn, signOut, isConfigured, session, profile, isLoading } =
+    useAuth()
   const { branding } = useAppBranding()
   const { t, locale } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const loginFormSchema = useValidationSchema(createLoginFormSchema)
+  const showDemoAccounts = shouldShowDemoAccounts()
+  const isForcedSignOut = searchParams.get('signout') === '1'
+
+  useEffect(() => {
+    if (!isForcedSignOut) {
+      return
+    }
+
+    let cancelled = false
+
+    void signOut().finally(() => {
+      if (!cancelled) {
+        setSearchParams({}, { replace: true })
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isForcedSignOut, setSearchParams, signOut])
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -44,7 +67,7 @@ export function LoginPage() {
     },
   })
 
-  if (!isLoading && session && profile?.is_active) {
+  if (!isLoading && !isForcedSignOut && session && profile?.is_active) {
     return <Navigate to="/" replace />
   }
 
@@ -136,7 +159,13 @@ export function LoginPage() {
               </Button>
             </form>
 
-            <DemoAccountsDialog />
+            {showDemoAccounts ? <DemoAccountsDialog /> : null}
+
+            {showDemoAccounts ? (
+              <p className="text-center text-xs text-muted-foreground">
+                {t('auth.demoAccounts.loginOnlyHint')}
+              </p>
+            ) : null}
 
             <p className="text-center text-sm text-muted-foreground">
               {t('auth.needAccount')}

@@ -14,6 +14,7 @@ export function AppErrorBoundaryProvider({
         title: t('errors.boundaryTitle'),
         description: t('errors.boundaryDescription'),
         retry: t('common.retry'),
+        backToSignIn: t('auth.backToSignIn'),
       }}
     >
       {children}

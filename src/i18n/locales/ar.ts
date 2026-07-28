@@ -140,6 +140,7 @@ export const ar = {
       'لم يتم إعداد Supabase. انسخ .env.example إلى .env.local وأضف مفاتيح المشروع.',
     accessDenied: 'الوصول مرفوض',
     accessDeniedDescription: 'ليس لديك صلاحية لعرض هذه الصفحة.',
+    backToSignIn: 'العودة لتسجيل الدخول',
     demoAccounts: {
       button: 'حسابات تجريبية',
       title: 'بيانات تسجيل الدخول التجريبية',
@@ -156,6 +157,10 @@ export const ar = {
       pmSaraNote: 'غير معيّن على مشروع حالياً',
       pmKhalidNote: 'مدير مشروع حلب',
       inactiveNote: 'حساب غير نشط — يُرفض تسجيل الدخول',
+      loginOnlyHint:
+        'الحسابات التجريبية تظهر فقط في صفحة تسجيل الدخول. سجّل الخروج للعودة إليها.',
+      stagingSetupHint:
+        'تعمل هذه الحسابات فقط بعد إنشاء مستخدمين مطابقين في Supabase Auth (staging لا يشغّل seed.sql تلقائياً).',
     },
   },
   dashboard: {

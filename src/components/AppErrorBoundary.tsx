@@ -8,6 +8,7 @@ interface AppErrorBoundaryProps {
     title: string
     description: string
     retry: string
+    backToSignIn?: string
   }
 }
 
@@ -43,9 +44,22 @@ export class AppErrorBoundary extends Component<
             <StatusMessage variant="error" role="alert">
               {this.props.labels.description}
             </StatusMessage>
-            <Button type="button" onClick={this.handleRetry}>
-              {this.props.labels.retry}
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button type="button" onClick={this.handleRetry}>
+                {this.props.labels.retry}
+              </Button>
+              {this.props.labels.backToSignIn ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    window.location.assign('/login?signout=1')
+                  }}
+                >
+                  {this.props.labels.backToSignIn}
+                </Button>
+              ) : null}
+            </div>
           </div>
         </div>
       )

@@ -141,6 +141,7 @@ export const en = {
       'Supabase is not configured. Copy .env.example to .env.local and add your project keys.',
     accessDenied: 'Access denied',
     accessDeniedDescription: 'You do not have permission to view this page.',
+    backToSignIn: 'Back to sign in',
     demoAccounts: {
       button: 'Demo accounts',
       title: 'Trial login credentials',
@@ -157,6 +158,10 @@ export const en = {
       pmSaraNote: 'Not assigned to a project yet',
       pmKhalidNote: 'Aleppo project manager',
       inactiveNote: 'Inactive account — sign-in is rejected',
+      loginOnlyHint:
+        'Trial accounts appear only on this sign-in page. Sign out to return here.',
+      stagingSetupHint:
+        'These accounts work only after you create matching users in Supabase Auth (staging does not run seed.sql automatically).',
     },
   },
   dashboard: {
