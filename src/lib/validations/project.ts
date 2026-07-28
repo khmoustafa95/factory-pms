@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { DURATION_UNIT_OPTIONS } from '@/lib/duration'
 import type { ValidationTranslator } from '@/lib/validations/types'
 
 export function createProjectFormSchema(t: ValidationTranslator) {
@@ -8,8 +9,11 @@ export function createProjectFormSchema(t: ValidationTranslator) {
       description: z.string().trim().optional(),
       budget: z.string().trim().optional(),
       currency: z.string().trim().min(3).max(3),
-      proposed_start_date: z.string().trim().optional(),
-      proposed_end_date: z.string().trim().optional(),
+      proposed_duration_value: z
+        .number({ error: t('validation.durationRequired') })
+        .int(t('validation.durationInteger'))
+        .min(1, t('validation.durationMin')),
+      proposed_duration_unit: z.enum(DURATION_UNIT_OPTIONS),
       assigned_pm_id: z.string().uuid().nullable(),
     })
     .superRefine((values, ctx) => {
@@ -20,16 +24,6 @@ export function createProjectFormSchema(t: ValidationTranslator) {
             code: 'custom',
             message: t('validation.budgetPositive'),
             path: ['budget'],
-          })
-        }
-      }
-
-      if (values.proposed_start_date && values.proposed_end_date) {
-        if (values.proposed_end_date < values.proposed_start_date) {
-          ctx.addIssue({
-            code: 'custom',
-            message: t('validation.endAfterStart'),
-            path: ['proposed_end_date'],
           })
         }
       }
@@ -48,12 +42,10 @@ export function toProjectPayload(values: ProjectFormValues) {
     description: values.description?.trim() ? values.description.trim() : null,
     budget,
     currency: values.currency.toUpperCase(),
-    proposed_start_date: values.proposed_start_date?.trim()
-      ? values.proposed_start_date.trim()
-      : null,
-    proposed_end_date: values.proposed_end_date?.trim()
-      ? values.proposed_end_date.trim()
-      : null,
+    proposed_duration_value: values.proposed_duration_value,
+    proposed_duration_unit: values.proposed_duration_unit,
+    proposed_start_date: null,
+    proposed_end_date: null,
     assigned_pm_id: values.assigned_pm_id,
   }
 }

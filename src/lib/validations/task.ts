@@ -1,7 +1,15 @@
 import { z } from 'zod'
 import type { ValidationTranslator } from '@/lib/validations/types'
 
-export function createTaskFormSchema(t: ValidationTranslator) {
+export interface TaskValidationContext {
+  phaseStartDate: string | null
+  phaseEndDate: string | null
+}
+
+export function createTaskFormSchema(
+  t: ValidationTranslator,
+  context?: TaskValidationContext,
+) {
   return z
     .object({
       title: z.string().trim().min(2, t('validation.titleMinShort')),
@@ -27,6 +35,26 @@ export function createTaskFormSchema(t: ValidationTranslator) {
           code: 'custom',
           message: t('validation.clearBlockedReason'),
           path: ['blocked_reason'],
+        })
+      }
+
+      if (!values.due_date?.trim() || !context) {
+        return
+      }
+
+      if (context.phaseStartDate && values.due_date < context.phaseStartDate) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.taskBeforePhaseStart'),
+          path: ['due_date'],
+        })
+      }
+
+      if (context.phaseEndDate && values.due_date > context.phaseEndDate) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.taskAfterPhaseEnd'),
+          path: ['due_date'],
         })
       }
     })

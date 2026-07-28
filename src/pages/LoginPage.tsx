@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import { DemoAccountsDialog } from '@/components/auth/DemoAccountsDialog'
 import { FadeIn } from '@/components/motion'
 import { LocaleToggle } from '@/components/LocaleToggle'
 import { AppBrand } from '@/components/AppBrand'
@@ -73,7 +74,7 @@ export function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6">
-      <div className="absolute end-4 top-4 flex items-center gap-2 sm:end-6 sm:top-6">
+      <div className="absolute inset-e-4 top-4 flex items-center gap-2 sm:inset-e-6 sm:top-6">
         <LocaleToggle />
         <ThemeToggle />
       </div>
@@ -134,6 +135,8 @@ export function LoginPage() {
                 {isSubmitting ? t('common.signingIn') : t('common.signIn')}
               </Button>
             </form>
+
+            <DemoAccountsDialog />
 
             <p className="text-center text-sm text-muted-foreground">
               {t('auth.needAccount')}

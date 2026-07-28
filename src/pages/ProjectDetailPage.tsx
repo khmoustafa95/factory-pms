@@ -61,7 +61,9 @@ import {
   useUpdateTask,
   type TaskListItem,
 } from '@/hooks/useTasks'
-import { formatLocalizedBudget, formatLocalizedDate } from '@/lib/i18n-format'
+import { formatLocalizedBudget } from '@/lib/i18n-format'
+import { formatProjectSchedule } from '@/lib/project-schedule'
+import { getProjectScheduleBounds } from '@/lib/duration'
 import { formatProgress } from '@/lib/progress'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
@@ -168,6 +170,10 @@ export function ProjectDetailPage() {
   const totalWeight = sumPhaseWeights(phases)
   const weightsValid = isPhaseWeightSumValid(phases)
   const remainingWeight = Math.max(0, 100 - totalWeight)
+  const projectSchedule = useMemo(
+    () => (project ? getProjectScheduleBounds(project) : null),
+    [project],
+  )
   const canManage = project ? canManageWbs(project, profile) : false
   const canEditDetails =
     isFactoryManager(profile?.role) &&
@@ -595,17 +601,7 @@ export function ProjectDetailPage() {
                   {t('common.timeline')}
                 </span>
                 <span className="font-medium">
-                  {formatLocalizedDate(
-                    project.proposed_start_date,
-                    locale,
-                    notAvailable,
-                  )}{' '}
-                  →{' '}
-                  {formatLocalizedDate(
-                    project.proposed_end_date,
-                    locale,
-                    notAvailable,
-                  )}
+                  {formatProjectSchedule(project, locale, t, notAvailable)}
                 </span>
               </div>
               <div className="flex justify-between gap-4">
@@ -772,6 +768,14 @@ export function ProjectDetailPage() {
             onOpenChange={setPhaseDialogOpen}
             phase={editingPhase}
             remainingWeight={remainingWeight}
+            schedule={
+              projectSchedule ?? {
+                start: null,
+                end: null,
+                durationDays: null,
+                hasFixedDates: false,
+              }
+            }
             onSubmit={handlePhaseSubmit}
             isSubmitting={createPhase.isPending || updatePhase.isPending}
           />
@@ -780,6 +784,8 @@ export function ProjectDetailPage() {
             onOpenChange={setTaskDialogOpen}
             task={editingTask}
             phaseName={activePhase?.name ?? t('common.phase')}
+            phaseStartDate={activePhase?.start_date ?? null}
+            phaseEndDate={activePhase?.end_date ?? null}
             factoryId={project.factory_id}
             onSubmit={handleTaskSubmit}
             isSubmitting={createTask.isPending || updateTask.isPending}

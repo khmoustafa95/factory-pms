@@ -105,6 +105,9 @@ export function ProjectWbsTab({
                       </CardTitle>
                       <CardDescription>
                         {getPhaseStatusLabel(t, phase.status)}
+                        {phase.start_date && phase.end_date
+                          ? ` · ${formatLocalizedDate(phase.start_date, locale)} → ${formatLocalizedDate(phase.end_date, locale)}`
+                          : ''}
                         {phase.description ? ` — ${phase.description}` : ''}
                       </CardDescription>
                     </div>

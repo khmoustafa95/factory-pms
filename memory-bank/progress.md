@@ -151,6 +151,16 @@
 - Updated Supabase function typing in `src/types/database.ts` for the new RPC
 - Validation: `npm run verify` and `npm run build` both passed
 
+### 2026-07-28 (session 51)
+
+- Proposal duration model: `proposed_duration_value` + `proposed_duration_unit` (day/week/year) replaces date pickers in project form; actual dates computed on `approved → in_progress`
+- Phase dates: `phases.start_date` / `end_date` required; validated within project schedule; status auto-derived from tasks
+- Task due dates validated within phase window (Zod + DB trigger)
+- `ProjectTimeline` renders real date-positioned Gantt bars + today marker
+- Login trial UX: `DemoAccountsDialog` on `/login` with all demo emails/password
+- Migration `20260728130000_duration_and_phase_dates.sql`; seed updated
+- Validation: `npm run verify` + `npm test` passed (27 tests)
+
 ### 2026-07-28 (session 50)
 
 - Fixed `20260728114500_unified_activity_feed.sql` migration failure (`42P13 cannot change return type`) by dropping `public.get_project_activity(uuid)` before recreating it with the unified feed return columns

@@ -32,6 +32,8 @@ export type DashboardInsights = {
   }>
 }
 
+import type { DurationUnit } from '@/types/database'
+
 export type DashboardProjectDetail = {
   id: string
   title: string
@@ -41,6 +43,10 @@ export type DashboardProjectDetail = {
   currency: string
   proposedStartDate: string | null
   proposedEndDate: string | null
+  proposedDurationValue: number | null
+  proposedDurationUnit: DurationUnit | null
+  actualStartDate: string | null
+  actualEndDate: string | null
   factory: {
     id: string
     name: string
@@ -271,7 +277,7 @@ export function useDashboardProjects() {
         supabase
           .from('projects')
           .select(
-            'id, title, status, progress_percent, budget, currency, proposed_start_date, proposed_end_date, factory_id, factories(id, name, code)',
+            'id, title, status, progress_percent, budget, currency, proposed_start_date, proposed_end_date, proposed_duration_value, proposed_duration_unit, actual_start_date, actual_end_date, factory_id, factories(id, name, code)',
           )
           .order('updated_at', { ascending: false }),
         supabase.from('tasks').select('project_id, status'),
@@ -337,6 +343,10 @@ export function useDashboardProjects() {
           currency: project.currency,
           proposedStartDate: project.proposed_start_date,
           proposedEndDate: project.proposed_end_date,
+          proposedDurationValue: project.proposed_duration_value,
+          proposedDurationUnit: project.proposed_duration_unit,
+          actualStartDate: project.actual_start_date,
+          actualEndDate: project.actual_end_date,
           factory: normalizeFactory(
             project.factories as RawProjectFactoryRelation,
           ),

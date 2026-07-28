@@ -2,9 +2,16 @@
 
 ## Current focus
 
-**Codebase audit & migration consolidation** — security hardening, integration fixes, merged DB migrations.
+**Duration-based proposals + phase scheduling + demo login UX** — improved WBS timeline validation and trial login hints.
 
 ## Recent changes
+
+- [2026-07-28] Proposal duration UX: project form now uses numeric duration + unit (day/week/year) instead of manual start/end dates; execution start sets `actual_start_date`/`actual_end_date` from duration via `transition_project_status`
+- [2026-07-28] Phase scheduling: added `start_date`/`end_date` on phases with DB + frontend validation against project window; phase status auto-syncs from task progress (removed manual status editing)
+- [2026-07-28] Task due dates validated against phase schedule (frontend + DB trigger)
+- [2026-07-28] Project timeline rebuilt as date-positioned Gantt bars with today marker
+- [2026-07-28] Login page: `DemoAccountsDialog` shows trial credentials + copy actions (`demo123456`)
+- [2026-07-28] Migration `20260728130000_duration_and_phase_dates.sql` + seed updates for duration/phase dates
 
 - [2026-07-28] Fixed migration compatibility for `get_project_activity`: dropped the old function signature before recreating the unified return shape; `supabase db push --local` now applies `20260728114500` and `20260728120000` successfully
 - [2026-07-28] Comment write path moved to RPC: added `create_comment(entity_type, entity_id, body)` using `auth.uid()` and switched frontend comment mutations to `.rpc('create_comment')` (removed client-side `authorId`)
@@ -30,11 +37,10 @@
 
 ## Next steps (concrete)
 
-1. Apply new migrations to local/live Supabase and verify end-to-end transitions with each role account
-2. Validate unified activity read/write path (`get_project_activity` + `create_comment`) against real role accounts (director/FM/PM)
-3. Decide whether transition to `in_progress` should also support an automatic rule (e.g., first in-progress task)
-4. Add optional UX confirmation for completion when task readiness checks fail (show RPC error hints)
-5. Gather stakeholder feedback on the new dashboard widgets/charts and tune thresholds if needed (e.g., deadline horizon)
+1. Start local Supabase and apply migration: `npm run supabase:reset` (or `supabase start` + `db push --local`)
+2. Validate proposal → approval → start execution flow computes actual dates correctly
+3. Create phases/tasks and confirm schedule validation + auto phase status from tasks
+4. Gather feedback on duration units (consider adding "month" if stakeholders prefer it)
 
 ## Open questions
 

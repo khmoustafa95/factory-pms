@@ -45,9 +45,9 @@ import {
 import { useFactories } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
+import { formatProjectSchedule } from '@/lib/project-schedule'
 import {
   formatLocalizedBudget,
-  formatLocalizedDate,
   formatFactoryLabel,
   getProjectStatusLabel,
 } from '@/lib/i18n-format'
@@ -606,17 +606,7 @@ export function ProjectsPage() {
             <span className="font-medium text-foreground">
               {t('common.timeline')}:{' '}
             </span>
-            {formatLocalizedDate(
-              project.proposed_start_date,
-              locale,
-              notAvailable,
-            )}{' '}
-            →{' '}
-            {formatLocalizedDate(
-              project.proposed_end_date,
-              locale,
-              notAvailable,
-            )}
+            {formatProjectSchedule(project, locale, t, notAvailable)}
           </p>
           {renderProjectActions(project)}
         </div>
@@ -722,17 +712,7 @@ export function ProjectsPage() {
                 )}
               </TableCell>
               <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                {formatLocalizedDate(
-                  project.proposed_start_date,
-                  locale,
-                  notAvailable,
-                )}{' '}
-                →{' '}
-                {formatLocalizedDate(
-                  project.proposed_end_date,
-                  locale,
-                  notAvailable,
-                )}
+                {formatProjectSchedule(project, locale, t, notAvailable)}
               </TableCell>
               {isDirector ? (
                 <TableCell>

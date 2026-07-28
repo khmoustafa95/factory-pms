@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -23,14 +24,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
-import { getTaskStatusLabel } from '@/lib/i18n-format'
+import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
 import {
   formatNullableSelectValue,
   NULL_SELECT_VALUE,
   parseNullableSelectValue,
 } from '@/lib/form-utils'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
-import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createTaskFormSchema,
   type TaskFormValues,
@@ -42,6 +42,8 @@ interface TaskFormDialogProps {
   onOpenChange: (open: boolean) => void
   task?: Task | null
   phaseName: string
+  phaseStartDate: string | null
+  phaseEndDate: string | null
   factoryId: string | null | undefined
   onSubmit: (values: TaskFormValues) => Promise<void>
   isSubmitting: boolean
@@ -61,13 +63,23 @@ export function TaskFormDialog({
   onOpenChange,
   task,
   phaseName,
+  phaseStartDate,
+  phaseEndDate,
   factoryId,
   onSubmit,
   isSubmitting,
 }: TaskFormDialogProps) {
   const { t, locale } = useTranslation()
   const { data: assignees = [] } = useFactoryProjectManagers(factoryId)
-  const taskFormSchema = useValidationSchema(createTaskFormSchema)
+
+  const taskFormSchema = useMemo(
+    () =>
+      createTaskFormSchema(t, {
+        phaseStartDate,
+        phaseEndDate,
+      }),
+    [phaseEndDate, phaseStartDate, t],
+  )
 
   const { form, createSubmitHandler } = useFormDialog({
     open,
@@ -91,6 +103,11 @@ export function TaskFormDialog({
   })
 
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
+
+  const phaseRangeHint =
+    phaseStartDate && phaseEndDate
+      ? `${formatLocalizedDate(phaseStartDate, locale)} → ${formatLocalizedDate(phaseEndDate, locale)}`
+      : t('wbs.noPhaseSchedule')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -154,10 +171,17 @@ export function TaskFormDialog({
               <Input
                 id="task-due-date"
                 type="date"
+                min={phaseStartDate ?? undefined}
+                max={phaseEndDate ?? undefined}
                 {...form.register('due_date')}
               />
+              <FormFieldError error={form.formState.errors.due_date} />
             </div>
           </div>
+
+          <p className="text-xs text-muted-foreground">
+            {t('wbs.taskDueDateHint', { range: phaseRangeHint })}
+          </p>
 
           {selectedStatus === 'blocked' ? (
             <div className="space-y-2">

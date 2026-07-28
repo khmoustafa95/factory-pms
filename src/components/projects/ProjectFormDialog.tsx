@@ -27,16 +27,18 @@ import { useFormDialog } from '@/hooks/useFormDialog'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
+import { DURATION_UNIT_OPTIONS } from '@/lib/duration'
 import {
   formatNullableSelectValue,
   NULL_SELECT_VALUE,
   parseNullableSelectValue,
 } from '@/lib/form-utils'
+import { getDefaultDurationFromProject } from '@/lib/project-schedule'
 import {
   createProjectFormSchema,
   type ProjectFormValues,
 } from '@/lib/validations/project'
-import type { Project } from '@/types/database'
+import type { DurationUnit, Project } from '@/types/database'
 
 export interface ProjectFormSubmitPayload {
   values: ProjectFormValues
@@ -60,9 +62,16 @@ const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
   description: '',
   budget: '',
   currency: 'USD',
-  proposed_start_date: undefined,
-  proposed_end_date: undefined,
+  proposed_duration_value: 12,
+  proposed_duration_unit: 'week',
   assigned_pm_id: null,
+}
+
+function getDurationUnitLabel(
+  t: (key: string) => string,
+  unit: DurationUnit,
+): string {
+  return t(`durationUnit.${unit}Label`)
 }
 
 export function ProjectFormDialog({
@@ -85,15 +94,21 @@ export function ProjectFormDialog({
     open,
     resolver: zodResolver(projectFormSchema),
     defaultValues: PROJECT_FORM_DEFAULTS,
-    getValues: () => ({
-      title: project?.title ?? '',
-      description: project?.description ?? '',
-      budget: project?.budget != null ? String(project.budget) : '',
-      currency: project?.currency ?? 'USD',
-      proposed_start_date: project?.proposed_start_date ?? undefined,
-      proposed_end_date: project?.proposed_end_date ?? undefined,
-      assigned_pm_id: project?.assigned_pm_id ?? null,
-    }),
+    getValues: () => {
+      const defaults = project
+        ? getDefaultDurationFromProject(project)
+        : { value: 12, unit: 'week' as DurationUnit }
+
+      return {
+        title: project?.title ?? '',
+        description: project?.description ?? '',
+        budget: project?.budget != null ? String(project.budget) : '',
+        currency: project?.currency ?? 'USD',
+        proposed_duration_value: defaults.value,
+        proposed_duration_unit: defaults.unit,
+        assigned_pm_id: project?.assigned_pm_id ?? null,
+      }
+    },
     resetDependencies: [project],
   })
 
@@ -111,6 +126,10 @@ export function ProjectFormDialog({
   const selectedPmId = useWatch({
     control: form.control,
     name: 'assigned_pm_id',
+  })
+  const selectedDurationUnit = useWatch({
+    control: form.control,
+    name: 'proposed_duration_unit',
   })
 
   const closeDialog = () => {
@@ -207,26 +226,58 @@ export function ProjectFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="project-start">
-                {t('projects.proposedStart')}
+              <Label htmlFor="project-duration-value">
+                {t('projects.proposedDuration')}
               </Label>
               <Input
-                id="project-start"
-                type="date"
-                {...form.register('proposed_start_date')}
+                id="project-duration-value"
+                type="number"
+                min="1"
+                step="1"
+                {...form.register('proposed_duration_value', {
+                  valueAsNumber: true,
+                })}
+              />
+              <FormFieldError
+                error={form.formState.errors.proposed_duration_value}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="project-end">{t('projects.proposedEnd')}</Label>
-              <Input
-                id="project-end"
-                type="date"
-                {...form.register('proposed_end_date')}
+              <Label>{t('projects.durationUnit')}</Label>
+              <Select
+                value={selectedDurationUnit}
+                onValueChange={(value) => {
+                  if (
+                    value === 'day' ||
+                    value === 'week' ||
+                    value === 'month'
+                  ) {
+                    form.setValue('proposed_duration_unit', value, {
+                      shouldDirty: true,
+                    })
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DURATION_UNIT_OPTIONS.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {getDurationUnitLabel(t, unit)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormFieldError
+                error={form.formState.errors.proposed_duration_unit}
               />
-              <FormFieldError error={form.formState.errors.proposed_end_date} />
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">
+            {t('projects.durationHint')}
+          </p>
 
           <div className="space-y-2">
             <Label>{t('projects.assignedPm')}</Label>

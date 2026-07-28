@@ -20,6 +20,8 @@ export type ProjectStatus =
 
 export type PhaseStatus = 'pending' | 'in_progress' | 'completed'
 
+export type DurationUnit = 'day' | 'week' | 'month'
+
 export type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done'
 
 export type EntityType = 'project' | 'phase' | 'task'
@@ -109,6 +111,8 @@ export interface Database {
           currency: string
           proposed_start_date: string | null
           proposed_end_date: string | null
+          proposed_duration_value: number | null
+          proposed_duration_unit: DurationUnit | null
           actual_start_date: string | null
           actual_end_date: string | null
           proposed_by: string | null
@@ -130,6 +134,8 @@ export interface Database {
           currency?: string
           proposed_start_date?: string | null
           proposed_end_date?: string | null
+          proposed_duration_value?: number | null
+          proposed_duration_unit?: DurationUnit | null
           actual_start_date?: string | null
           actual_end_date?: string | null
           proposed_by?: string | null
@@ -151,6 +157,8 @@ export interface Database {
           currency?: string
           proposed_start_date?: string | null
           proposed_end_date?: string | null
+          proposed_duration_value?: number | null
+          proposed_duration_unit?: DurationUnit | null
           actual_start_date?: string | null
           actual_end_date?: string | null
           proposed_by?: string | null
@@ -180,6 +188,8 @@ export interface Database {
           description: string | null
           weight_percent: number
           status: PhaseStatus
+          start_date: string | null
+          end_date: string | null
           sort_order: number
           created_at: string
           updated_at: string
@@ -191,6 +201,8 @@ export interface Database {
           description?: string | null
           weight_percent?: number
           status?: PhaseStatus
+          start_date?: string | null
+          end_date?: string | null
           sort_order?: number
           created_at?: string
           updated_at?: string
@@ -202,6 +214,8 @@ export interface Database {
           description?: string | null
           weight_percent?: number
           status?: PhaseStatus
+          start_date?: string | null
+          end_date?: string | null
           sort_order?: number
           created_at?: string
           updated_at?: string

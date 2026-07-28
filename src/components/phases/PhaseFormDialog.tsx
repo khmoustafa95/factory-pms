@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useWatch } from 'react-hook-form'
+import { useMemo } from 'react'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,35 +12,23 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
-import { getPhaseStatusLabel } from '@/lib/i18n-format'
-import { useValidationSchema } from '@/hooks/useValidationSchema'
+import type { ProjectScheduleBounds } from '@/lib/duration'
+import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
 import {
   createPhaseFormSchema,
   type PhaseFormValues,
 } from '@/lib/validations/phase'
-import type { Phase, PhaseStatus } from '@/types/database'
-
-const PHASE_STATUS_OPTIONS = [
-  'pending',
-  'in_progress',
-  'completed',
-] as const satisfies readonly PhaseStatus[]
+import type { Phase } from '@/types/database'
 
 interface PhaseFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   phase?: Phase | null
   remainingWeight: number
+  schedule: ProjectScheduleBounds
   onSubmit: (values: PhaseFormValues) => Promise<void>
   isSubmitting: boolean
 }
@@ -49,7 +37,8 @@ const PHASE_FORM_DEFAULTS: PhaseFormValues = {
   name: '',
   description: '',
   weight_percent: 0,
-  status: 'pending',
+  start_date: '',
+  end_date: '',
 }
 
 export function PhaseFormDialog({
@@ -57,14 +46,19 @@ export function PhaseFormDialog({
   onOpenChange,
   phase,
   remainingWeight,
+  schedule,
   onSubmit,
   isSubmitting,
 }: PhaseFormDialogProps) {
   const { t, locale } = useTranslation()
-  const phaseFormSchema = useValidationSchema(createPhaseFormSchema)
   const maxWeight = phase
     ? remainingWeight + Number(phase.weight_percent)
     : remainingWeight
+
+  const phaseFormSchema = useMemo(
+    () => createPhaseFormSchema(t, { schedule }),
+    [schedule, t],
+  )
 
   const { form } = useFormDialog({
     open,
@@ -74,12 +68,11 @@ export function PhaseFormDialog({
       name: phase?.name ?? '',
       description: phase?.description ?? '',
       weight_percent: phase?.weight_percent ?? Math.min(maxWeight, 0),
-      status: phase?.status ?? 'pending',
+      start_date: phase?.start_date ?? schedule.start ?? '',
+      end_date: phase?.end_date ?? schedule.end ?? '',
     }),
-    resetDependencies: [phase, maxWeight],
+    resetDependencies: [phase, maxWeight, schedule],
   })
-
-  const selectedStatus = useWatch({ control: form.control, name: 'status' })
 
   const handleSubmit = form.handleSubmit(async (values) => {
     if (values.weight_percent > maxWeight + 0.001) {
@@ -94,6 +87,13 @@ export function PhaseFormDialog({
     await onSubmit(values)
     onOpenChange(false)
   })
+
+  const scheduleHint =
+    schedule.start && schedule.end
+      ? `${formatLocalizedDate(schedule.start, locale)} → ${formatLocalizedDate(schedule.end, locale)}`
+      : schedule.durationDays != null
+        ? t('wbs.projectDurationDays', { days: schedule.durationDays })
+        : t('wbs.noProjectSchedule')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,31 +140,48 @@ export function PhaseFormDialog({
               <FormFieldError error={form.formState.errors.weight_percent} />
             </div>
 
+            {phase ? (
+              <div className="space-y-2">
+                <Label>{t('wbs.phaseStatus')}</Label>
+                <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
+                  {getPhaseStatusLabel(t, phase.status)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('wbs.phaseStatusHint')}
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              {t('wbs.phaseScheduleHint', { range: scheduleHint })}
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>{t('wbs.phaseStatus')}</Label>
-              <Select
-                value={selectedStatus}
-                onValueChange={(value) => {
-                  if (
-                    value === 'pending' ||
-                    value === 'in_progress' ||
-                    value === 'completed'
-                  ) {
-                    form.setValue('status', value)
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PHASE_STATUS_OPTIONS.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {getPhaseStatusLabel(t, status)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="phase-start">{t('wbs.startDate')}</Label>
+              <Input
+                id="phase-start"
+                type="date"
+                min={schedule.start ?? undefined}
+                max={schedule.end ?? undefined}
+                {...form.register('start_date')}
+              />
+              <FormFieldError error={form.formState.errors.start_date} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phase-end">{t('wbs.endDate')}</Label>
+              <Input
+                id="phase-end"
+                type="date"
+                min={schedule.start ?? undefined}
+                max={schedule.end ?? undefined}
+                {...form.register('end_date')}
+              />
+              <FormFieldError error={form.formState.errors.end_date} />
             </div>
           </div>
 

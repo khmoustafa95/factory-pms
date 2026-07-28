@@ -27,10 +27,10 @@ import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import {
   formatFactoryLabel,
   formatLocalizedBudget,
-  formatLocalizedDate,
   getProjectStatusLabel,
   getRoleLabel,
 } from '@/lib/i18n-format'
+import { formatProjectSchedule } from '@/lib/project-schedule'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import {
   Card,
@@ -673,15 +673,19 @@ export function DashboardPage() {
                           )}
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                          {formatLocalizedDate(
-                            project.proposedStartDate,
+                          {formatProjectSchedule(
+                            {
+                              proposed_start_date: project.proposedStartDate,
+                              proposed_end_date: project.proposedEndDate,
+                              proposed_duration_value:
+                                project.proposedDurationValue,
+                              proposed_duration_unit:
+                                project.proposedDurationUnit,
+                              actual_start_date: project.actualStartDate,
+                              actual_end_date: project.actualEndDate,
+                            },
                             locale,
-                            notAvailable,
-                          )}{' '}
-                          →{' '}
-                          {formatLocalizedDate(
-                            project.proposedEndDate,
-                            locale,
+                            t,
                             notAvailable,
                           )}
                         </TableCell>
