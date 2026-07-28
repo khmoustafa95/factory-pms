@@ -56,6 +56,28 @@
 - Terminology update only (no behavior changes): user-facing "Escalations" renamed to "Critical alerts" (`التنبيهات الحرجة`) in `ar/en` locale copy (nav, dashboard cards, action labels, dialog text, and validation messages)
 - `npm run verify` passed (typecheck + lint)
 
+### 2026-07-28 (session 37)
+
+- Dashboard redesign: expanded KPI cards with total projects/tasks, overdue tasks, and 7-day deadlines
+- Added responsive chart-like sections (project status distribution, task status distribution, progress buckets, top blocked projects)
+- Added `useDashboardInsights` hook with role-scoped Supabase aggregation over `projects`/`tasks` + blocked tasks per project
+- i18n updated for new dashboard labels in `ar/en`
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 38)
+
+- Dashboard project intelligence: added `useDashboardProjects` hook for role-scoped detailed project rows (status/progress/budget/timeline/factory + blocked task count)
+- Added dashboard project details panel with responsive table and localized filtering (`search`, `status`, `factory` for director)
+- Added new i18n keys for dashboard project details section in `ar/en`
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 39)
+
+- Dashboard advanced filters: added progress-range, blocked-state (blocked/not blocked), and task-activity (has in-progress/done/todo tasks) filters on project details panel
+- Expanded per-project details with task metrics (`done`, `in_progress`, `blocked`, `total`) computed from role-scoped `tasks` query in `useDashboardProjects`
+- Updated dashboard localization for new filter labels and task-metrics columns in `ar/en`
+- Validation: `npm run verify` and `npm run build` both passed
+
 ### 2026-07-27 (session 35)
 
 - **Migration consolidation (12 → 8):** merged `handle_new_user` chain into `20260722110000`; FM profile policy into same; `revoke_user_sessions` → `20260727120000`; `grant_api_privileges` → `20260727130000` (last, with revokes on `recalculate_project_progress` + trigger fns)

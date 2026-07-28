@@ -29,6 +29,8 @@ export const queryKeys = {
   escalationsPage: (params: EscalationsPageParams) =>
     ['escalations', 'page', params] as const,
   dashboard: ['dashboard'] as const,
+  dashboardInsights: ['dashboard', 'insights'] as const,
+  dashboardProjects: ['dashboard', 'projects'] as const,
   appSettings: ['app-settings'] as const,
   currencies: ['currencies'] as const,
   factoryProjectManagers: (factoryId: string | null | undefined) =>
