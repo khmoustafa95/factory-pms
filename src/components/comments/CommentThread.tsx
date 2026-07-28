@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { QueryState } from '@/components/QueryState'
-import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import {
   useComments,
@@ -69,7 +68,6 @@ export function CommentThread({
   title,
   canComment,
 }: CommentThreadProps) {
-  const { user } = useAuth()
   const { t, locale } = useTranslation()
   const {
     data: comments = [],
@@ -88,12 +86,8 @@ export function CommentThread({
   })
 
   const onSubmit = form.handleSubmit(async (values) => {
-    if (!user?.id) {
-      return
-    }
-
     try {
-      await createComment.mutateAsync({ values, authorId: user.id })
+      await createComment.mutateAsync({ values })
       form.reset()
       toast.success(t('activity.commentAdded'))
     } catch (error) {

@@ -1,10 +1,11 @@
-import { Check, Eye, Layers, Plus, Send, X } from 'lucide-react'
+import { Check, Eye, Layers, Lock, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
+import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ListToolbar } from '@/components/ListToolbar'
@@ -18,15 +19,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { uploadProjectAttachments } from '@/hooks/useProjectAttachments'
 import { queryKeys } from '@/lib/query-keys'
 import {
   useApproveProject,
+  useCompleteProjectExecution,
   useCreateProject,
+  usePauseProjectExecution,
   useProjectsPage,
   useRejectProject,
+  useResumeProjectExecution,
+  useStartProjectExecution,
   useSubmitProject,
   useUpdateProject,
   type ProjectListItem,
@@ -49,9 +60,16 @@ import {
   canSubmitProject,
   isProposalReviewStatus,
 } from '@/lib/project-status'
-import type { ProjectRejectValues } from '@/lib/validations/approval'
-import { canViewWbs } from '@/lib/wbs'
-import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
+import type {
+  ProjectPauseValues,
+  ProjectRejectValues,
+} from '@/lib/validations/approval'
+import { canManageWbs, canViewWbs } from '@/lib/wbs'
+import {
+  isCompanyDirector,
+  isFactoryManager,
+  isProjectManager,
+} from '@/lib/roles'
 import type { ProjectFormSubmitPayload } from '@/components/projects/ProjectFormDialog'
 import type { Project, ProjectStatus } from '@/types/database'
 
@@ -85,11 +103,19 @@ export function ProjectsPage() {
   const submitProject = useSubmitProject()
   const approveProject = useApproveProject()
   const rejectProject = useRejectProject()
+  const startProjectExecution = useStartProjectExecution()
+  const pauseProjectExecution = usePauseProjectExecution()
+  const resumeProjectExecution = useResumeProjectExecution()
+  const completeProjectExecution = useCompleteProjectExecution()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [rejectingProject, setRejectingProject] =
     useState<ProjectListItem | null>(null)
+  const [pausingProject, setPausingProject] = useState<ProjectListItem | null>(
+    null,
+  )
 
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
@@ -270,12 +296,66 @@ export function ProjectsPage() {
     }
   }
 
+  const handleStartExecution = async (project: ProjectListItem) => {
+    try {
+      await startProjectExecution.mutateAsync({ id: project.id })
+      toast.success(t('projects.executionStarted'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.startExecutionFailed'))
+    }
+  }
+
+  const openPauseExecution = (project: ProjectListItem) => {
+    setPausingProject(project)
+    setPauseDialogOpen(true)
+  }
+
+  const handlePauseExecution = async (values: ProjectPauseValues) => {
+    if (!pausingProject) {
+      return
+    }
+
+    try {
+      await pauseProjectExecution.mutateAsync({
+        id: pausingProject.id,
+        reason: values.pause_reason,
+      })
+      toast.success(t('projects.executionPaused'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.pauseExecutionFailed'))
+      throw submitError
+    }
+  }
+
+  const handleResumeExecution = async (project: ProjectListItem) => {
+    try {
+      await resumeProjectExecution.mutateAsync({ id: project.id })
+      toast.success(t('projects.executionResumed'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.resumeExecutionFailed'))
+    }
+  }
+
+  const handleCompleteExecution = async (project: ProjectListItem) => {
+    try {
+      await completeProjectExecution.mutateAsync({ id: project.id })
+      toast.success(t('projects.executionCompleted'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.completeExecutionFailed'))
+    }
+  }
+
   const isSaving =
     createProject.isPending ||
     updateProject.isPending ||
     submitProject.isPending
 
   const isReviewing = approveProject.isPending || rejectProject.isPending
+  const isChangingExecutionState =
+    startProjectExecution.isPending ||
+    pauseProjectExecution.isPending ||
+    resumeProjectExecution.isPending ||
+    completeProjectExecution.isPending
 
   const projectDetailLabel = (status: ProjectStatus) => {
     if (canReviewProject(status)) {
@@ -289,8 +369,38 @@ export function ProjectsPage() {
     return t('common.wbs')
   }
 
+  const getExecutionPermissionHint = (project: ProjectListItem): string => {
+    if (!profile) {
+      return t('projects.executionHintNoAccess')
+    }
+
+    if (isProjectManager(profile.role)) {
+      if (!project.assigned_pm_id) {
+        return t('projects.executionHintPmNotAssigned')
+      }
+      if (project.assigned_pm_id !== profile.id) {
+        return t('projects.executionHintPmOtherAssignee')
+      }
+    }
+
+    if (
+      isFactoryManager(profile.role) &&
+      profile.factory_id &&
+      project.factory_id !== profile.factory_id
+    ) {
+      return t('projects.executionHintFactoryScope')
+    }
+
+    return t('projects.executionHintNoAccess')
+  }
+
   const renderProjectActions = (project: ProjectListItem) => {
     const canReviewAsDirector = canApproveAsDirector(project, profile)
+    const canManageExecution = canManageWbs(project, profile)
+    const executionEligibleStatus =
+      project.status === 'approved' ||
+      project.status === 'in_progress' ||
+      project.status === 'paused'
 
     return (
       <div className="flex flex-wrap gap-2">
@@ -339,6 +449,58 @@ export function ProjectsPage() {
             <Send className="size-4" />
             {t('common.submit')}
           </Button>
+        ) : null}
+        {canManageExecution && project.status === 'approved' ? (
+          <Button
+            size="sm"
+            onClick={() => void handleStartExecution(project)}
+            disabled={isChangingExecutionState}
+          >
+            {t('common.startExecution')}
+          </Button>
+        ) : null}
+        {canManageExecution && project.status === 'in_progress' ? (
+          <>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => openPauseExecution(project)}
+              disabled={isChangingExecutionState}
+            >
+              {t('common.pauseExecution')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => void handleCompleteExecution(project)}
+              disabled={isChangingExecutionState}
+            >
+              {t('common.completeExecution')}
+            </Button>
+          </>
+        ) : null}
+        {canManageExecution && project.status === 'paused' ? (
+          <Button
+            size="sm"
+            onClick={() => void handleResumeExecution(project)}
+            disabled={isChangingExecutionState}
+          >
+            {t('common.resumeExecution')}
+          </Button>
+        ) : null}
+        {!canManageExecution && executionEligibleStatus ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="sm" variant="ghost" disabled>
+                  <Lock className="size-4" />
+                  {t('projects.executionActionsLocked')}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={6}>
+                {getExecutionPermissionHint(project)}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ) : null}
       </div>
     )
@@ -490,6 +652,13 @@ export function ProjectsPage() {
             projectTitle={rejectingProject?.title ?? null}
             onSubmit={handleReject}
             isSubmitting={rejectProject.isPending}
+          />
+          <ProjectPauseDialog
+            open={pauseDialogOpen}
+            onOpenChange={setPauseDialogOpen}
+            projectTitle={pausingProject?.title ?? null}
+            onSubmit={handlePauseExecution}
+            isSubmitting={pauseProjectExecution.isPending}
           />
         </>
       }

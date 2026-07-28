@@ -78,6 +78,79 @@
 - Updated dashboard localization for new filter labels and task-metrics columns in `ar/en`
 - Validation: `npm run verify` and `npm run build` both passed
 
+### 2026-07-28 (session 40)
+
+- Added explicit project execution transition hook `useStartProjectExecution` in `useProjects.ts` to move project status from `approved` to `in_progress`
+- Added "Start execution" action on `ProjectDetailPage` for users who can manage WBS, visible only while project status is `approved`
+- Added localized labels/toasts for the new action in `src/i18n/locales/ar.ts` and `src/i18n/locales/en.ts`
+- Validation: `npm run verify` and `npm run build` passed; npm printed `Unknown env config "devdir"` warning (environment-level, not project code)
+
+### 2026-07-28 (session 41)
+
+- Completed lifecycle + RBAC review of project flow across frontend guards and Supabase RLS
+- Findings: current flow is functional but governance/security is weak due to missing server-side state-machine enforcement and over-permissive project update rights for FM/PM
+- Identified UI/RLS mismatch: proposal discussion is restricted in UI but not fully enforced at DB comment insert policy
+- Prepared recommended target flow (global-style): explicit transition matrix, guard-based transitions, RPC-based state changes, and stricter completion/pause rules
+
+### 2026-07-28 (session 42)
+
+- Added migration `20260728110000_tighten_project_rls.sql`
+- Projects RLS hardening: PM direct project updates are now limited to execution-stage statuses only (`approved`, `in_progress`, `paused`)
+- Comments RLS alignment: project-level comment inserts during proposal statuses (`draft`, `proposed`, `rejected`) are now restricted to company director + factory manager (matching UI policy)
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 43)
+
+- Added execution lifecycle actions to `ProjectDetailPage`: pause, resume, complete (in addition to start)
+- Added `ProjectPauseDialog` with required reason validation and localized labels/messages
+- Added `usePauseProjectExecution`, `useResumeProjectExecution`, and `useCompleteProjectExecution` hooks using `transition_project_status` RPC
+- Extended validation/i18n dictionaries (`ar/en`) with pause reason and execution action/result messages
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 44)
+
+- Added the same execution lifecycle quick actions to `ProjectsPage` rows/cards: start, pause, resume, complete
+- Reused `canManageWbs` to keep role/scoped execution permissions consistent with project detail behavior
+- Integrated `ProjectPauseDialog` in `ProjectsPage` for pause reason capture before transition RPC call
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 45)
+
+- Added locked execution action indicator in `ProjectsPage` when status is execution-eligible but user lacks permission
+- Added localized tooltip reasons (`ar/en`) for common denial causes (out-of-factory scope, PM not assigned, PM not assignee, generic no-access)
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 46)
+
+- Added the same locked execution-action indicator + tooltip reasons to `ProjectDetailPage` for consistency with `ProjectsPage`
+- Reused the same localized messages and role-scope hint logic to explain hidden/disabled transitions at detail level
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 47)
+
+- Added migration `20260728113000_project_status_audit_log.sql` with `project_status_transitions` audit table + read RLS scoped by `can_access_project(project_id)`
+- Extended `transition_project_status` DB function to append immutable transition records (`from_status`, `to_status`, `changed_by`, `changed_by_name`, `changed_by_role`, `reason`, `created_at`)
+- Added frontend query support (`queryKeys.projectStatusTransitions`, `useProjectStatusTransitions`) and cache invalidation after transitions/comments
+- Enhanced `ProjectActivityTab` with a dedicated "Status transitions" section beside comments, fully localized (`ar/en`)
+- Updated `src/types/database.ts` for the new audit table shape
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 48)
+
+- Added migration `20260728114500_unified_activity_feed.sql` to unify comments and status transitions in `get_project_activity`
+- Extended RPC return payload with `activity_kind`, transition fields (`from_status`, `to_status`, `reason`), while keeping comment context fields
+- Refactored `ProjectActivityTab` to render a single chronological feed instead of separate transitions/comments sections
+- Updated frontend RPC typing and activity hook mapping for the unified feed shape
+- Validation: `npm run verify` and `npm run build` both passed
+
+### 2026-07-28 (session 49)
+
+- Added migration `20260728120000_create_comment_rpc.sql` introducing `create_comment(p_entity_type, p_entity_id, p_body)` with server-side author resolution via `auth.uid()`
+- Switched `useCreateComment` from direct `comments` insert to `supabase.rpc('create_comment', ...)`
+- Updated `CommentThread` and escalation submit flow to remove client-provided `authorId`
+- Updated Supabase function typing in `src/types/database.ts` for the new RPC
+- Validation: `npm run verify` and `npm run build` both passed
+
 ### 2026-07-27 (session 35)
 
 - **Migration consolidation (12 → 8):** merged `handle_new_user` chain into `20260722110000`; FM profile policy into same; `revoke_user_sessions` → `20260727120000`; `grant_api_privileges` → `20260727130000` (last, with revokes on `recalculate_project_progress` + trigger fns)

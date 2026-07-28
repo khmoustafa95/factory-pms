@@ -83,8 +83,13 @@ export function ProjectActivityTab({
               </p>
             ) : (
               activity.map((item) => {
-                const role = parseUserRole(item.author?.role)
-                const escalated = isEscalationComment(item.body)
+                const role = parseUserRole(item.author.role)
+                const isStatusTransition =
+                  item.activity_kind === 'status_transition'
+                const escalated =
+                  !isStatusTransition && item.body
+                    ? isEscalationComment(item.body)
+                    : false
 
                 return (
                   <div
@@ -92,16 +97,22 @@ export function ProjectActivityTab({
                     className="rounded-lg border border-border bg-muted p-3"
                   >
                     <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <Badge variant="outline">
-                        {getActivityContextLabel(t, item.entity_type)}
-                      </Badge>
+                      {isStatusTransition ? (
+                        <Badge variant="secondary">
+                          {t('activity.statusChanged')}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">
+                          {getActivityContextLabel(t, item.entity_type)}
+                        </Badge>
+                      )}
                       {escalated ? (
                         <Badge variant="destructive">
                           {t('common.escalate')}
                         </Badge>
                       ) : null}
                       <span className="font-medium">
-                        {item.author?.full_name ?? t('common.user')}
+                        {item.author.full_name ?? t('common.user')}
                       </span>
                       {role ? (
                         <span className="text-muted-foreground">
@@ -112,11 +123,30 @@ export function ProjectActivityTab({
                         {formatLocalizedDateTime(item.created_at, locale)}
                       </span>
                     </div>
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
-                      {escalated
-                        ? item.body.replace(`${ESCALATION_PREFIX} `, '')
-                        : item.body}
-                    </p>
+                    {isStatusTransition ? (
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
+                        {t('activity.statusTransitionSummary', {
+                          from: item.from_status
+                            ? t(`projectStatus.${item.from_status}`)
+                            : '—',
+                          to: item.to_status
+                            ? t(`projectStatus.${item.to_status}`)
+                            : '—',
+                        })}
+                      </p>
+                    ) : null}
+                    {!isStatusTransition && item.body ? (
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
+                        {escalated
+                          ? item.body.replace(`${ESCALATION_PREFIX} `, '')
+                          : item.body}
+                      </p>
+                    ) : null}
+                    {isStatusTransition && item.reason ? (
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                        {item.reason}
+                      </p>
+                    ) : null}
                   </div>
                 )
               })

@@ -402,6 +402,57 @@ export interface Database {
           },
         ]
       }
+      project_status_transitions: {
+        Row: {
+          id: string
+          project_id: string
+          from_status: ProjectStatus
+          to_status: ProjectStatus
+          changed_by: string
+          changed_by_name: string
+          changed_by_role: UserRole
+          reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          from_status: ProjectStatus
+          to_status: ProjectStatus
+          changed_by: string
+          changed_by_name: string
+          changed_by_role: UserRole
+          reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          from_status?: ProjectStatus
+          to_status?: ProjectStatus
+          changed_by?: string
+          changed_by_name?: string
+          changed_by_role?: UserRole
+          reason?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_status_transitions_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'project_status_transitions_changed_by_fkey'
+            columns: ['changed_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       comments: {
         Row: {
           id: string
@@ -480,15 +531,35 @@ export interface Database {
         Args: { p_project_id: string }
         Returns: {
           id: string
+          activity_kind: string
           entity_type: EntityType
           entity_id: string
           author_id: string
-          body: string
+          body: string | null
+          from_status: ProjectStatus | null
+          to_status: ProjectStatus | null
+          reason: string | null
           created_at: string
           updated_at: string
           author_full_name: string
           author_role: UserRole
         }[]
+      }
+      transition_project_status: {
+        Args: {
+          p_project_id: string
+          p_target_status: ProjectStatus
+          p_reason?: string | null
+        }
+        Returns: Database['public']['Tables']['projects']['Row']
+      }
+      create_comment: {
+        Args: {
+          p_entity_type: EntityType
+          p_entity_id: string
+          p_body: string
+        }
+        Returns: Database['public']['Tables']['comments']['Row']
       }
     }
     Enums: {

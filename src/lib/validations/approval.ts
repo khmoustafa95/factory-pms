@@ -10,6 +10,16 @@ export function createProjectRejectSchema(t: ValidationTranslator) {
   })
 }
 
+export function createProjectPauseSchema(t: ValidationTranslator) {
+  return z.object({
+    pause_reason: z.string().trim().min(3, t('validation.pauseReasonMin')),
+  })
+}
+
 export type ProjectRejectValues = z.infer<
   ReturnType<typeof createProjectRejectSchema>
+>
+
+export type ProjectPauseValues = z.infer<
+  ReturnType<typeof createProjectPauseSchema>
 >

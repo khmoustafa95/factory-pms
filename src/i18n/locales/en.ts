@@ -45,6 +45,10 @@ export const en = {
     manageAccounts: 'Manage accounts',
     newProposal: 'New proposal',
     submit: 'Submit',
+    startExecution: 'Start execution',
+    pauseExecution: 'Pause execution',
+    resumeExecution: 'Resume execution',
+    completeExecution: 'Complete execution',
     approve: 'Approve',
     reject: 'Reject',
     escalate: 'Critical alert',
@@ -220,6 +224,27 @@ export const en = {
     approveFailed: 'Unable to approve proposal',
     proposalRejected: 'Proposal rejected',
     rejectFailed: 'Unable to reject proposal',
+    executionStarted: 'Project moved to in-progress',
+    startExecutionFailed: 'Unable to start project execution',
+    executionPaused: 'Project execution paused',
+    pauseExecutionFailed: 'Unable to pause project execution',
+    executionResumed: 'Project execution resumed',
+    resumeExecutionFailed: 'Unable to resume project execution',
+    executionCompleted: 'Project marked as completed',
+    completeExecutionFailed: 'Unable to complete project execution',
+    executionActionsLocked: 'Execution actions locked',
+    executionHintNoAccess:
+      'You do not have permission to change execution status for this project.',
+    executionHintFactoryScope:
+      'This project is outside your factory scope, so execution actions are unavailable.',
+    executionHintPmNotAssigned:
+      'This project has no assigned project manager yet.',
+    executionHintPmOtherAssignee:
+      'Execution actions are available only for the assigned project manager.',
+    pauseProject: 'Pause project',
+    pauseReason: 'Pause reason',
+    pauseDescription:
+      'Provide a clear reason to pause execution so the team can resume with context.',
     pmRequiredToSubmit:
       'Assign a project manager before submitting the proposal',
     openProposal: 'Open',
@@ -349,6 +374,16 @@ export const en = {
   activity: {
     title: 'Activity',
     description: 'Comments and updates across the project, phases, and tasks.',
+    statusTransitionsTitle: 'Status transitions',
+    statusTransitionsDescription:
+      'Audit trail of lifecycle state changes for this project.',
+    statusTransitionsEmpty: 'No status transitions recorded yet.',
+    statusTransitionsLoadFailed: 'Failed to load status transitions',
+    statusChanged: 'Status changed',
+    statusTransitionSummary: '{{from}} -> {{to}}',
+    commentsTitle: 'Comments and updates',
+    commentsDescription:
+      'Project, phase, and task discussions including critical alerts.',
     placeholder: 'Write a comment…',
     post: 'Post comment',
     posting: 'Posting…',
@@ -503,6 +538,7 @@ export const en = {
     codeMax: 'Code must be at most 12 characters',
     codeFormat: 'Code must be uppercase letters, numbers, _ or -',
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
+    pauseReasonMin: 'Pause reason must be at least 3 characters',
     commentRequired: 'Comment cannot be empty',
     commentMaxLength: 'Comment cannot exceed 4000 characters',
     escalationMin: 'Critical alert message must be at least 3 characters',

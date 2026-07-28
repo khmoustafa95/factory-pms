@@ -4,6 +4,11 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-07-28 — Comment creation now goes through `create_comment()` RPC and does not accept client `author_id` — author identity is resolved server-side from `auth.uid()` to prevent spoofing and keep lifecycle actions consistently RPC-driven.
+- 2026-07-28 — Project activity is unified through `get_project_activity` (comments + status transitions) with an `activity_kind` discriminator — a single server-sorted timeline simplifies UI consistency and avoids dual-query ordering drift between sections.
+- 2026-07-28 — Status transitions are persisted in an immutable audit table (`project_status_transitions`) and rendered in project activity — lifecycle governance requires a durable history independent of mutable comments.
+- 2026-07-28 — Tightened RLS to remove proposal-stage PM direct project updates and enforce proposal-discussion commenters at DB level (director + factory manager) — keeps governance consistent even if clients bypass frontend guards.
+- 2026-07-28 — Project lifecycle transitions moved to a dedicated DB RPC `transition_project_status()` with a guard trigger blocking direct `projects.status` updates — UI-only guardrails are insufficient; centralizing transitions in DB enforces role/state/validation rules consistently across all clients.
 - 2026-07-27 — Squashed iterative `20260726` migrations into base security/auth migrations; `grant_api_privileges` runs **last** with explicit `REVOKE EXECUTE` on `recalculate_project_progress` and trigger helpers — blanket function grants had re-opened SECURITY DEFINER internals to authenticated clients.
 - 2026-07-27 — Disallow SVG in `app-assets` public bucket — SVG in public storage is an XSS/phishing vector when opened directly; raster formats only (PNG/JPEG/WebP).
 - 2026-07-27 — Proposal **discussion** is company director ↔ factory manager; **approval** is by company director. Assigned PM is required on submit for execution after approval (not the proposal discussant/approver). Supporting files remain in `project-attachments`.

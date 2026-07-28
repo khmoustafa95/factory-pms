@@ -31,7 +31,7 @@ import {
 
 export function EscalationsPage() {
   const { t, locale } = useTranslation()
-  const { user, profile } = useAuth()
+  const { profile } = useAuth()
   const isDirector = isCompanyDirector(profile?.role)
   const listState = useListQueryState({ factoryId: 'all' })
   const { data: factories = [] } = useFactories()
@@ -48,14 +48,13 @@ export function EscalationsPage() {
   const notAvailable = t('common.notAvailable')
 
   const handleEscalationSubmit = async (values: EscalationFormValues) => {
-    if (!user?.id || !selectedTask) {
+    if (!selectedTask) {
       return
     }
 
     try {
       await createComment.mutateAsync({
         values: { body: formatEscalationBody(values.message) },
-        authorId: user.id,
       })
       toast.success(t('escalations.sent'))
       setSelectedTask(null)

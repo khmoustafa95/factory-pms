@@ -152,6 +152,9 @@ export function useUpdateProject() {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.project(data.id),
       })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
+      })
     },
   })
 }
@@ -160,19 +163,13 @@ export function useSubmitProject() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
+    mutationFn: async ({ id }: { id: string; userId: string }) => {
       const supabase = getSupabase()
-      const { data, error } = await supabase
-        .from('projects')
-        .update({
-          status: 'proposed',
-          proposed_by: userId,
-          rejection_reason: null,
-        })
-        .eq('id', id)
-        .in('status', ['draft', 'rejected'])
-        .select('*')
-        .single()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'proposed',
+        p_reason: null,
+      })
 
       if (error) {
         throw error
@@ -190,20 +187,13 @@ export function useApproveProject() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
+    mutationFn: async ({ id }: { id: string; userId: string }) => {
       const supabase = getSupabase()
-      const { data, error } = await supabase
-        .from('projects')
-        .update({
-          status: 'approved',
-          approved_by: userId,
-          approved_at: new Date().toISOString(),
-          rejection_reason: null,
-        })
-        .eq('id', id)
-        .eq('status', 'proposed')
-        .select('*')
-        .single()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'approved',
+        p_reason: null,
+      })
 
       if (error) {
         throw error
@@ -215,6 +205,9 @@ export function useApproveProject() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
       await queryClient.invalidateQueries({
         queryKey: queryKeys.project(data.id),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
       })
     },
   })
@@ -232,18 +225,131 @@ export function useRejectProject() {
       rejectionReason: string
     }) => {
       const supabase = getSupabase()
-      const { data, error } = await supabase
-        .from('projects')
-        .update({
-          status: 'rejected',
-          rejection_reason: rejectionReason.trim(),
-          approved_by: null,
-          approved_at: null,
-        })
-        .eq('id', id)
-        .eq('status', 'proposed')
-        .select('*')
-        .single()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'rejected',
+        p_reason: rejectionReason.trim(),
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
+      })
+    },
+  })
+}
+
+export function useStartProjectExecution() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'in_progress',
+        p_reason: null,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
+      })
+    },
+  })
+}
+
+export function usePauseProjectExecution() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'paused',
+        p_reason: reason.trim(),
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
+      })
+    },
+  })
+}
+
+export function useResumeProjectExecution() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'in_progress',
+        p_reason: null,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
+      })
+    },
+  })
+}
+
+export function useCompleteProjectExecution() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'completed',
+        p_reason: null,
+      })
 
       if (error) {
         throw error
