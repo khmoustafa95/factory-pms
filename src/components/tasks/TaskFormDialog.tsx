@@ -30,6 +30,7 @@ import {
   NULL_SELECT_VALUE,
   parseNullableSelectValue,
 } from '@/lib/form-utils'
+import { progressPercentForStatus } from '@/lib/progress'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
 import {
   createTaskFormSchema,
@@ -44,6 +45,7 @@ interface TaskFormDialogProps {
   phaseName: string
   phaseStartDate: string | null
   phaseEndDate: string | null
+  remainingWeight: number
   factoryId: string | null | undefined
   onSubmit: (values: TaskFormValues) => Promise<void>
   isSubmitting: boolean
@@ -56,6 +58,13 @@ const TASK_FORM_DEFAULTS: TaskFormValues = {
   blocked_reason: '',
   due_date: '',
   assignee_id: null,
+  weight_percent: 0,
+  progress_percent: 0,
+  expected_duration_days: 1,
+  actual_duration_days: 0,
+  expected_cost: 0,
+  actual_cost: 0,
+  cost_category: 'non_raw_material',
 }
 
 export function TaskFormDialog({
@@ -65,20 +74,25 @@ export function TaskFormDialog({
   phaseName,
   phaseStartDate,
   phaseEndDate,
+  remainingWeight,
   factoryId,
   onSubmit,
   isSubmitting,
 }: TaskFormDialogProps) {
   const { t, locale } = useTranslation()
   const { data: assignees = [] } = useFactoryProjectManagers(factoryId)
+  const maxWeight = task
+    ? remainingWeight + Number(task.weight_percent)
+    : remainingWeight
 
   const taskFormSchema = useMemo(
     () =>
       createTaskFormSchema(t, {
         phaseStartDate,
         phaseEndDate,
+        remainingWeight: maxWeight,
       }),
-    [phaseEndDate, phaseStartDate, t],
+    [maxWeight, phaseEndDate, phaseStartDate, t],
   )
 
   const { form, createSubmitHandler } = useFormDialog({
@@ -92,14 +106,27 @@ export function TaskFormDialog({
       blocked_reason: task?.blocked_reason ?? '',
       due_date: task?.due_date ?? '',
       assignee_id: task?.assignee_id ?? null,
+      weight_percent: task?.weight_percent ?? Math.min(maxWeight, 100),
+      progress_percent:
+        task?.progress_percent ??
+        progressPercentForStatus(task?.status ?? 'todo'),
+      expected_duration_days: task?.expected_duration_days ?? 1,
+      actual_duration_days: task?.actual_duration_days ?? 0,
+      expected_cost: task?.expected_cost ?? 0,
+      actual_cost: task?.actual_cost ?? 0,
+      cost_category: task?.cost_category ?? 'non_raw_material',
     }),
-    resetDependencies: [task],
+    resetDependencies: [task, maxWeight],
   })
 
   const selectedStatus = useWatch({ control: form.control, name: 'status' })
   const selectedAssigneeId = useWatch({
     control: form.control,
     name: 'assignee_id',
+  })
+  const selectedCostCategory = useWatch({
+    control: form.control,
+    name: 'cost_category',
   })
 
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
@@ -109,15 +136,21 @@ export function TaskFormDialog({
       ? `${formatLocalizedDate(phaseStartDate, locale)} → ${formatLocalizedDate(phaseEndDate, locale)}`
       : t('wbs.noPhaseSchedule')
 
+  const progressEditable =
+    selectedStatus === 'in_progress' || selectedStatus === 'blocked'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {task ? t('wbs.editTask') : t('wbs.newTask')}
           </DialogTitle>
           <DialogDescription>
-            {t('common.phase')}: {phaseName}
+            {t('common.phase')}: {phaseName} ·{' '}
+            {t('wbs.taskWeightRemaining', {
+              remaining: maxWeight.toFixed(1),
+            })}
           </DialogDescription>
         </DialogHeader>
 
@@ -150,6 +183,13 @@ export function TaskFormDialog({
                     value === 'done'
                   ) {
                     form.setValue('status', value)
+                    form.setValue(
+                      'progress_percent',
+                      progressPercentForStatus(
+                        value,
+                        form.getValues('progress_percent'),
+                      ),
+                    )
                   }
                 }}
               >
@@ -182,6 +222,125 @@ export function TaskFormDialog({
           <p className="text-xs text-muted-foreground">
             {t('wbs.taskDueDateHint', { range: phaseRangeHint })}
           </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="task-weight">{t('wbs.taskWeight')}</Label>
+              <Input
+                id="task-weight"
+                type="number"
+                min="0"
+                max={maxWeight}
+                step="0.1"
+                {...form.register('weight_percent', { valueAsNumber: true })}
+              />
+              <FormFieldError error={form.formState.errors.weight_percent} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="task-progress">{t('wbs.taskProgress')}</Label>
+              <Input
+                id="task-progress"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                disabled={!progressEditable}
+                {...form.register('progress_percent', { valueAsNumber: true })}
+              />
+              <FormFieldError error={form.formState.errors.progress_percent} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="task-expected-days">
+                {t('wbs.expectedDurationDays')}
+              </Label>
+              <Input
+                id="task-expected-days"
+                type="number"
+                min="0"
+                step="1"
+                {...form.register('expected_duration_days', {
+                  valueAsNumber: true,
+                })}
+              />
+              <FormFieldError
+                error={form.formState.errors.expected_duration_days}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="task-actual-days">
+                {t('wbs.actualDurationDays')}
+              </Label>
+              <Input
+                id="task-actual-days"
+                type="number"
+                min="0"
+                step="1"
+                {...form.register('actual_duration_days', {
+                  valueAsNumber: true,
+                })}
+              />
+              <FormFieldError
+                error={form.formState.errors.actual_duration_days}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="task-expected-cost">
+                {t('wbs.expectedCost')}
+              </Label>
+              <Input
+                id="task-expected-cost"
+                type="number"
+                min="0"
+                step="0.01"
+                {...form.register('expected_cost', { valueAsNumber: true })}
+              />
+              <FormFieldError error={form.formState.errors.expected_cost} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="task-actual-cost">{t('wbs.actualCost')}</Label>
+              <Input
+                id="task-actual-cost"
+                type="number"
+                min="0"
+                step="0.01"
+                {...form.register('actual_cost', { valueAsNumber: true })}
+              />
+              <FormFieldError error={form.formState.errors.actual_cost} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('wbs.costCategory')}</Label>
+            <Select
+              value={selectedCostCategory}
+              onValueChange={(value) => {
+                if (value === 'raw_material' || value === 'non_raw_material') {
+                  form.setValue('cost_category', value)
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="raw_material">
+                  {t('wbs.costCategoryRaw')}
+                </SelectItem>
+                <SelectItem value="non_raw_material">
+                  {t('wbs.costCategoryNonRaw')}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {selectedStatus === 'blocked' ? (
             <div className="space-y-2">

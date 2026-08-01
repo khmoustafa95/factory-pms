@@ -1,4 +1,5 @@
 import { ProgressBar } from '@/components/progress/ProgressBar'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -12,11 +13,22 @@ import {
   calculatePhaseProgress,
   calculateProjectProgress,
 } from '@/lib/progress'
-import type { Phase } from '@/types/database'
+import { deriveProjectFieldHealth } from '@/lib/phase-metrics'
+import type { FieldHealthStatus, Phase } from '@/types/database'
 
 interface ProjectProgressOverviewProps {
   phases: Phase[]
   tasks: TaskListItem[]
+}
+
+const HEALTH_VARIANT: Record<
+  FieldHealthStatus,
+  'default' | 'secondary' | 'destructive' | 'outline'
+> = {
+  on_track: 'secondary',
+  delayed: 'destructive',
+  over_budget: 'destructive',
+  delayed_and_over_budget: 'destructive',
 }
 
 export function ProjectProgressOverview({
@@ -25,12 +37,18 @@ export function ProjectProgressOverview({
 }: ProjectProgressOverviewProps) {
   const { t } = useTranslation()
   const projectProgress = calculateProjectProgress(phases, tasks)
+  const fieldHealth = deriveProjectFieldHealth(phases, tasks)
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('progress.title')}</CardTitle>
-        <CardDescription>{t('progress.description')}</CardDescription>
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div className="space-y-1">
+          <CardTitle>{t('progress.title')}</CardTitle>
+          <CardDescription>{t('progress.description')}</CardDescription>
+        </div>
+        <Badge variant={HEALTH_VARIANT[fieldHealth]}>
+          {t(`progress.fieldHealth.${fieldHealth}`)}
+        </Badge>
       </CardHeader>
       <CardContent className="space-y-5">
         <ProgressBar label={t('progress.overall')} value={projectProgress} />

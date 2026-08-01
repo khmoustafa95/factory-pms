@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Field tracking: phase budget/deviations/problems + task weight/duration/cost/progress (Excel-aligned rollups)
 - [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
 - [x] Vite + React 19 + TypeScript + Tailwind v4 scaffold
 - [x] React Router + basic layout / home page
@@ -50,6 +51,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-01 (session 52)
+
+- Field tracking (Excel-aligned): tasks carry weight/progress/duration/cost/category; phases carry expected budget, actual end, deviation reasons, problem/solution
+- Progress: `Σ (phase.weight × Σ (task.weight × task.progress))`; DB `recalculate_project_progress` updated
+- UI: WBS phase metric cards (planned vs actual, deviations), task weight/progress columns, field-health badge on progress overview
+- Migration `20260801140000_phase_field_tracking.sql` + seed; `npm run verify` + progress unit tests passed
 
 ### 2026-07-27 (session 36)
 

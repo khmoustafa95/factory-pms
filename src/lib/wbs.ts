@@ -60,3 +60,33 @@ export function isPhaseWeightSumValid(
 
   return Math.abs(sumPhaseWeights(phases) - 100) < 0.01
 }
+
+export function sumTaskWeights(
+  tasks: Array<{ weight_percent: number }>,
+): number {
+  return tasks.reduce((sum, task) => sum + Number(task.weight_percent), 0)
+}
+
+export function isTaskWeightSumValid(
+  tasks: Array<{ weight_percent: number }>,
+): boolean {
+  if (tasks.length === 0) {
+    return true
+  }
+
+  return Math.abs(sumTaskWeights(tasks) - 100) < 0.01
+}
+
+export function remainingTaskWeight(
+  tasks: Array<{ id?: string; weight_percent: number }>,
+  excludeTaskId?: string,
+): number {
+  const total = tasks.reduce((sum, task) => {
+    if (excludeTaskId && task.id === excludeTaskId) {
+      return sum
+    }
+    return sum + Number(task.weight_percent)
+  }, 0)
+
+  return Math.max(0, 100 - total)
+}

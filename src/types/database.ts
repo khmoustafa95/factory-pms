@@ -24,7 +24,12 @@ export type DurationUnit = 'day' | 'week' | 'month'
 
 export type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done'
 
+export type CostCategory = 'raw_material' | 'non_raw_material'
+
 export type EntityType = 'project' | 'phase' | 'task'
+
+export type FieldHealthStatus =
+  'on_track' | 'delayed' | 'over_budget' | 'delayed_and_over_budget'
 
 export interface Database {
   public: {
@@ -190,6 +195,12 @@ export interface Database {
           status: PhaseStatus
           start_date: string | null
           end_date: string | null
+          expected_budget: number
+          actual_end_date: string | null
+          schedule_deviation_reason: string | null
+          financial_deviation_reason: string | null
+          problem_description: string | null
+          solution_in_progress: string | null
           sort_order: number
           created_at: string
           updated_at: string
@@ -203,6 +214,12 @@ export interface Database {
           status?: PhaseStatus
           start_date?: string | null
           end_date?: string | null
+          expected_budget?: number
+          actual_end_date?: string | null
+          schedule_deviation_reason?: string | null
+          financial_deviation_reason?: string | null
+          problem_description?: string | null
+          solution_in_progress?: string | null
           sort_order?: number
           created_at?: string
           updated_at?: string
@@ -216,6 +233,12 @@ export interface Database {
           status?: PhaseStatus
           start_date?: string | null
           end_date?: string | null
+          expected_budget?: number
+          actual_end_date?: string | null
+          schedule_deviation_reason?: string | null
+          financial_deviation_reason?: string | null
+          problem_description?: string | null
+          solution_in_progress?: string | null
           sort_order?: number
           created_at?: string
           updated_at?: string
@@ -241,6 +264,13 @@ export interface Database {
           blocked_reason: string | null
           assignee_id: string | null
           due_date: string | null
+          weight_percent: number
+          progress_percent: number
+          expected_duration_days: number
+          actual_duration_days: number
+          expected_cost: number
+          actual_cost: number
+          cost_category: CostCategory
           sort_order: number
           created_at: string
           updated_at: string
@@ -255,6 +285,13 @@ export interface Database {
           blocked_reason?: string | null
           assignee_id?: string | null
           due_date?: string | null
+          weight_percent?: number
+          progress_percent?: number
+          expected_duration_days?: number
+          actual_duration_days?: number
+          expected_cost?: number
+          actual_cost?: number
+          cost_category?: CostCategory
           sort_order?: number
           created_at?: string
           updated_at?: string
@@ -269,6 +306,13 @@ export interface Database {
           blocked_reason?: string | null
           assignee_id?: string | null
           due_date?: string | null
+          weight_percent?: number
+          progress_percent?: number
+          expected_duration_days?: number
+          actual_duration_days?: number
+          expected_cost?: number
+          actual_cost?: number
+          cost_category?: CostCategory
           sort_order?: number
           created_at?: string
           updated_at?: string
@@ -582,6 +626,8 @@ export interface Database {
       phase_status: PhaseStatus
       task_status: TaskStatus
       entity_type: EntityType
+      duration_unit: DurationUnit
+      cost_category: CostCategory
     }
     CompositeTypes: Record<string, never>
   }

@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-08-01 — Field tracking model: tasks are the source of actual duration/cost/progress (weights sum to 100% per phase in UI); phases hold planned baseline (`expected_budget`, schedule dates) plus deviation justifications and problem/solution — mirrors the legacy Excel tracker without importing spreadsheets.
+- 2026-08-01 — DB enforces task weight sum **≤ 100%** (not exact equality) because single-row SPA mutations cannot atomically rebalance siblings; UI requires exact 100% (same pattern as phase weights). Delete rebalances freed weight onto a sibling.
 - 2026-07-28 — Comment creation now goes through `create_comment()` RPC and does not accept client `author_id` — author identity is resolved server-side from `auth.uid()` to prevent spoofing and keep lifecycle actions consistently RPC-driven.
 - 2026-07-28 — Project activity is unified through `get_project_activity` (comments + status transitions) with an `activity_kind` discriminator — a single server-sorted timeline simplifies UI consistency and avoids dual-query ordering drift between sections.
 - 2026-07-28 — Status transitions are persisted in an immutable audit table (`project_status_transitions`) and rendered in project activity — lifecycle governance requires a durable history independent of mutable comments.

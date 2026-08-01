@@ -29,6 +29,8 @@ interface PhaseFormDialogProps {
   phase?: Phase | null
   remainingWeight: number
   schedule: ProjectScheduleBounds
+  actualCostTotal?: number
+  scheduleDeviationDays?: number | null
   onSubmit: (values: PhaseFormValues) => Promise<void>
   isSubmitting: boolean
 }
@@ -39,6 +41,12 @@ const PHASE_FORM_DEFAULTS: PhaseFormValues = {
   weight_percent: 0,
   start_date: '',
   end_date: '',
+  expected_budget: 0,
+  actual_end_date: '',
+  schedule_deviation_reason: '',
+  financial_deviation_reason: '',
+  problem_description: '',
+  solution_in_progress: '',
 }
 
 export function PhaseFormDialog({
@@ -47,6 +55,8 @@ export function PhaseFormDialog({
   phase,
   remainingWeight,
   schedule,
+  actualCostTotal = 0,
+  scheduleDeviationDays = null,
   onSubmit,
   isSubmitting,
 }: PhaseFormDialogProps) {
@@ -56,8 +66,13 @@ export function PhaseFormDialog({
     : remainingWeight
 
   const phaseFormSchema = useMemo(
-    () => createPhaseFormSchema(t, { schedule }),
-    [schedule, t],
+    () =>
+      createPhaseFormSchema(t, {
+        schedule,
+        actualCostTotal,
+        scheduleDeviationDays,
+      }),
+    [actualCostTotal, schedule, scheduleDeviationDays, t],
   )
 
   const { form } = useFormDialog({
@@ -70,8 +85,20 @@ export function PhaseFormDialog({
       weight_percent: phase?.weight_percent ?? Math.min(maxWeight, 0),
       start_date: phase?.start_date ?? schedule.start ?? '',
       end_date: phase?.end_date ?? schedule.end ?? '',
+      expected_budget: phase?.expected_budget ?? 0,
+      actual_end_date: phase?.actual_end_date ?? '',
+      schedule_deviation_reason: phase?.schedule_deviation_reason ?? '',
+      financial_deviation_reason: phase?.financial_deviation_reason ?? '',
+      problem_description: phase?.problem_description ?? '',
+      solution_in_progress: phase?.solution_in_progress ?? '',
     }),
-    resetDependencies: [phase, maxWeight, schedule],
+    resetDependencies: [
+      phase,
+      maxWeight,
+      schedule,
+      actualCostTotal,
+      scheduleDeviationDays,
+    ],
   })
 
   const handleSubmit = form.handleSubmit(async (values) => {
@@ -97,7 +124,7 @@ export function PhaseFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {phase ? t('wbs.editPhase') : t('wbs.newPhase')}
@@ -140,18 +167,32 @@ export function PhaseFormDialog({
               <FormFieldError error={form.formState.errors.weight_percent} />
             </div>
 
-            {phase ? (
-              <div className="space-y-2">
-                <Label>{t('wbs.phaseStatus')}</Label>
-                <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
-                  {getPhaseStatusLabel(t, phase.status)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('wbs.phaseStatusHint')}
-                </p>
-              </div>
-            ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="phase-expected-budget">
+                {t('wbs.expectedBudget')}
+              </Label>
+              <Input
+                id="phase-expected-budget"
+                type="number"
+                min="0"
+                step="0.01"
+                {...form.register('expected_budget', { valueAsNumber: true })}
+              />
+              <FormFieldError error={form.formState.errors.expected_budget} />
+            </div>
           </div>
+
+          {phase ? (
+            <div className="space-y-2">
+              <Label>{t('wbs.phaseStatus')}</Label>
+              <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
+                {getPhaseStatusLabel(t, phase.status)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('wbs.phaseStatusHint')}
+              </p>
+            </div>
+          ) : null}
 
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">
@@ -183,6 +224,71 @@ export function PhaseFormDialog({
               />
               <FormFieldError error={form.formState.errors.end_date} />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phase-actual-end">{t('wbs.actualEndDate')}</Label>
+            <Input
+              id="phase-actual-end"
+              type="date"
+              {...form.register('actual_end_date')}
+            />
+            <FormFieldError error={form.formState.errors.actual_end_date} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phase-schedule-reason">
+              {t('wbs.scheduleDeviationReason')}
+            </Label>
+            <Textarea
+              id="phase-schedule-reason"
+              rows={2}
+              {...form.register('schedule_deviation_reason')}
+            />
+            <FormFieldError
+              error={form.formState.errors.schedule_deviation_reason}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phase-financial-reason">
+              {t('wbs.financialDeviationReason')}
+            </Label>
+            <Textarea
+              id="phase-financial-reason"
+              rows={2}
+              {...form.register('financial_deviation_reason')}
+            />
+            <FormFieldError
+              error={form.formState.errors.financial_deviation_reason}
+            />
+            {actualCostTotal > 0 ? (
+              <p className="text-xs text-muted-foreground">
+                {t('wbs.actualCostHint', {
+                  amount: actualCostTotal.toFixed(2),
+                })}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phase-problem">{t('wbs.problemDescription')}</Label>
+            <Textarea
+              id="phase-problem"
+              rows={2}
+              {...form.register('problem_description')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phase-solution">
+              {t('wbs.solutionInProgress')}
+            </Label>
+            <Textarea
+              id="phase-solution"
+              rows={2}
+              {...form.register('solution_in_progress')}
+            />
           </div>
 
           <DialogFooter>

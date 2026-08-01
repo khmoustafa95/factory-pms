@@ -1,17 +1,23 @@
 import type { Phase, Task } from '@/types/database'
 
-export function calculatePhaseProgress(tasks: Task[]): number {
+export function calculatePhaseProgress(
+  tasks: Array<Pick<Task, 'weight_percent' | 'progress_percent'>>,
+): number {
   if (tasks.length === 0) {
     return 0
   }
 
-  const completed = tasks.filter((task) => task.status === 'done').length
-  return (completed / tasks.length) * 100
+  return tasks.reduce((total, task) => {
+    return (
+      total +
+      (Number(task.weight_percent) / 100) * Number(task.progress_percent)
+    )
+  }, 0)
 }
 
 export function calculateProjectProgress(
-  phases: Phase[],
-  tasks: Task[],
+  phases: Array<Pick<Phase, 'id' | 'weight_percent'>>,
+  tasks: Array<Pick<Task, 'phase_id' | 'weight_percent' | 'progress_percent'>>,
 ): number {
   if (phases.length === 0) {
     return 0
@@ -26,4 +32,20 @@ export function calculateProjectProgress(
 
 export function formatProgress(value: number): string {
   return `${Math.round(value)}%`
+}
+
+export function progressPercentForStatus(
+  status: Task['status'],
+  currentProgress?: number,
+): number {
+  if (status === 'done') {
+    return 100
+  }
+  if (status === 'todo') {
+    return 0
+  }
+  if (currentProgress != null && currentProgress > 0 && currentProgress < 100) {
+    return currentProgress
+  }
+  return 50
 }

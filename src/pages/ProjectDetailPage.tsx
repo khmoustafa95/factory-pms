@@ -64,6 +64,7 @@ import {
 import { formatLocalizedBudget } from '@/lib/i18n-format'
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { getProjectScheduleBounds } from '@/lib/duration'
+import { calculatePhaseMetrics } from '@/lib/phase-metrics'
 import { formatProgress } from '@/lib/progress'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
@@ -82,6 +83,7 @@ import {
   canManageWbs,
   canViewWbs,
   isPhaseWeightSumValid,
+  remainingTaskWeight,
   sumPhaseWeights,
 } from '@/lib/wbs'
 import type { PhaseFormValues } from '@/lib/validations/phase'
@@ -397,7 +399,19 @@ export function ProjectDetailPage() {
   }
 
   const activePhase = phases.find((phase) => phase.id === activePhaseId) ?? null
-
+  const activePhaseTasks = activePhaseId
+    ? (tasksByPhase.get(activePhaseId) ?? [])
+    : []
+  const editingPhaseTasks = editingPhase
+    ? (tasksByPhase.get(editingPhase.id) ?? [])
+    : []
+  const editingPhaseMetrics = editingPhase
+    ? calculatePhaseMetrics(editingPhase, editingPhaseTasks)
+    : null
+  const taskRemainingWeight = remainingTaskWeight(
+    activePhaseTasks,
+    editingTask?.id,
+  )
   return (
     <section className="space-y-6">
       <QueryState
@@ -776,6 +790,10 @@ export function ProjectDetailPage() {
                 hasFixedDates: false,
               }
             }
+            actualCostTotal={editingPhaseMetrics?.costs.total ?? 0}
+            scheduleDeviationDays={
+              editingPhaseMetrics?.scheduleDeviationDays ?? null
+            }
             onSubmit={handlePhaseSubmit}
             isSubmitting={createPhase.isPending || updatePhase.isPending}
           />
@@ -786,6 +804,7 @@ export function ProjectDetailPage() {
             phaseName={activePhase?.name ?? t('common.phase')}
             phaseStartDate={activePhase?.start_date ?? null}
             phaseEndDate={activePhase?.end_date ?? null}
+            remainingWeight={taskRemainingWeight}
             factoryId={project.factory_id}
             onSubmit={handleTaskSubmit}
             isSubmitting={createTask.isPending || updateTask.isPending}

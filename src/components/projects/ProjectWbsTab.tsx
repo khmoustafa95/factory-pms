@@ -22,6 +22,8 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { TaskListItem } from '@/hooks/useTasks'
 import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
+import { calculatePhaseMetrics } from '@/lib/phase-metrics'
+import { isTaskWeightSumValid, sumTaskWeights } from '@/lib/wbs'
 import type { Phase } from '@/types/database'
 
 interface ProjectWbsTabProps {
@@ -94,6 +96,9 @@ export function ProjectWbsTab({
           <div className="space-y-4">
             {phases.map((phase) => {
               const phaseTasks = tasksByPhase.get(phase.id) ?? []
+              const metrics = calculatePhaseMetrics(phase, phaseTasks)
+              const taskWeightTotal = sumTaskWeights(phaseTasks)
+              const taskWeightsValid = isTaskWeightSumValid(phaseTasks)
 
               return (
                 <Card key={phase.id}>
@@ -130,6 +135,10 @@ export function ProjectWbsTab({
                         <Button
                           size="sm"
                           onClick={() => onCreateTask(phase.id)}
+                          disabled={
+                            phaseTasks.length > 0 &&
+                            remainingTaskCreateDisabled(phaseTasks)
+                          }
                         >
                           <Plus className="size-4" />
                           {t('common.addTask')}
@@ -137,7 +146,103 @@ export function ProjectWbsTab({
                       </div>
                     ) : null}
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
+                      <MetricLine
+                        label={t('wbs.plannedDuration')}
+                        value={
+                          metrics.plannedDurationDays != null
+                            ? t('wbs.daysValue', {
+                                days: metrics.plannedDurationDays,
+                              })
+                            : t('common.notAvailable')
+                        }
+                      />
+                      <MetricLine
+                        label={t('wbs.actualDuration')}
+                        value={t('wbs.daysValue', {
+                          days: metrics.actualDurationDays,
+                        })}
+                      />
+                      <MetricLine
+                        label={t('wbs.scheduleDeviation')}
+                        value={
+                          metrics.scheduleDeviationDays != null
+                            ? t('wbs.daysValueSigned', {
+                                days: metrics.scheduleDeviationDays,
+                              })
+                            : t('common.notAvailable')
+                        }
+                        warn={
+                          metrics.hasScheduleDeviation &&
+                          (metrics.scheduleDeviationDays ?? 0) > 0
+                        }
+                      />
+                      <MetricLine
+                        label={t('wbs.phaseProgress')}
+                        value={`${Math.round(metrics.progressPercent)}%`}
+                      />
+                      <MetricLine
+                        label={t('wbs.expectedBudget')}
+                        value={metrics.expectedBudget.toFixed(2)}
+                      />
+                      <MetricLine
+                        label={t('wbs.rawMaterialCost')}
+                        value={metrics.costs.rawMaterial.toFixed(2)}
+                      />
+                      <MetricLine
+                        label={t('wbs.nonRawMaterialCost')}
+                        value={metrics.costs.nonRawMaterial.toFixed(2)}
+                      />
+                      <MetricLine
+                        label={t('wbs.financialDeviation')}
+                        value={metrics.financialDeviation.toFixed(2)}
+                        warn={
+                          metrics.hasFinancialDeviation &&
+                          metrics.financialDeviation > 0
+                        }
+                      />
+                    </div>
+
+                    {phase.schedule_deviation_reason ? (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">
+                          {t('wbs.scheduleDeviationReason')}:{' '}
+                        </span>
+                        {phase.schedule_deviation_reason}
+                      </p>
+                    ) : null}
+
+                    {phase.financial_deviation_reason ? (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">
+                          {t('wbs.financialDeviationReason')}:{' '}
+                        </span>
+                        {phase.financial_deviation_reason}
+                      </p>
+                    ) : null}
+
+                    {phase.problem_description ? (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">
+                          {t('wbs.problemDescription')}:{' '}
+                        </span>
+                        {phase.problem_description}
+                        {phase.solution_in_progress
+                          ? ` · ${t('wbs.solutionInProgress')}: ${phase.solution_in_progress}`
+                          : ''}
+                      </p>
+                    ) : null}
+
+                    {phaseTasks.length > 0 && !taskWeightsValid ? (
+                      <StatusMessage variant="warning">
+                        {t('wbs.taskWeightInvalid')}{' '}
+                        {t('wbs.taskWeightSummary', {
+                          total: taskWeightTotal.toFixed(1),
+                        })}
+                      </StatusMessage>
+                    ) : null}
+
                     {phaseTasks.length === 0 ? (
                       <p className="text-sm text-muted-foreground">
                         {t('wbs.noTasks')}
@@ -148,6 +253,8 @@ export function ProjectWbsTab({
                           <TableHeader>
                             <TableRow>
                               <TableHead>{t('wbs.tasks')}</TableHead>
+                              <TableHead>{t('wbs.taskWeight')}</TableHead>
+                              <TableHead>{t('wbs.taskProgress')}</TableHead>
                               <TableHead>{t('common.status')}</TableHead>
                               <TableHead>{t('wbs.assignee')}</TableHead>
                               <TableHead>{t('wbs.dueDate')}</TableHead>
@@ -172,6 +279,10 @@ export function ProjectWbsTab({
                                       </p>
                                     ) : null}
                                   </div>
+                                </TableCell>
+                                <TableCell>{task.weight_percent}%</TableCell>
+                                <TableCell>
+                                  {Math.round(Number(task.progress_percent))}%
                                 </TableCell>
                                 <TableCell>
                                   <TaskStatusBadge status={task.status} />
@@ -222,4 +333,33 @@ export function ProjectWbsTab({
       </CardContent>
     </Card>
   )
+}
+
+function MetricLine({
+  label,
+  value,
+  warn = false,
+}: {
+  label: string
+  value: string
+  warn?: boolean
+}) {
+  return (
+    <div className="rounded-md border border-border px-3 py-2">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p
+        className={
+          warn ? 'font-medium text-destructive' : 'font-medium text-foreground'
+        }
+      >
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function remainingTaskCreateDisabled(
+  tasks: Array<{ weight_percent: number }>,
+): boolean {
+  return sumTaskWeights(tasks) >= 99.99
 }
