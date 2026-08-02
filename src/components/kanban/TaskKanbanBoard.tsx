@@ -25,6 +25,7 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import type { TaskListItem } from '@/hooks/useTasks'
 import { useUpdateTaskStatus } from '@/hooks/useTasks'
 import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
+import { toastMutationError } from '@/lib/mutation-error'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
 import type { TaskCompletionValues } from '@/lib/validations/task'
 import type { Phase, TaskStatus } from '@/types/database'
@@ -83,9 +84,7 @@ export function TaskKanbanBoard({
       })
       toast.success(t('wbs.taskStatusUpdated'))
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('wbs.updateTaskStatusFailed')
-      toast.error(message)
+      toastMutationError(error, t('wbs.updateTaskStatusFailed'), t)
     }
   }
 
@@ -104,9 +103,7 @@ export function TaskKanbanBoard({
       setBlockedTask(null)
       setBlockedReason('')
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('wbs.updateTaskStatusFailed')
-      toast.error(message)
+      toastMutationError(error, t('wbs.updateTaskStatusFailed'), t)
     }
   }
 
@@ -124,9 +121,7 @@ export function TaskKanbanBoard({
       toast.success(t('wbs.taskStatusUpdated'))
       setCompletingTask(null)
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t('wbs.updateTaskStatusFailed')
-      toast.error(message)
+      toastMutationError(error, t('wbs.updateTaskStatusFailed'), t)
       throw error
     }
   }

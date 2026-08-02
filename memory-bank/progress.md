@@ -53,6 +53,10 @@
 
 ## Changelog
 
+### 2026-08-02 (session 60)
+
+- Root cause of Kanban "unable to update task status": completing last task set phase `actual_end_date` to today before phase `start_date` → constraint failure; fixed in `20260802170000_fix_phase_actual_end_on_complete.sql`; improved error toast extraction
+
 ### 2026-08-02 (session 59)
 
 - Kanban: marking task done opens completion dialog for actual end date + spent cost; schedule/financial justification required when exceeding due date / expected cost
