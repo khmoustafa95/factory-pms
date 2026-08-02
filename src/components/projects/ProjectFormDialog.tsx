@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
+import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
 import { Button } from '@/components/ui/button'
@@ -23,22 +24,25 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useCreateAccount } from '@/hooks/useAccounts'
 import { useFormDialog } from '@/hooks/useFormDialog'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
-import { useValidationSchema } from '@/hooks/useValidationSchema'
-import { DURATION_UNIT_OPTIONS } from '@/lib/duration'
+import { getPhaseDurationDays } from '@/lib/duration'
 import {
   formatNullableSelectValue,
   NULL_SELECT_VALUE,
   parseNullableSelectValue,
 } from '@/lib/form-utils'
-import { getDefaultDurationFromProject } from '@/lib/project-schedule'
+import { toastMutationError } from '@/lib/mutation-error'
 import {
-  createProjectFormSchema,
+  createDraftProjectSchema,
+  createSubmitProjectSchema,
   type ProjectFormValues,
 } from '@/lib/validations/project'
-import type { DurationUnit, Project } from '@/types/database'
+import type { AccountDialogFormValues } from '@/lib/validations/account'
+import type { Project } from '@/types/database'
+import { toast } from 'sonner'
 
 export interface ProjectFormSubmitPayload {
   values: ProjectFormValues
@@ -57,21 +61,17 @@ interface ProjectFormDialogProps {
   isSubmitting: boolean
 }
 
+const ADD_PM_VALUE = '__add_project_manager__'
+
 const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
+  code: '',
   title: '',
   description: '',
   budget: '',
   currency: 'USD',
-  proposed_duration_value: 12,
-  proposed_duration_unit: 'week',
+  proposed_start_date: '',
+  proposed_end_date: '',
   assigned_pm_id: null,
-}
-
-function getDurationUnitLabel(
-  t: (key: string) => string,
-  unit: DurationUnit,
-): string {
-  return t(`durationUnit.${unit}Label`)
 }
 
 export function ProjectFormDialog({
@@ -86,29 +86,29 @@ export function ProjectFormDialog({
 }: ProjectFormDialogProps) {
   const { t, locale } = useTranslation()
   const { data: currencies = [] } = useActiveCurrencies()
-  const { data: projectManagers = [] } = useFactoryProjectManagers(factoryId)
-  const projectFormSchema = useValidationSchema(createProjectFormSchema)
+  const { data: projectManagers = [], refetch: refetchManagers } =
+    useFactoryProjectManagers(factoryId)
+  const createAccount = useCreateAccount()
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [addPmOpen, setAddPmOpen] = useState(false)
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const draftSchema = useMemo(() => createDraftProjectSchema(t), [t])
+  const submitSchema = useMemo(() => createSubmitProjectSchema(t), [t])
+
+  const { form } = useFormDialog({
     open,
-    resolver: zodResolver(projectFormSchema),
+    resolver: zodResolver(draftSchema),
     defaultValues: PROJECT_FORM_DEFAULTS,
-    getValues: () => {
-      const defaults = project
-        ? getDefaultDurationFromProject(project)
-        : { value: 12, unit: 'week' as DurationUnit }
-
-      return {
-        title: project?.title ?? '',
-        description: project?.description ?? '',
-        budget: project?.budget != null ? String(project.budget) : '',
-        currency: project?.currency ?? 'USD',
-        proposed_duration_value: defaults.value,
-        proposed_duration_unit: defaults.unit,
-        assigned_pm_id: project?.assigned_pm_id ?? null,
-      }
-    },
+    getValues: () => ({
+      code: project?.code ?? '',
+      title: project?.title ?? '',
+      description: project?.description ?? '',
+      budget: project?.budget != null ? String(project.budget) : '',
+      currency: project?.currency ?? 'USD',
+      proposed_start_date: project?.proposed_start_date ?? '',
+      proposed_end_date: project?.proposed_end_date ?? '',
+      assigned_pm_id: project?.assigned_pm_id ?? null,
+    }),
     resetDependencies: [project],
   })
 
@@ -127,235 +127,359 @@ export function ProjectFormDialog({
     control: form.control,
     name: 'assigned_pm_id',
   })
-  const selectedDurationUnit = useWatch({
+  const startDate = useWatch({
     control: form.control,
-    name: 'proposed_duration_unit',
+    name: 'proposed_start_date',
   })
+  const endDate = useWatch({
+    control: form.control,
+    name: 'proposed_end_date',
+  })
+
+  const derivedDurationDays =
+    startDate && endDate && endDate >= startDate
+      ? getPhaseDurationDays(startDate, endDate)
+      : null
 
   const closeDialog = () => {
     setPendingFiles([])
     onOpenChange(false)
   }
 
-  const saveDraft = createSubmitHandler(
-    (values) => onSaveDraft({ values, files: pendingFiles }),
-    closeDialog,
-  )
-  const submitProposal = createSubmitHandler(
-    (values) => onSubmitProposal({ values, files: pendingFiles }),
-    closeDialog,
-  )
+  const applySchemaErrors = (
+    issues: Array<{ path: PropertyKey[]; message: string }>,
+  ) => {
+    for (const issue of issues) {
+      const field = String(issue.path[0] ?? '')
+      if (
+        field === 'code' ||
+        field === 'title' ||
+        field === 'description' ||
+        field === 'budget' ||
+        field === 'currency' ||
+        field === 'proposed_start_date' ||
+        field === 'proposed_end_date' ||
+        field === 'assigned_pm_id'
+      ) {
+        form.setError(field, { message: issue.message })
+      }
+    }
+  }
+
+  const saveDraft = async () => {
+    form.clearErrors()
+    const values = form.getValues()
+    const parsed = draftSchema.safeParse(values)
+    if (!parsed.success) {
+      applySchemaErrors(parsed.error.issues)
+      return
+    }
+
+    try {
+      await onSaveDraft({
+        values: {
+          ...values,
+          code: values.code ?? '',
+          title: values.title ?? '',
+          description: values.description ?? '',
+          budget: values.budget ?? '',
+          currency: values.currency || 'USD',
+          proposed_start_date: values.proposed_start_date ?? '',
+          proposed_end_date: values.proposed_end_date ?? '',
+          assigned_pm_id: values.assigned_pm_id ?? null,
+        },
+        files: pendingFiles,
+      })
+      closeDialog()
+    } catch {
+      // Caller handles toast
+    }
+  }
+
+  const submitProposal = async () => {
+    form.clearErrors()
+    const values = form.getValues()
+    const parsed = submitSchema.safeParse({
+      ...values,
+      code: (values.code ?? '').toUpperCase(),
+    })
+    if (!parsed.success) {
+      applySchemaErrors(parsed.error.issues)
+      return
+    }
+
+    try {
+      await onSubmitProposal({
+        values: {
+          code: parsed.data.code,
+          title: parsed.data.title,
+          description: parsed.data.description,
+          budget: parsed.data.budget,
+          currency: parsed.data.currency,
+          proposed_start_date: parsed.data.proposed_start_date,
+          proposed_end_date: parsed.data.proposed_end_date,
+          assigned_pm_id: parsed.data.assigned_pm_id,
+        },
+        files: pendingFiles,
+      })
+      closeDialog()
+    } catch {
+      // Caller handles toast
+    }
+  }
+
+  const handleCreatePm = async (accountValues: AccountDialogFormValues) => {
+    try {
+      const result = await createAccount.mutateAsync({
+        ...accountValues,
+        role: 'project_manager',
+        factory_id: factoryId ?? accountValues.factory_id,
+      })
+      await refetchManagers()
+      form.setValue('assigned_pm_id', result.user_id, { shouldDirty: true })
+      toast.success(
+        t('projects.pmCreatedWithPassword', { password: result.password }),
+      )
+      setAddPmOpen(false)
+    } catch (error) {
+      toastMutationError(error, t('accounts.createFailed'))
+      throw error
+    }
+  }
+
   const isDetailsEdit = Boolean(project) && !allowSubmitProposal
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {isDetailsEdit
-              ? t('projects.editProject')
-              : project
-                ? t('projects.editProposal')
-                : t('projects.newProposal')}
-          </DialogTitle>
-          <DialogDescription>
-            {isDetailsEdit
-              ? t('projects.editDetailsDescription')
-              : t('projects.formDescription')}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {isDetailsEdit
+                ? t('projects.editProject')
+                : project
+                  ? t('projects.editProposal')
+                  : t('projects.newProposal')}
+            </DialogTitle>
+            <DialogDescription>
+              {isDetailsEdit
+                ? t('projects.editDetailsDescription')
+                : t('projects.formDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form key={locale} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="project-title">{t('common.title')}</Label>
-            <Input id="project-title" {...form.register('title')} />
-            <FormFieldError error={form.formState.errors.title} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="project-description">
-              {t('common.description')}
-            </Label>
-            <Textarea
-              id="project-description"
-              rows={4}
-              {...form.register('description')}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+          <form key={locale} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="project-budget">{t('common.budget')}</Label>
+              <Label htmlFor="project-code">{t('projects.code')}</Label>
               <Input
-                id="project-budget"
-                type="number"
-                min="0"
-                step="0.01"
-                inputMode="decimal"
-                {...form.register('budget')}
+                id="project-code"
+                className="uppercase"
+                {...form.register('code')}
               />
-              <FormFieldError error={form.formState.errors.budget} />
+              <FormFieldError error={form.formState.errors.code} />
             </div>
 
             <div className="space-y-2">
-              <Label>{t('projects.currency')}</Label>
-              <Select
-                value={selectedCurrency}
-                onValueChange={(value) =>
-                  form.setValue('currency', value, { shouldDirty: true })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {currencies.map((c) => (
-                    <SelectItem key={c.id} value={c.code}>
-                      {c.code}
-                      {c.symbol ? ` (${c.symbol})` : ''}
-                    </SelectItem>
-                  ))}
-                  {currencies.length === 0 ? (
-                    <SelectItem value="USD">USD ($)</SelectItem>
-                  ) : null}
-                </SelectContent>
-              </Select>
-              <FormFieldError error={form.formState.errors.currency} />
+              <Label htmlFor="project-title">{t('common.title')}</Label>
+              <Input id="project-title" {...form.register('title')} />
+              <FormFieldError error={form.formState.errors.title} />
             </div>
-          </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="project-duration-value">
-                {t('projects.proposedDuration')}
+              <Label htmlFor="project-description">
+                {t('common.description')}
               </Label>
-              <Input
-                id="project-duration-value"
-                type="number"
-                min="1"
-                step="1"
-                {...form.register('proposed_duration_value', {
-                  valueAsNumber: true,
-                })}
+              <Textarea
+                id="project-description"
+                rows={4}
+                {...form.register('description')}
               />
-              <FormFieldError
-                error={form.formState.errors.proposed_duration_value}
-              />
+              <FormFieldError error={form.formState.errors.description} />
             </div>
 
-            <div className="space-y-2">
-              <Label>{t('projects.durationUnit')}</Label>
-              <Select
-                value={selectedDurationUnit}
-                onValueChange={(value) => {
-                  if (
-                    value === 'day' ||
-                    value === 'week' ||
-                    value === 'month'
-                  ) {
-                    form.setValue('proposed_duration_unit', value, {
-                      shouldDirty: true,
-                    })
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="project-budget">{t('common.budget')}</Label>
+                <Input
+                  id="project-budget"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  inputMode="decimal"
+                  {...form.register('budget')}
+                />
+                <FormFieldError error={form.formState.errors.budget} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('projects.currency')}</Label>
+                <Select
+                  value={selectedCurrency}
+                  onValueChange={(value) =>
+                    form.setValue('currency', value, { shouldDirty: true })
                   }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((c) => (
+                      <SelectItem key={c.id} value={c.code}>
+                        {c.code}
+                        {c.symbol ? ` (${c.symbol})` : ''}
+                      </SelectItem>
+                    ))}
+                    {currencies.length === 0 ? (
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                    ) : null}
+                  </SelectContent>
+                </Select>
+                <FormFieldError error={form.formState.errors.currency} />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="project-start">
+                  {t('projects.proposedStartDate')}
+                </Label>
+                <Input
+                  id="project-start"
+                  type="date"
+                  {...form.register('proposed_start_date')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.proposed_start_date}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project-end">
+                  {t('projects.proposedEndDate')}
+                </Label>
+                <Input
+                  id="project-end"
+                  type="date"
+                  {...form.register('proposed_end_date')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.proposed_end_date}
+                />
+              </div>
+            </div>
+
+            {derivedDurationDays != null ? (
+              <p className="text-xs text-muted-foreground">
+                {t('projects.derivedDuration', { days: derivedDurationDays })}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {t('projects.datesHint')}
+              </p>
+            )}
+
+            <div className="space-y-2">
+              <Label>{t('projects.assignedPm')}</Label>
+              <Select
+                value={formatNullableSelectValue(selectedPmId)}
+                onValueChange={(value) => {
+                  if (value === ADD_PM_VALUE) {
+                    setAddPmOpen(true)
+                    return
+                  }
+                  form.setValue(
+                    'assigned_pm_id',
+                    parseNullableSelectValue(value),
+                  )
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={t('common.optional')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {DURATION_UNIT_OPTIONS.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {getDurationUnitLabel(t, unit)}
+                  <SelectItem value={NULL_SELECT_VALUE}>
+                    {t('common.unassigned')}
+                  </SelectItem>
+                  {projectManagers.map((manager) => (
+                    <SelectItem key={manager.id} value={manager.id}>
+                      {manager.full_name}
                     </SelectItem>
                   ))}
+                  {factoryId ? (
+                    <SelectItem value={ADD_PM_VALUE}>
+                      {t('projects.addProjectManager')}
+                    </SelectItem>
+                  ) : null}
                 </SelectContent>
               </Select>
-              <FormFieldError
-                error={form.formState.errors.proposed_duration_unit}
-              />
+              <FormFieldError error={form.formState.errors.assigned_pm_id} />
+              {allowSubmitProposal ? (
+                <p className="text-xs text-muted-foreground">
+                  {t('projects.pmRequiredToSubmit')}
+                </p>
+              ) : null}
             </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {t('projects.durationHint')}
-          </p>
 
-          <div className="space-y-2">
-            <Label>{t('projects.assignedPm')}</Label>
-            <Select
-              value={formatNullableSelectValue(selectedPmId)}
-              onValueChange={(value) =>
-                form.setValue('assigned_pm_id', parseNullableSelectValue(value))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('common.optional')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NULL_SELECT_VALUE}>
-                  {t('common.unassigned')}
-                </SelectItem>
-                {projectManagers.map((manager) => (
-                  <SelectItem key={manager.id} value={manager.id}>
-                    {manager.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             {allowSubmitProposal ? (
-              <p className="text-xs text-muted-foreground">
-                {t('projects.pmRequiredToSubmit')}
-              </p>
+              <ProposalFilePicker
+                files={pendingFiles}
+                onChange={setPendingFiles}
+                disabled={isSubmitting}
+              />
             ) : null}
-          </div>
 
-          {allowSubmitProposal ? (
-            <ProposalFilePicker
-              files={pendingFiles}
-              onChange={setPendingFiles}
-              disabled={isSubmitting}
-            />
-          ) : null}
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            {allowSubmitProposal ? (
-              <>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              {allowSubmitProposal ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSubmitting}
+                    onClick={() => void saveDraft()}
+                  >
+                    {isSubmitting ? t('common.saving') : t('common.saveDraft')}
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => void submitProposal()}
+                  >
+                    {isSubmitting
+                      ? t('common.submitting')
+                      : t('common.submitProposal')}
+                  </Button>
+                </>
+              ) : (
                 <Button
                   type="button"
-                  variant="secondary"
                   disabled={isSubmitting}
                   onClick={() => void saveDraft()}
                 >
-                  {isSubmitting ? t('common.saving') : t('common.saveDraft')}
+                  {isSubmitting ? t('common.saving') : t('common.save')}
                 </Button>
-                <Button
-                  type="button"
-                  disabled={isSubmitting}
-                  onClick={() => void submitProposal()}
-                >
-                  {isSubmitting
-                    ? t('common.submitting')
-                    : t('common.submitProposal')}
-                </Button>
-              </>
-            ) : (
-              <Button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => void saveDraft()}
-              >
-                {isSubmitting ? t('common.saving') : t('common.save')}
-              </Button>
-            )}
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              )}
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <AccountFormDialog
+        open={addPmOpen}
+        onOpenChange={setAddPmOpen}
+        account={null}
+        allowedRoles={['project_manager']}
+        lockFactoryId={factoryId}
+        onCreate={handleCreatePm}
+        onUpdate={async () => undefined}
+        isSubmitting={createAccount.isPending}
+      />
+    </>
   )
 }

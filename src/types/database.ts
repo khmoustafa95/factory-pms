@@ -109,6 +109,7 @@ export interface Database {
         Row: {
           id: string
           factory_id: string
+          code: string
           title: string
           description: string | null
           status: ProjectStatus
@@ -132,6 +133,7 @@ export interface Database {
         Insert: {
           id?: string
           factory_id: string
+          code: string
           title: string
           description?: string | null
           status?: ProjectStatus
@@ -155,6 +157,7 @@ export interface Database {
         Update: {
           id?: string
           factory_id?: string
+          code?: string
           title?: string
           description?: string | null
           status?: ProjectStatus
@@ -196,6 +199,7 @@ export interface Database {
           start_date: string | null
           end_date: string | null
           expected_budget: number
+          actual_budget: number | null
           actual_end_date: string | null
           schedule_deviation_reason: string | null
           financial_deviation_reason: string | null
@@ -215,6 +219,7 @@ export interface Database {
           start_date?: string | null
           end_date?: string | null
           expected_budget?: number
+          actual_budget?: number | null
           actual_end_date?: string | null
           schedule_deviation_reason?: string | null
           financial_deviation_reason?: string | null
@@ -234,6 +239,7 @@ export interface Database {
           start_date?: string | null
           end_date?: string | null
           expected_budget?: number
+          actual_budget?: number | null
           actual_end_date?: string | null
           schedule_deviation_reason?: string | null
           financial_deviation_reason?: string | null
@@ -583,6 +589,10 @@ export interface Database {
           active_project_count: number
           average_progress: number
           blocked_task_count: number
+          draft_count: number
+          proposed_count: number
+          in_progress_count: number
+          overdue_task_count: number
         }[]
       }
       get_project_activity: {

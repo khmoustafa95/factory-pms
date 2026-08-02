@@ -64,7 +64,7 @@ import type {
   ProjectPauseValues,
   ProjectRejectValues,
 } from '@/lib/validations/approval'
-import { canManageWbs, canViewWbs } from '@/lib/wbs'
+import { canManagePhases, canStartExecution, canViewWbs } from '@/lib/wbs'
 import {
   isCompanyDirector,
   isFactoryManager,
@@ -235,7 +235,7 @@ export function ProjectsPage() {
         toast.success(t('projects.proposalSubmitted'))
       }
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.submitFailed'))
+      toastMutationError(submitError, t('projects.submitFailed'), t)
       throw submitError
     }
   }
@@ -255,7 +255,7 @@ export function ProjectsPage() {
       await submitProject.mutateAsync({ id: project.id, userId })
       toast.success(t('projects.proposalSubmitted'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.submitFailed'))
+      toastMutationError(submitError, t('projects.submitFailed'), t)
     }
   }
 
@@ -270,7 +270,7 @@ export function ProjectsPage() {
       await approveProject.mutateAsync({ id: project.id, userId })
       toast.success(t('projects.proposalApproved'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.approveFailed'))
+      toastMutationError(submitError, t('projects.approveFailed'), t)
     }
   }
 
@@ -291,7 +291,7 @@ export function ProjectsPage() {
       })
       toast.success(t('projects.proposalRejected'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.rejectFailed'))
+      toastMutationError(submitError, t('projects.rejectFailed'), t)
       throw submitError
     }
   }
@@ -301,7 +301,7 @@ export function ProjectsPage() {
       await startProjectExecution.mutateAsync({ id: project.id })
       toast.success(t('projects.executionStarted'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.startExecutionFailed'))
+      toastMutationError(submitError, t('projects.startExecutionFailed'), t)
     }
   }
 
@@ -322,7 +322,7 @@ export function ProjectsPage() {
       })
       toast.success(t('projects.executionPaused'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.pauseExecutionFailed'))
+      toastMutationError(submitError, t('projects.pauseExecutionFailed'), t)
       throw submitError
     }
   }
@@ -332,7 +332,7 @@ export function ProjectsPage() {
       await resumeProjectExecution.mutateAsync({ id: project.id })
       toast.success(t('projects.executionResumed'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.resumeExecutionFailed'))
+      toastMutationError(submitError, t('projects.resumeExecutionFailed'), t)
     }
   }
 
@@ -341,7 +341,7 @@ export function ProjectsPage() {
       await completeProjectExecution.mutateAsync({ id: project.id })
       toast.success(t('projects.executionCompleted'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.completeExecutionFailed'))
+      toastMutationError(submitError, t('projects.completeExecutionFailed'), t)
     }
   }
 
@@ -396,7 +396,8 @@ export function ProjectsPage() {
 
   const renderProjectActions = (project: ProjectListItem) => {
     const canReviewAsDirector = canApproveAsDirector(project, profile)
-    const canManageExecution = canManageWbs(project, profile)
+    const canManageExecution = canManagePhases(project, profile)
+    const canStart = canStartExecution(project, profile)
     const executionEligibleStatus =
       project.status === 'approved' ||
       project.status === 'in_progress' ||
@@ -450,7 +451,7 @@ export function ProjectsPage() {
             {t('common.submit')}
           </Button>
         ) : null}
-        {canManageExecution && project.status === 'approved' ? (
+        {canStart && project.status === 'approved' ? (
           <Button
             size="sm"
             onClick={() => void handleStartExecution(project)}
@@ -487,7 +488,7 @@ export function ProjectsPage() {
             {t('common.resumeExecution')}
           </Button>
         ) : null}
-        {!canManageExecution && executionEligibleStatus ? (
+        {!canManageExecution && !canStart && executionEligibleStatus ? (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

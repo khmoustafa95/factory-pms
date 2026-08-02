@@ -46,6 +46,7 @@ interface TaskFormDialogProps {
   phaseStartDate: string | null
   phaseEndDate: string | null
   remainingWeight: number
+  remainingBudget?: number
   factoryId: string | null | undefined
   onSubmit: (values: TaskFormValues) => Promise<void>
   isSubmitting: boolean
@@ -75,6 +76,7 @@ export function TaskFormDialog({
   phaseStartDate,
   phaseEndDate,
   remainingWeight,
+  remainingBudget,
   factoryId,
   onSubmit,
   isSubmitting,
@@ -84,6 +86,12 @@ export function TaskFormDialog({
   const maxWeight = task
     ? remainingWeight + Number(task.weight_percent)
     : remainingWeight
+  const maxBudget =
+    remainingBudget != null
+      ? task
+        ? remainingBudget + Number(task.expected_cost)
+        : remainingBudget
+      : undefined
 
   const taskFormSchema = useMemo(
     () =>
@@ -91,8 +99,9 @@ export function TaskFormDialog({
         phaseStartDate,
         phaseEndDate,
         remainingWeight: maxWeight,
+        remainingBudget: maxBudget,
       }),
-    [maxWeight, phaseEndDate, phaseStartDate, t],
+    [maxBudget, maxWeight, phaseEndDate, phaseStartDate, t],
   )
 
   const { form, createSubmitHandler } = useFormDialog({
@@ -299,10 +308,18 @@ export function TaskFormDialog({
                 id="task-expected-cost"
                 type="number"
                 min="0"
+                max={maxBudget}
                 step="0.01"
                 {...form.register('expected_cost', { valueAsNumber: true })}
               />
               <FormFieldError error={form.formState.errors.expected_cost} />
+              {maxBudget != null ? (
+                <p className="text-xs text-muted-foreground">
+                  {t('wbs.budgetRemaining', {
+                    remaining: maxBudget.toFixed(2),
+                  })}
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-2">

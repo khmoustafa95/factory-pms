@@ -29,10 +29,15 @@ import type { Phase } from '@/types/database'
 interface ProjectWbsTabProps {
   phases: Phase[]
   tasksByPhase: Map<string, TaskListItem[]>
-  canManage: boolean
+  canManagePhases: boolean
+  canManageTasks: boolean
   remainingWeight: number
   totalWeight: number
   weightsValid: boolean
+  remainingBudget: number
+  totalBudget: number
+  budgetValid: boolean
+  projectBudget: number | null | undefined
   onCreatePhase: () => void
   onEditPhase: (phase: Phase) => void
   onDeletePhase: (phase: Phase) => void
@@ -44,10 +49,15 @@ interface ProjectWbsTabProps {
 export function ProjectWbsTab({
   phases,
   tasksByPhase,
-  canManage,
+  canManagePhases,
+  canManageTasks,
   remainingWeight,
   totalWeight,
   weightsValid,
+  remainingBudget,
+  totalBudget,
+  budgetValid,
+  projectBudget,
   onCreatePhase,
   onEditPhase,
   onDeletePhase,
@@ -66,10 +76,12 @@ export function ProjectWbsTab({
             {t('wbs.title')}
           </CardTitle>
           <CardDescription>
-            {canManage ? t('wbs.manageDescription') : t('wbs.viewDescription')}
+            {canManagePhases
+              ? t('wbs.manageDescription')
+              : t('wbs.viewDescription')}
           </CardDescription>
         </div>
-        {canManage ? (
+        {canManagePhases ? (
           <Button onClick={onCreatePhase} disabled={remainingWeight <= 0}>
             <Plus className="size-4" />
             {t('common.addPhase')}
@@ -85,6 +97,31 @@ export function ProjectWbsTab({
           <StatusMessage variant="warning">
             {t('wbs.weightInvalid')}{' '}
             {t('wbs.weightSummary', { total: totalWeight.toFixed(1) })}
+          </StatusMessage>
+        )}
+
+        {budgetValid ? (
+          <StatusMessage variant="info">
+            {t('wbs.budgetSummary', {
+              total: totalBudget.toFixed(2),
+              projectBudget: (projectBudget ?? 0).toFixed(2),
+            })}
+            {' · '}
+            {t('wbs.remainingBudget', {
+              remaining: remainingBudget.toFixed(2),
+            })}
+          </StatusMessage>
+        ) : (
+          <StatusMessage variant="warning">
+            {t('wbs.budgetInvalid')}{' '}
+            {t('wbs.budgetSummary', {
+              total: totalBudget.toFixed(2),
+              projectBudget: (projectBudget ?? 0).toFixed(2),
+            })}
+            {' · '}
+            {t('wbs.remainingBudget', {
+              remaining: remainingBudget.toFixed(2),
+            })}
           </StatusMessage>
         )}
 
@@ -116,33 +153,39 @@ export function ProjectWbsTab({
                         {phase.description ? ` — ${phase.description}` : ''}
                       </CardDescription>
                     </div>
-                    {canManage ? (
+                    {canManagePhases || canManageTasks ? (
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => onEditPhase(phase)}
-                        >
-                          {t('common.edit')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void onDeletePhase(phase)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => onCreateTask(phase.id)}
-                          disabled={
-                            phaseTasks.length > 0 &&
-                            remainingTaskCreateDisabled(phaseTasks)
-                          }
-                        >
-                          <Plus className="size-4" />
-                          {t('common.addTask')}
-                        </Button>
+                        {canManagePhases ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onEditPhase(phase)}
+                            >
+                              {t('common.edit')}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => void onDeletePhase(phase)}
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </>
+                        ) : null}
+                        {canManageTasks ? (
+                          <Button
+                            size="sm"
+                            onClick={() => onCreateTask(phase.id)}
+                            disabled={
+                              phaseTasks.length > 0 &&
+                              remainingTaskCreateDisabled(phaseTasks)
+                            }
+                          >
+                            <Plus className="size-4" />
+                            {t('common.addTask')}
+                          </Button>
+                        ) : null}
                       </div>
                     ) : null}
                   </CardHeader>
@@ -258,7 +301,7 @@ export function ProjectWbsTab({
                               <TableHead>{t('common.status')}</TableHead>
                               <TableHead>{t('wbs.assignee')}</TableHead>
                               <TableHead>{t('wbs.dueDate')}</TableHead>
-                              {canManage ? (
+                              {canManageTasks ? (
                                 <TableHead className="text-end">
                                   {t('common.actions')}
                                 </TableHead>
@@ -298,7 +341,7 @@ export function ProjectWbsTab({
                                     t('common.notAvailable'),
                                   )}
                                 </TableCell>
-                                {canManage ? (
+                                {canManageTasks ? (
                                   <TableCell className="text-end">
                                     <div className="flex justify-end gap-2">
                                       <Button

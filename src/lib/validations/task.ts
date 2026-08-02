@@ -6,6 +6,7 @@ export interface TaskValidationContext {
   phaseStartDate: string | null
   phaseEndDate: string | null
   remainingWeight: number
+  remainingBudget?: number
 }
 
 export function createTaskFormSchema(
@@ -70,6 +71,19 @@ export function createTaskFormSchema(
             remaining: context.remainingWeight.toFixed(1),
           }),
           path: ['weight_percent'],
+        })
+      }
+
+      if (
+        context?.remainingBudget != null &&
+        values.expected_cost > context.remainingBudget + 0.001
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('wbs.expectedBudgetRemaining', {
+            remaining: context.remainingBudget.toFixed(2),
+          }),
+          path: ['expected_cost'],
         })
       }
 

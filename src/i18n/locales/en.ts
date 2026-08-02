@@ -122,7 +122,7 @@ export const en = {
     done: 'Done',
   },
   phaseStatus: {
-    pending: 'Pending',
+    pending: 'Not started',
     in_progress: 'In progress',
     completed: 'Completed',
   },
@@ -220,6 +220,9 @@ export const en = {
     tasksDone: 'Done tasks',
     tasksInProgress: 'In-progress tasks',
     tasksTotal: 'Total tasks',
+    draftProjects: 'Draft proposals',
+    proposedProjects: 'Proposals awaiting review',
+    inProgressProjects: 'Projects in progress',
   },
   projects: {
     title: 'Projects',
@@ -297,6 +300,41 @@ export const en = {
     awaitingDirectorReview: 'Awaiting company director review',
     discussionParticipantsOnly:
       'Only the company director and factory manager can post in this discussion.',
+    code: 'Project code',
+    proposedStartDate: 'Proposed start date',
+    proposedEndDate: 'Proposed end date',
+    derivedDuration: 'Duration: {{days}} days',
+    datesHint:
+      'Select start and end dates to calculate the duration automatically.',
+    addProjectManager: 'Add new project manager',
+    pmCreatedWithPassword:
+      'Project manager account created. Temporary password: {{password}}',
+    executionNotReady: {
+      not_approved: 'The project must be approved before starting execution.',
+      no_phases: 'Add at least one phase before starting execution.',
+      weights_incomplete: 'Phase weights must total exactly 100%.',
+      budgets_incomplete: 'Phase budgets must total the project budget.',
+      missing_dates: 'All phases need start and end dates.',
+      dates_outside_project:
+        'Phase dates must fall within the project schedule.',
+      phase_budget_exceeds_project:
+        'A phase budget exceeds the project budget.',
+      missing_project_budget:
+        'Set the project budget before starting execution.',
+      missing_project_schedule:
+        'Set the project schedule before starting execution.',
+    },
+    rpcErrors: {
+      wbsNotReady:
+        'Project WBS is not ready: phase weights and budgets must total 100% with valid dates.',
+      missingDuration:
+        'Project duration is required before starting execution.',
+      startNotFactoryManager:
+        'Only the factory manager for this project can start execution.',
+      tasksNotDone:
+        'All tasks must be done before marking the project completed.',
+      notAllowed: 'You are not allowed to perform this action on this project.',
+    },
     attachments: {
       title: 'Supporting files',
       description:
@@ -353,6 +391,12 @@ export const en = {
     weightSummary: 'Phase weights: {{total}}% / 100%',
     weightRemaining: '{{remaining}}% remaining',
     weightInvalid: 'Phase weights must total exactly 100%.',
+    budgetSummary: 'Phase budgets: {{total}} / {{projectBudget}}',
+    remainingBudget: 'Remaining budget: {{remaining}}',
+    budgetRemaining: '{{remaining}} remaining',
+    budgetInvalid: 'Phase budgets must total the project budget.',
+    expectedBudgetRemaining:
+      'Expected budget cannot exceed {{remaining}} of the remaining project budget',
     taskWeightSummary: 'Task weights: {{total}}% / 100%',
     taskWeightInvalid: 'Task weights in this phase must total exactly 100%.',
     taskWeightRemaining: '{{remaining}}% task weight remaining',
@@ -373,6 +417,7 @@ export const en = {
     endDate: 'Planned end date',
     actualEndDate: 'Actual end date',
     expectedBudget: 'Expected phase budget',
+    actualBudget: 'Actual phase budget',
     scheduleDeviationReason: 'Schedule deviation reason',
     financialDeviationReason: 'Financial deviation reason',
     problemDescription: 'Problem',
@@ -611,6 +656,9 @@ export const en = {
     directorNoFactory: 'Company directors are not assigned to a factory',
     budgetPositive: 'Budget must be greater than zero',
     budgetNonNegative: 'Amount cannot be negative',
+    budgetRequired: 'Budget is required',
+    descriptionMin: 'Description must be at least 3 characters',
+    assignedPmRequired: 'Assigned project manager is required',
     expectedBudgetRequired: 'Expected budget is required',
     actualCostRequired: 'Actual cost is required',
     progressRequired: 'Progress is required',
@@ -642,6 +690,7 @@ export const en = {
       'Weight cannot exceed {{remaining}}% for the remaining budget',
     codeMin: 'Code must be at least 2 characters',
     codeMax: 'Code must be at most 12 characters',
+    projectCodeMax: 'Code must be at most 32 characters',
     codeFormat: 'Code must be uppercase letters, numbers, _ or -',
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
     pauseReasonMin: 'Pause reason must be at least 3 characters',

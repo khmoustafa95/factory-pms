@@ -29,7 +29,7 @@ export interface PhaseMetrics {
 type PhaseInput = Pick<
   Phase,
   'id' | 'start_date' | 'end_date' | 'actual_end_date' | 'expected_budget'
->
+> & { actual_budget?: number | null }
 
 type TaskMetricsInput = Pick<
   Task,
@@ -114,7 +114,7 @@ export function calculatePhaseMetrics(
   phase: Pick<
     Phase,
     'start_date' | 'end_date' | 'actual_end_date' | 'expected_budget'
-  >,
+  > & { actual_budget?: number | null },
   tasks: Array<
     Pick<
       Task,
@@ -133,8 +133,10 @@ export function calculatePhaseMetrics(
   const actualDurationDays = sumPhaseActualDuration(tasks)
   const costs = sumPhaseCostsByCategory(tasks)
   const expectedBudget = Number(phase.expected_budget ?? 0)
+  const actualTotal =
+    phase.actual_budget != null ? Number(phase.actual_budget) : costs.total
   const deviationSchedule = scheduleDeviationDays(phase, tasks)
-  const deviationFinancial = financialDeviation(expectedBudget, costs.total)
+  const deviationFinancial = financialDeviation(expectedBudget, actualTotal)
 
   return {
     plannedDurationDays,

@@ -122,7 +122,7 @@ export const ar = {
     done: 'منجز',
   },
   phaseStatus: {
-    pending: 'قيد الانتظار',
+    pending: 'لم تبدأ',
     in_progress: 'قيد التنفيذ',
     completed: 'مكتمل',
   },
@@ -218,6 +218,9 @@ export const ar = {
     tasksDone: 'المهام المنجزة',
     tasksInProgress: 'المهام قيد التنفيذ',
     tasksTotal: 'إجمالي المهام',
+    draftProjects: 'مقترحات مسودة',
+    proposedProjects: 'مقترحات بانتظار المراجعة',
+    inProgressProjects: 'مشاريع قيد التنفيذ',
   },
   projects: {
     title: 'المشاريع',
@@ -291,6 +294,35 @@ export const ar = {
     awaitingDirectorReview: 'بانتظار مراجعة المدير العام',
     discussionParticipantsOnly:
       'يمكن للمدير العام ومدير المصنع فقط المشاركة في هذا النقاش.',
+    code: 'رمز المشروع',
+    proposedStartDate: 'تاريخ البدء المقترح',
+    proposedEndDate: 'تاريخ الانتهاء المقترح',
+    derivedDuration: 'المدة: {{days}} يوم',
+    datesHint: 'حدد تاريخي البدء والانتهاء لحساب المدة تلقائياً.',
+    addProjectManager: 'إضافة مدير مشروع جديد',
+    pmCreatedWithPassword:
+      'تم إنشاء حساب مدير المشروع. كلمة المرور المؤقتة: {{password}}',
+    executionNotReady: {
+      not_approved: 'يجب اعتماد المشروع قبل بدء التنفيذ.',
+      no_phases: 'أضف مرحلة واحدة على الأقل قبل بدء التنفيذ.',
+      weights_incomplete: 'يجب أن يصل مجموع أوزان المراحل إلى 100% بالضبط.',
+      budgets_incomplete:
+        'يجب أن يصل مجموع ميزانيات المراحل إلى ميزانية المشروع.',
+      missing_dates: 'تحتاج جميع المراحل إلى تاريخي بدء وانتهاء.',
+      dates_outside_project: 'يجب أن تقع تواريخ المراحل ضمن جدول المشروع.',
+      phase_budget_exceeds_project:
+        'ميزانية إحدى المراحل تتجاوز ميزانية المشروع.',
+      missing_project_budget: 'حدد ميزانية المشروع قبل بدء التنفيذ.',
+      missing_project_schedule: 'حدد الجدول الزمني للمشروع قبل بدء التنفيذ.',
+    },
+    rpcErrors: {
+      wbsNotReady:
+        'هيكل تقسيم العمل غير جاهز: يجب أن تصل أوزان وميزانيات المراحل إلى 100% بتواريخ صحيحة.',
+      missingDuration: 'مدة المشروع مطلوبة قبل بدء التنفيذ.',
+      startNotFactoryManager: 'يمكن فقط لمدير مصنع هذا المشروع بدء التنفيذ.',
+      tasksNotDone: 'يجب إنجاز جميع المهام قبل تعيين المشروع كمكتمل.',
+      notAllowed: 'ليست لديك صلاحية تنفيذ هذا الإجراء على هذا المشروع.',
+    },
     attachments: {
       title: 'الملفات الداعمة',
       description:
@@ -347,6 +379,12 @@ export const ar = {
     weightSummary: 'أوزان المراحل: {{total}}% / 100%',
     weightRemaining: 'متبقي {{remaining}}%',
     weightInvalid: 'يجب أن يصل مجموع أوزان المراحل إلى 100% بالضبط.',
+    budgetSummary: 'ميزانيات المراحل: {{total}} / {{projectBudget}}',
+    remainingBudget: 'الميزانية المتبقية: {{remaining}}',
+    budgetRemaining: 'متبقي {{remaining}}',
+    budgetInvalid: 'يجب أن يصل مجموع ميزانيات المراحل إلى ميزانية المشروع.',
+    expectedBudgetRemaining:
+      'لا يمكن أن تتجاوز الميزانية المتوقعة {{remaining}} من الميزانية المتبقية للمشروع',
     taskWeightSummary: 'أوزان المهام: {{total}}% / 100%',
     taskWeightInvalid:
       'يجب أن يصل مجموع أوزان مهام هذه المرحلة إلى 100% بالضبط.',
@@ -368,6 +406,7 @@ export const ar = {
     endDate: 'تاريخ الانتهاء الافتراضي',
     actualEndDate: 'تاريخ الانتهاء الفعلي',
     expectedBudget: 'المبلغ المتوقع للمرحلة',
+    actualBudget: 'المبلغ الفعلي للمرحلة',
     scheduleDeviationReason: 'سبب الانحراف الزمني',
     financialDeviationReason: 'سبب الانحراف المالي',
     problemDescription: 'المشكلة',
@@ -598,6 +637,9 @@ export const ar = {
     directorNoFactory: 'مديرو الشركة غير مرتبطين بمصنع',
     budgetPositive: 'يجب أن تكون الميزانية أكبر من صفر',
     budgetNonNegative: 'لا يمكن أن يكون المبلغ سالباً',
+    budgetRequired: 'الميزانية مطلوبة',
+    descriptionMin: 'يجب أن يكون الوصف 3 أحرف على الأقل',
+    assignedPmRequired: 'مدير المشروع المعيّن مطلوب',
     expectedBudgetRequired: 'الميزانية المتوقعة مطلوبة',
     actualCostRequired: 'التكلفة الفعلية مطلوبة',
     progressRequired: 'نسبة الإنجاز مطلوبة',
@@ -630,6 +672,7 @@ export const ar = {
       'لا يمكن أن يتجاوز الوزن {{remaining}}% من الميزانية المتبقية',
     codeMin: 'يجب أن يكون الرمز حرفين على الأقل',
     codeMax: 'يجب ألا يتجاوز الرمز 12 حرفاً',
+    projectCodeMax: 'يجب ألا يتجاوز الرمز 32 حرفاً',
     codeFormat: 'يجب أن يحتوي الرمز على أحرف كبيرة وأرقام و _ أو -',
     rejectionReasonMin: 'يجب أن يكون سبب الرفض 3 أحرف على الأقل',
     pauseReasonMin: 'يجب أن يكون سبب الإيقاف المؤقت 3 أحرف على الأقل',

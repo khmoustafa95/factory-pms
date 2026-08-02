@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] WBS readiness + start-execution UX: granular `canManagePhases`/`canManageTasks`/`canStartExecution`, `getExecutionReadiness()` with tooltip reasons, phase/task remaining-budget capping, RPC error → i18n mapping, FM dashboard KPI cards (draft/proposed/in-progress/overdue)
 - [x] Field tracking: phase budget/deviations/problems + task weight/duration/cost/progress (Excel-aligned rollups)
 - [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
 - [x] Vite + React 19 + TypeScript + Tailwind v4 scaffold
@@ -51,6 +52,19 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-02 (session 53)
+
+- Migration `20260802120000_project_flow_hardening.sql`: `projects.code`, `phases.actual_budget`, `project_execution_ready()`, extended `get_dashboard_stats`
+- `wbs.ts`: split `canManageWbs` into `canManagePhases`/`canManageTasks`; added `canStartExecution`, `getExecutionReadiness` (typed `ExecutionReadinessReason`), `remainingPhaseBudget`, `isPhaseBudgetSumValid`, `remainingTaskBudget`
+- `PhaseFormDialog`/`phase.ts`: remaining-budget cap + hints, conditional `actual_budget` field, financial/schedule deviation-reason enforcement tied to `actual_budget`/`actual_end_date`
+- `TaskFormDialog`/`task.ts`: optional remaining-budget cap on `expected_cost`
+- `ProjectWbsTab`: independent `canManagePhases`/`canManageTasks` gating + phase-budget summary
+- `ProjectDetailPage`/`ProjectsPage`: "Start execution" gated strictly by `canStartExecution` with readiness-reasons tooltip on the detail page; RPC failures mapped to localized `projects.rpcErrors.*` via updated `toastMutationError(error, fallback, t)`
+- `useDashboard.ts`/`DashboardPage`: factory-manager-only KPI cards for draft/proposed/in-progress/overdue counts
+- `useCreateAccount` invalidates `factory-project-managers` query key so inline PM creation refreshes assignment dropdowns
+- `validations.test.ts` updated for `createSubmitProjectSchema` (code/dates/PM) after `createProjectFormSchema` removal
+- Validation: `npm run verify`, `npm run build`, and `vitest run` (34 tests) all passed
 
 ### 2026-08-01 (session 52)
 

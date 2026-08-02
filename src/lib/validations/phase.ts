@@ -8,6 +8,7 @@ export interface PhaseValidationContext {
   schedule: ProjectScheduleBounds
   actualCostTotal?: number
   scheduleDeviationDays?: number | null
+  remainingBudget?: number
 }
 
 function calendarDayDelta(fromDate: string, toDate: string): number {
@@ -31,6 +32,7 @@ export function createPhaseFormSchema(
       expected_budget: z
         .number({ error: t('validation.expectedBudgetRequired') })
         .min(0, t('validation.budgetNonNegative')),
+      actual_budget: z.number().nullable(),
       actual_end_date: z.string().trim().optional(),
       schedule_deviation_reason: z.string().trim().optional(),
       financial_deviation_reason: z.string().trim().optional(),
@@ -76,10 +78,10 @@ export function createPhaseFormSchema(
         })
       }
 
-      const actualCost = context?.actualCostTotal ?? 0
-      const financialDev = actualCost - values.expected_budget
+      const actualAmount = values.actual_budget ?? context?.actualCostTotal ?? 0
+      const financialDev = actualAmount - values.expected_budget
       if (
-        actualCost > 0 &&
+        actualAmount > 0 &&
         Math.abs(financialDev) > 0.009 &&
         !values.financial_deviation_reason?.trim()
       ) {
@@ -87,6 +89,19 @@ export function createPhaseFormSchema(
           code: 'custom',
           message: t('validation.financialDeviationReasonRequired'),
           path: ['financial_deviation_reason'],
+        })
+      }
+
+      if (
+        context?.remainingBudget != null &&
+        values.expected_budget > context.remainingBudget + 0.001
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('wbs.expectedBudgetRemaining', {
+            remaining: context.remainingBudget.toFixed(2),
+          }),
+          path: ['expected_budget'],
         })
       }
 
@@ -140,6 +155,7 @@ export function toPhasePayload(values: PhaseFormValues) {
     start_date: values.start_date,
     end_date: values.end_date,
     expected_budget: values.expected_budget,
+    actual_budget: values.actual_budget,
     actual_end_date: values.actual_end_date?.trim()
       ? values.actual_end_date.trim()
       : null,
