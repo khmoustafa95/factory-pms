@@ -1,25 +1,14 @@
 import { differenceInCalendarDays, parseISO } from 'date-fns'
 import { getPhaseDurationDays } from '@/lib/duration'
 import { calculatePhaseProgress } from '@/lib/progress'
-import type {
-  CostCategory,
-  FieldHealthStatus,
-  Phase,
-  Task,
-} from '@/types/database'
-
-export interface PhaseCostBreakdown {
-  rawMaterial: number
-  nonRawMaterial: number
-  total: number
-}
+import type { FieldHealthStatus, Phase, Task } from '@/types/database'
 
 export interface PhaseMetrics {
   plannedDurationDays: number | null
   actualDurationDays: number
   scheduleDeviationDays: number | null
   expectedBudget: number
-  costs: PhaseCostBreakdown
+  actualCost: number
   financialDeviation: number
   progressPercent: number
   hasScheduleDeviation: boolean
@@ -38,7 +27,6 @@ type TaskMetricsInput = Pick<
   | 'progress_percent'
   | 'actual_duration_days'
   | 'actual_cost'
-  | 'cost_category'
 >
 
 export function sumPhaseActualDuration(
@@ -50,26 +38,10 @@ export function sumPhaseActualDuration(
   )
 }
 
-export function sumPhaseCostsByCategory(
-  tasks: Array<Pick<Task, 'actual_cost' | 'cost_category'>>,
-): PhaseCostBreakdown {
-  const breakdown = tasks.reduce(
-    (acc, task) => {
-      const amount = Number(task.actual_cost ?? 0)
-      if (task.cost_category === 'raw_material') {
-        acc.rawMaterial += amount
-      } else {
-        acc.nonRawMaterial += amount
-      }
-      return acc
-    },
-    { rawMaterial: 0, nonRawMaterial: 0 },
-  )
-
-  return {
-    ...breakdown,
-    total: breakdown.rawMaterial + breakdown.nonRawMaterial,
-  }
+export function sumPhaseActualCost(
+  tasks: Array<Pick<Task, 'actual_cost'>>,
+): number {
+  return tasks.reduce((sum, task) => sum + Number(task.actual_cost ?? 0), 0)
 }
 
 export function scheduleDeviationDays(
@@ -122,7 +94,6 @@ export function calculatePhaseMetrics(
       | 'progress_percent'
       | 'actual_duration_days'
       | 'actual_cost'
-      | 'cost_category'
     >
   >,
 ): PhaseMetrics {
@@ -131,19 +102,19 @@ export function calculatePhaseMetrics(
       ? getPhaseDurationDays(phase.start_date, phase.end_date)
       : null
   const actualDurationDays = sumPhaseActualDuration(tasks)
-  const costs = sumPhaseCostsByCategory(tasks)
+  const taskActualCost = sumPhaseActualCost(tasks)
   const expectedBudget = Number(phase.expected_budget ?? 0)
-  const actualTotal =
-    phase.actual_budget != null ? Number(phase.actual_budget) : costs.total
+  const actualCost =
+    phase.actual_budget != null ? Number(phase.actual_budget) : taskActualCost
   const deviationSchedule = scheduleDeviationDays(phase, tasks)
-  const deviationFinancial = financialDeviation(expectedBudget, actualTotal)
+  const deviationFinancial = financialDeviation(expectedBudget, actualCost)
 
   return {
     plannedDurationDays,
     actualDurationDays,
     scheduleDeviationDays: deviationSchedule,
     expectedBudget,
-    costs,
+    actualCost,
     financialDeviation: deviationFinancial,
     progressPercent: calculatePhaseProgress(tasks),
     hasScheduleDeviation:
@@ -183,8 +154,4 @@ export function deriveProjectFieldHealth(
     return 'over_budget'
   }
   return 'on_track'
-}
-
-export function isCostCategory(value: string): value is CostCategory {
-  return value === 'raw_material' || value === 'non_raw_material'
 }

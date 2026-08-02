@@ -230,12 +230,8 @@ export function ProjectWbsTab({
                         value={metrics.expectedBudget.toFixed(2)}
                       />
                       <MetricLine
-                        label={t('wbs.rawMaterialCost')}
-                        value={metrics.costs.rawMaterial.toFixed(2)}
-                      />
-                      <MetricLine
-                        label={t('wbs.nonRawMaterialCost')}
-                        value={metrics.costs.nonRawMaterial.toFixed(2)}
+                        label={t('wbs.actualCost')}
+                        value={metrics.actualCost.toFixed(2)}
                       />
                       <MetricLine
                         label={t('wbs.financialDeviation')}

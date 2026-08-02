@@ -53,6 +53,10 @@
 
 ## Changelog
 
+### 2026-08-02 (session 61)
+
+- Phase WBS metrics: removed raw/non-raw material cost breakdown; show single actual cost rolled up from tasks (or phase `actual_budget`)
+
 ### 2026-08-02 (session 60)
 
 - Root cause of Kanban "unable to update task status": completing last task set phase `actual_end_date` to today before phase `start_date` → constraint failure; fixed in `20260802170000_fix_phase_actual_end_on_complete.sql`; improved error toast extraction

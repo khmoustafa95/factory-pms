@@ -426,8 +426,6 @@ export const en = {
     scheduleDeviation: 'Schedule deviation',
     financialDeviation: 'Financial deviation',
     phaseProgress: 'Phase progress',
-    rawMaterialCost: 'Raw material cost',
-    nonRawMaterialCost: 'Non-raw material cost',
     daysValue: '{{days}} days',
     daysValueSigned: '{{days}} days',
     actualCostHint: 'Actual cost from tasks: {{amount}}',

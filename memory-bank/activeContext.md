@@ -6,6 +6,7 @@
 
 ## Recent changes
 
+- [2026-08-02] Phase WBS metrics: replaced raw/non-raw material cost lines with a single actual cost total
 - [2026-08-02] Fix: completing last task failed when phase `actual_end_date` (today) preceded phase `start_date` — `sync_phase_status_from_tasks` now clamps to `start_date` / max task actual end; Kanban uses `toastMutationError`
 - [2026-08-02] Migration `20260802160000_task_completion_tracking.sql`: `tasks.actual_end_date`, `schedule_deviation_reason`, `financial_deviation_reason`; Kanban opens `TaskCompleteDialog` on done; TaskFormDialog aligned
 - [2026-08-02] Task form: removed expected duration from UI; keep due date only for schedule; expected_duration_days defaults/preserved in payload

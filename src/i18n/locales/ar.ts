@@ -415,8 +415,6 @@ export const ar = {
     scheduleDeviation: 'الانحراف الزمني',
     financialDeviation: 'الانحراف المالي',
     phaseProgress: 'نسبة إنجاز المرحلة',
-    rawMaterialCost: 'تكلفة المواد الأولية',
-    nonRawMaterialCost: 'تكلفة المواد غير الأولية',
     daysValue: '{{days}} يوم',
     daysValueSigned: '{{days}} يوم',
     actualCostHint: 'التكلفة الفعلية من المهام: {{amount}}',

@@ -8,7 +8,7 @@ import {
   calculatePhaseMetrics,
   deriveProjectFieldHealth,
   financialDeviation,
-  sumPhaseCostsByCategory,
+  sumPhaseActualCost,
 } from '@/lib/phase-metrics'
 
 describe('progress weighted by task weights', () => {
@@ -51,16 +51,12 @@ describe('progress weighted by task weights', () => {
 })
 
 describe('phase metrics', () => {
-  it('sums costs by category and financial deviation', () => {
-    const costs = sumPhaseCostsByCategory([
-      { actual_cost: 100, cost_category: 'raw_material' },
-      { actual_cost: 40, cost_category: 'non_raw_material' },
+  it('sums actual costs and financial deviation', () => {
+    const actualCost = sumPhaseActualCost([
+      { actual_cost: 100 },
+      { actual_cost: 40 },
     ])
-    expect(costs).toEqual({
-      rawMaterial: 100,
-      nonRawMaterial: 40,
-      total: 140,
-    })
+    expect(actualCost).toBe(140)
     expect(financialDeviation(100, 140)).toBe(40)
   })
 
@@ -82,7 +78,6 @@ describe('phase metrics', () => {
           progress_percent: 100,
           actual_duration_days: 15,
           actual_cost: 150,
-          cost_category: 'raw_material',
         },
       ],
     )
@@ -103,13 +98,13 @@ describe('phase metrics', () => {
           progress_percent: 50,
           actual_duration_days: 12,
           actual_cost: 180,
-          cost_category: 'non_raw_material',
         },
       ],
     )
     expect(metrics.plannedDurationDays).toBe(10)
     expect(metrics.actualDurationDays).toBe(12)
     expect(metrics.scheduleDeviationDays).toBe(2)
+    expect(metrics.actualCost).toBe(180)
     expect(metrics.financialDeviation).toBe(-20)
     expect(metrics.progressPercent).toBe(50)
   })

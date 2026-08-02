@@ -851,7 +851,7 @@ export function ProjectDetailPage() {
               hasFixedDates: false,
             }
           }
-          actualCostTotal={editingPhaseMetrics?.costs.total ?? 0}
+          actualCostTotal={editingPhaseMetrics?.actualCost ?? 0}
           scheduleDeviationDays={
             editingPhaseMetrics?.scheduleDeviationDays ?? null
           }
