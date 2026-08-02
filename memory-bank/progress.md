@@ -53,6 +53,14 @@
 
 ## Changelog
 
+### 2026-08-02 (session 56)
+
+- Task create dialog audited: only planning fields (title, description, due date, weight, expected duration, expected cost); status defaults to `todo`; progress/actuals/cost category/assignee shown on edit only
+
+### 2026-08-02 (session 55)
+
+- Phase create dialog: hide field-tracking fields (actual end date, actual budget, deviation reasons, problem/solution); those appear only when editing an existing phase
+
 ### 2026-08-02 (session 54)
 
 - Slimmed `supabase/seed.sql` to user accounts only (director + 2 factory managers + 3 project managers) plus 2 active factories and USD currency — no projects/phases/tasks

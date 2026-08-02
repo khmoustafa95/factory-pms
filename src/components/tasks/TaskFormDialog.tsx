@@ -82,7 +82,10 @@ export function TaskFormDialog({
   isSubmitting,
 }: TaskFormDialogProps) {
   const { t, locale } = useTranslation()
-  const { data: assignees = [] } = useFactoryProjectManagers(factoryId)
+  const isEditing = Boolean(task)
+  const { data: assignees = [] } = useFactoryProjectManagers(
+    isEditing ? factoryId : null,
+  )
   const maxWeight = task
     ? remainingWeight + Number(task.weight_percent)
     : remainingWeight
@@ -104,7 +107,7 @@ export function TaskFormDialog({
     [maxBudget, maxWeight, phaseEndDate, phaseStartDate, t],
   )
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const { form } = useFormDialog({
     open,
     resolver: zodResolver(taskFormSchema),
     defaultValues: TASK_FORM_DEFAULTS,
@@ -138,7 +141,23 @@ export function TaskFormDialog({
     name: 'cost_category',
   })
 
-  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
+  const handleSubmit = form.handleSubmit(async (values) => {
+    const payload: TaskFormValues = task
+      ? values
+      : {
+          ...values,
+          status: 'todo',
+          blocked_reason: '',
+          assignee_id: null,
+          progress_percent: 0,
+          actual_duration_days: 0,
+          actual_cost: 0,
+          cost_category: 'non_raw_material',
+        }
+
+    await onSubmit(payload)
+    onOpenChange(false)
+  })
 
   const phaseRangeHint =
     phaseStartDate && phaseEndDate
@@ -179,58 +198,20 @@ export function TaskFormDialog({
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{t('wbs.taskStatus')}</Label>
-              <Select
-                value={selectedStatus}
-                onValueChange={(value) => {
-                  if (
-                    value === 'todo' ||
-                    value === 'in_progress' ||
-                    value === 'blocked' ||
-                    value === 'done'
-                  ) {
-                    form.setValue('status', value)
-                    form.setValue(
-                      'progress_percent',
-                      progressPercentForStatus(
-                        value,
-                        form.getValues('progress_percent'),
-                      ),
-                    )
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TASK_STATUS_OPTIONS.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {getTaskStatusLabel(t, status)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="task-due-date">{t('wbs.taskDueDate')}</Label>
-              <Input
-                id="task-due-date"
-                type="date"
-                min={phaseStartDate ?? undefined}
-                max={phaseEndDate ?? undefined}
-                {...form.register('due_date')}
-              />
-              <FormFieldError error={form.formState.errors.due_date} />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="task-due-date">{t('wbs.taskDueDate')}</Label>
+            <Input
+              id="task-due-date"
+              type="date"
+              min={phaseStartDate ?? undefined}
+              max={phaseEndDate ?? undefined}
+              {...form.register('due_date')}
+            />
+            <FormFieldError error={form.formState.errors.due_date} />
+            <p className="text-xs text-muted-foreground">
+              {t('wbs.taskDueDateHint', { range: phaseRangeHint })}
+            </p>
           </div>
-
-          <p className="text-xs text-muted-foreground">
-            {t('wbs.taskDueDateHint', { range: phaseRangeHint })}
-          </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -246,22 +227,6 @@ export function TaskFormDialog({
               <FormFieldError error={form.formState.errors.weight_percent} />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="task-progress">{t('wbs.taskProgress')}</Label>
-              <Input
-                id="task-progress"
-                type="number"
-                min="0"
-                max="100"
-                step="1"
-                disabled={!progressEditable}
-                {...form.register('progress_percent', { valueAsNumber: true })}
-              />
-              <FormFieldError error={form.formState.errors.progress_percent} />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="task-expected-days">
                 {t('wbs.expectedDurationDays')}
@@ -279,123 +244,191 @@ export function TaskFormDialog({
                 error={form.formState.errors.expected_duration_days}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="task-actual-days">
-                {t('wbs.actualDurationDays')}
-              </Label>
-              <Input
-                id="task-actual-days"
-                type="number"
-                min="0"
-                step="1"
-                {...form.register('actual_duration_days', {
-                  valueAsNumber: true,
+          <div className="space-y-2">
+            <Label htmlFor="task-expected-cost">{t('wbs.expectedCost')}</Label>
+            <Input
+              id="task-expected-cost"
+              type="number"
+              min="0"
+              max={maxBudget}
+              step="0.01"
+              {...form.register('expected_cost', { valueAsNumber: true })}
+            />
+            <FormFieldError error={form.formState.errors.expected_cost} />
+            {maxBudget != null ? (
+              <p className="text-xs text-muted-foreground">
+                {t('wbs.budgetRemaining', {
+                  remaining: maxBudget.toFixed(2),
                 })}
-              />
-              <FormFieldError
-                error={form.formState.errors.actual_duration_days}
-              />
-            </div>
+              </p>
+            ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="task-expected-cost">
-                {t('wbs.expectedCost')}
-              </Label>
-              <Input
-                id="task-expected-cost"
-                type="number"
-                min="0"
-                max={maxBudget}
-                step="0.01"
-                {...form.register('expected_cost', { valueAsNumber: true })}
-              />
-              <FormFieldError error={form.formState.errors.expected_cost} />
-              {maxBudget != null ? (
-                <p className="text-xs text-muted-foreground">
-                  {t('wbs.budgetRemaining', {
-                    remaining: maxBudget.toFixed(2),
-                  })}
-                </p>
+          {/* Tracking fields: edit only */}
+          {task ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>{t('wbs.taskStatus')}</Label>
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={(value) => {
+                      if (
+                        value === 'todo' ||
+                        value === 'in_progress' ||
+                        value === 'blocked' ||
+                        value === 'done'
+                      ) {
+                        form.setValue('status', value)
+                        form.setValue(
+                          'progress_percent',
+                          progressPercentForStatus(
+                            value,
+                            form.getValues('progress_percent'),
+                          ),
+                        )
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TASK_STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {getTaskStatusLabel(t, status)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="task-progress">{t('wbs.taskProgress')}</Label>
+                  <Input
+                    id="task-progress"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    disabled={!progressEditable}
+                    {...form.register('progress_percent', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.progress_percent}
+                  />
+                </div>
+              </div>
+
+              {selectedStatus === 'blocked' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="task-blocked-reason">
+                    {t('wbs.blockedReasonLabel')}
+                  </Label>
+                  <Textarea
+                    id="task-blocked-reason"
+                    rows={3}
+                    {...form.register('blocked_reason')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.blocked_reason}
+                  />
+                </div>
               ) : null}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="task-actual-cost">{t('wbs.actualCost')}</Label>
-              <Input
-                id="task-actual-cost"
-                type="number"
-                min="0"
-                step="0.01"
-                {...form.register('actual_cost', { valueAsNumber: true })}
-              />
-              <FormFieldError error={form.formState.errors.actual_cost} />
-            </div>
-          </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="task-actual-days">
+                    {t('wbs.actualDurationDays')}
+                  </Label>
+                  <Input
+                    id="task-actual-days"
+                    type="number"
+                    min="0"
+                    step="1"
+                    {...form.register('actual_duration_days', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.actual_duration_days}
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <Label>{t('wbs.costCategory')}</Label>
-            <Select
-              value={selectedCostCategory}
-              onValueChange={(value) => {
-                if (value === 'raw_material' || value === 'non_raw_material') {
-                  form.setValue('cost_category', value)
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="raw_material">
-                  {t('wbs.costCategoryRaw')}
-                </SelectItem>
-                <SelectItem value="non_raw_material">
-                  {t('wbs.costCategoryNonRaw')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="task-actual-cost">
+                    {t('wbs.actualCost')}
+                  </Label>
+                  <Input
+                    id="task-actual-cost"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    {...form.register('actual_cost', { valueAsNumber: true })}
+                  />
+                  <FormFieldError error={form.formState.errors.actual_cost} />
+                </div>
+              </div>
 
-          {selectedStatus === 'blocked' ? (
-            <div className="space-y-2">
-              <Label htmlFor="task-blocked-reason">
-                {t('wbs.blockedReasonLabel')}
-              </Label>
-              <Textarea
-                id="task-blocked-reason"
-                rows={3}
-                {...form.register('blocked_reason')}
-              />
-              <FormFieldError error={form.formState.errors.blocked_reason} />
-            </div>
+              <div className="space-y-2">
+                <Label>{t('wbs.costCategory')}</Label>
+                <Select
+                  value={selectedCostCategory}
+                  onValueChange={(value) => {
+                    if (
+                      value === 'raw_material' ||
+                      value === 'non_raw_material'
+                    ) {
+                      form.setValue('cost_category', value)
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="raw_material">
+                      {t('wbs.costCategoryRaw')}
+                    </SelectItem>
+                    <SelectItem value="non_raw_material">
+                      {t('wbs.costCategoryNonRaw')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t('wbs.assignee')}</Label>
+                <Select
+                  value={formatNullableSelectValue(selectedAssigneeId)}
+                  onValueChange={(value) =>
+                    form.setValue(
+                      'assignee_id',
+                      parseNullableSelectValue(value),
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('common.optional')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NULL_SELECT_VALUE}>
+                      {t('common.unassigned')}
+                    </SelectItem>
+                    {assignees.map((assignee) => (
+                      <SelectItem key={assignee.id} value={assignee.id}>
+                        {assignee.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
           ) : null}
-
-          <div className="space-y-2">
-            <Label>{t('wbs.assignee')}</Label>
-            <Select
-              value={formatNullableSelectValue(selectedAssigneeId)}
-              onValueChange={(value) =>
-                form.setValue('assignee_id', parseNullableSelectValue(value))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t('common.optional')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NULL_SELECT_VALUE}>
-                  {t('common.unassigned')}
-                </SelectItem>
-                {assignees.map((assignee) => (
-                  <SelectItem key={assignee.id} value={assignee.id}>
-                    {assignee.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <DialogFooter>
             <Button

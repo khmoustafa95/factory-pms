@@ -6,6 +6,8 @@
 
 ## Recent changes
 
+- [2026-08-02] Task create form: planning fields only (title/description/due/weight/expected duration/cost); tracking (status/progress/actuals/cost category/assignee) on edit only
+- [2026-08-02] Phase create form: hide field-tracking fields (actual end, deviation reasons, problem/solution); show only when editing
 - [2026-08-02] Seed slimmed to accounts only: 2 factories (DMS/ALP) + 1 company director + 2 factory managers + 3 project managers (+ USD currency); removed demo projects/phases/tasks/inactive user; updated `demo-accounts.md` / `demo-accounts.ts` / i18n notes
 - [2026-08-02] Migration `20260802120000_project_flow_hardening.sql`: `projects.code` (unique), `phases.actual_budget`, `project_execution_ready()`; `get_dashboard_stats` extended with `draft_count`/`proposed_count`/`in_progress_count`/`overdue_task_count`
 - [2026-08-02] `src/lib/wbs.ts`: split `canManageWbs` into `canManagePhases` (approved/in_progress/paused) + `canManageTasks` (in_progress/paused, deprecated wrapper kept); added `canStartExecution` (FM + matching factory + `approved` status), `getExecutionReadiness()` (`ExecutionReadinessReason[]`), `remainingPhaseBudget`, `isPhaseBudgetSumValid`, `remainingTaskBudget`
