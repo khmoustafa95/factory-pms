@@ -870,7 +870,6 @@ export function ProjectDetailPage() {
           phaseEndDate={activePhase?.end_date ?? null}
           remainingWeight={taskRemainingWeight}
           remainingBudget={taskRemainingBudget}
-          factoryId={project.factory_id}
           onSubmit={handleTaskSubmit}
           isSubmitting={createTask.isPending || updateTask.isPending}
         />

@@ -660,6 +660,8 @@ export const en = {
     assignedPmRequired: 'Assigned project manager is required',
     expectedBudgetRequired: 'Expected budget is required',
     actualCostRequired: 'Actual cost is required',
+    actualDurationWhenDone:
+      'Actual duration must be at least 1 day when the task is done',
     progressRequired: 'Progress is required',
     progressMin: 'Progress must be at least 0',
     progressMax: 'Progress cannot exceed 100',

@@ -23,13 +23,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
-import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
-import {
-  formatNullableSelectValue,
-  NULL_SELECT_VALUE,
-  parseNullableSelectValue,
-} from '@/lib/form-utils'
 import { progressPercentForStatus } from '@/lib/progress'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
 import {
@@ -47,7 +41,6 @@ interface TaskFormDialogProps {
   phaseEndDate: string | null
   remainingWeight: number
   remainingBudget?: number
-  factoryId: string | null | undefined
   onSubmit: (values: TaskFormValues) => Promise<void>
   isSubmitting: boolean
 }
@@ -77,15 +70,10 @@ export function TaskFormDialog({
   phaseEndDate,
   remainingWeight,
   remainingBudget,
-  factoryId,
   onSubmit,
   isSubmitting,
 }: TaskFormDialogProps) {
   const { t, locale } = useTranslation()
-  const isEditing = Boolean(task)
-  const { data: assignees = [] } = useFactoryProjectManagers(
-    isEditing ? factoryId : null,
-  )
   const maxWeight = task
     ? remainingWeight + Number(task.weight_percent)
     : remainingWeight
@@ -132,18 +120,26 @@ export function TaskFormDialog({
   })
 
   const selectedStatus = useWatch({ control: form.control, name: 'status' })
-  const selectedAssigneeId = useWatch({
-    control: form.control,
-    name: 'assignee_id',
-  })
   const selectedCostCategory = useWatch({
     control: form.control,
     name: 'cost_category',
   })
 
+  const showCompletionFields = selectedStatus === 'done'
+  const progressEditable =
+    selectedStatus === 'in_progress' || selectedStatus === 'blocked'
+
   const handleSubmit = form.handleSubmit(async (values) => {
     const payload: TaskFormValues = task
-      ? values
+      ? values.status === 'done'
+        ? values
+        : {
+            ...values,
+            // Keep existing actuals unless marking done (fields not shown).
+            actual_duration_days: task.actual_duration_days,
+            actual_cost: task.actual_cost,
+            cost_category: task.cost_category,
+          }
       : {
           ...values,
           status: 'todo',
@@ -163,9 +159,6 @@ export function TaskFormDialog({
     phaseStartDate && phaseEndDate
       ? `${formatLocalizedDate(phaseStartDate, locale)} → ${formatLocalizedDate(phaseEndDate, locale)}`
       : t('wbs.noPhaseSchedule')
-
-  const progressEditable =
-    selectedStatus === 'in_progress' || selectedStatus === 'blocked'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -266,7 +259,6 @@ export function TaskFormDialog({
             ) : null}
           </div>
 
-          {/* Tracking fields: edit only */}
           {task ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -289,6 +281,18 @@ export function TaskFormDialog({
                             form.getValues('progress_percent'),
                           ),
                         )
+                        if (
+                          value === 'done' &&
+                          form.getValues('actual_duration_days') <= 0
+                        ) {
+                          form.setValue(
+                            'actual_duration_days',
+                            Math.max(
+                              form.getValues('expected_duration_days'),
+                              1,
+                            ),
+                          )
+                        }
                       }
                     }}
                   >
@@ -305,23 +309,26 @@ export function TaskFormDialog({
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="task-progress">{t('wbs.taskProgress')}</Label>
-                  <Input
-                    id="task-progress"
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    disabled={!progressEditable}
-                    {...form.register('progress_percent', {
-                      valueAsNumber: true,
-                    })}
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.progress_percent}
-                  />
-                </div>
+                {progressEditable ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="task-progress">
+                      {t('wbs.taskProgress')}
+                    </Label>
+                    <Input
+                      id="task-progress"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      {...form.register('progress_percent', {
+                        valueAsNumber: true,
+                      })}
+                    />
+                    <FormFieldError
+                      error={form.formState.errors.progress_percent}
+                    />
+                  </div>
+                ) : null}
               </div>
 
               {selectedStatus === 'blocked' ? (
@@ -340,93 +347,74 @@ export function TaskFormDialog({
                 </div>
               ) : null}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="task-actual-days">
-                    {t('wbs.actualDurationDays')}
-                  </Label>
-                  <Input
-                    id="task-actual-days"
-                    type="number"
-                    min="0"
-                    step="1"
-                    {...form.register('actual_duration_days', {
-                      valueAsNumber: true,
-                    })}
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.actual_duration_days}
-                  />
-                </div>
+              {showCompletionFields ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="task-actual-days">
+                        {t('wbs.actualDurationDays')}
+                      </Label>
+                      <Input
+                        id="task-actual-days"
+                        type="number"
+                        min="1"
+                        step="1"
+                        {...form.register('actual_duration_days', {
+                          valueAsNumber: true,
+                        })}
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.actual_duration_days}
+                      />
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="task-actual-cost">
-                    {t('wbs.actualCost')}
-                  </Label>
-                  <Input
-                    id="task-actual-cost"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    {...form.register('actual_cost', { valueAsNumber: true })}
-                  />
-                  <FormFieldError error={form.formState.errors.actual_cost} />
-                </div>
-              </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="task-actual-cost">
+                        {t('wbs.actualCost')}
+                      </Label>
+                      <Input
+                        id="task-actual-cost"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        {...form.register('actual_cost', {
+                          valueAsNumber: true,
+                        })}
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.actual_cost}
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <Label>{t('wbs.costCategory')}</Label>
-                <Select
-                  value={selectedCostCategory}
-                  onValueChange={(value) => {
-                    if (
-                      value === 'raw_material' ||
-                      value === 'non_raw_material'
-                    ) {
-                      form.setValue('cost_category', value)
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="raw_material">
-                      {t('wbs.costCategoryRaw')}
-                    </SelectItem>
-                    <SelectItem value="non_raw_material">
-                      {t('wbs.costCategoryNonRaw')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t('wbs.assignee')}</Label>
-                <Select
-                  value={formatNullableSelectValue(selectedAssigneeId)}
-                  onValueChange={(value) =>
-                    form.setValue(
-                      'assignee_id',
-                      parseNullableSelectValue(value),
-                    )
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('common.optional')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NULL_SELECT_VALUE}>
-                      {t('common.unassigned')}
-                    </SelectItem>
-                    {assignees.map((assignee) => (
-                      <SelectItem key={assignee.id} value={assignee.id}>
-                        {assignee.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div className="space-y-2">
+                    <Label>{t('wbs.costCategory')}</Label>
+                    <Select
+                      value={selectedCostCategory}
+                      onValueChange={(value) => {
+                        if (
+                          value === 'raw_material' ||
+                          value === 'non_raw_material'
+                        ) {
+                          form.setValue('cost_category', value)
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="raw_material">
+                          {t('wbs.costCategoryRaw')}
+                        </SelectItem>
+                        <SelectItem value="non_raw_material">
+                          {t('wbs.costCategoryNonRaw')}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              ) : null}
             </>
           ) : null}
 

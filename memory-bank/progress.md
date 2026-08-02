@@ -53,6 +53,10 @@
 
 ## Changelog
 
+### 2026-08-02 (session 57)
+
+- Task dialog: actual duration/cost + cost category only when status is `done` (not on every edit); create stays planning-only; assignee field removed from dialog; validation requires actual duration ≥ 1 when done
+
 ### 2026-08-02 (session 56)
 
 - Task create dialog audited: only planning fields (title, description, due date, weight, expected duration, expected cost); status defaults to `todo`; progress/actuals/cost category/assignee shown on edit only

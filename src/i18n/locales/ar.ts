@@ -641,6 +641,8 @@ export const ar = {
     assignedPmRequired: 'مدير المشروع المعيّن مطلوب',
     expectedBudgetRequired: 'الميزانية المتوقعة مطلوبة',
     actualCostRequired: 'التكلفة الفعلية مطلوبة',
+    actualDurationWhenDone:
+      'المدة الفعلية يجب أن تكون يوماً واحداً على الأقل عند تحويل المهمة لمنجزة',
     progressRequired: 'نسبة الإنجاز مطلوبة',
     progressMin: 'يجب ألا تقل نسبة الإنجاز عن 0',
     progressMax: 'لا يمكن أن تتجاوز نسبة الإنجاز 100',

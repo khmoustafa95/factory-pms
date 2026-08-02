@@ -64,6 +64,14 @@ export function createTaskFormSchema(
         })
       }
 
+      if (values.status === 'done' && values.actual_duration_days < 1) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.actualDurationWhenDone'),
+          path: ['actual_duration_days'],
+        })
+      }
+
       if (context && values.weight_percent > context.remainingWeight + 0.001) {
         ctx.addIssue({
           code: 'custom',

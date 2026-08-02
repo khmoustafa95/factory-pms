@@ -6,6 +6,7 @@
 
 ## Recent changes
 
+- [2026-08-02] Task form: completion fields (actual duration/cost, cost category) appear only when status is `done`; create = planning only; edit = planning + status (+ progress/blocked); assignee removed from dialog
 - [2026-08-02] Task create form: planning fields only (title/description/due/weight/expected duration/cost); tracking (status/progress/actuals/cost category/assignee) on edit only
 - [2026-08-02] Phase create form: hide field-tracking fields (actual end, deviation reasons, problem/solution); show only when editing
 - [2026-08-02] Seed slimmed to accounts only: 2 factories (DMS/ALP) + 1 company director + 2 factory managers + 3 project managers (+ USD currency); removed demo projects/phases/tasks/inactive user; updated `demo-accounts.md` / `demo-accounts.ts` / i18n notes
