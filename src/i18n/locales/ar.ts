@@ -443,6 +443,7 @@ export const ar = {
     blockedReason: 'سبب الحظر',
     markBlocked: 'تعيين المهمة كمحظورة',
     blockedReasonLabel: 'سبب الحظر',
+    markDone: 'تعيين المهمة كمنجزة',
     noTasksKanban: 'لا توجد مهام',
     taskStatusUpdated: 'تم تحديث حالة المهمة',
     updateTaskStatusFailed: 'تعذر تحديث حالة المهمة',
@@ -641,6 +642,7 @@ export const ar = {
     assignedPmRequired: 'مدير المشروع المعيّن مطلوب',
     expectedBudgetRequired: 'الميزانية المتوقعة مطلوبة',
     actualCostRequired: 'التكلفة الفعلية مطلوبة',
+    actualEndDateRequired: 'تاريخ الانتهاء الفعلي مطلوب',
     actualDurationWhenDone:
       'المدة الفعلية يجب أن تكون يوماً واحداً على الأقل عند تحويل المهمة لمنجزة',
     progressRequired: 'نسبة الإنجاز مطلوبة',

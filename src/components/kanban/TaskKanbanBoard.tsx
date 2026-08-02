@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { TaskCompleteDialog } from '@/components/tasks/TaskCompleteDialog'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
 import { StaggerGroup } from '@/components/motion'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ import type { TaskListItem } from '@/hooks/useTasks'
 import { useUpdateTaskStatus } from '@/hooks/useTasks'
 import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
+import type { TaskCompletionValues } from '@/lib/validations/task'
 import type { Phase, TaskStatus } from '@/types/database'
 
 interface TaskKanbanBoardProps {
@@ -44,6 +46,9 @@ export function TaskKanbanBoard({
   const updateStatus = useUpdateTaskStatus(projectId)
   const [blockedTask, setBlockedTask] = useState<TaskListItem | null>(null)
   const [blockedReason, setBlockedReason] = useState('')
+  const [completingTask, setCompletingTask] = useState<TaskListItem | null>(
+    null,
+  )
 
   const phaseNameById = new Map(phases.map((phase) => [phase.id, phase.name]))
 
@@ -62,6 +67,11 @@ export function TaskKanbanBoard({
   ) => {
     if (status === 'blocked' && !reason?.trim()) {
       setBlockedTask(task)
+      return
+    }
+
+    if (status === 'done') {
+      setCompletingTask(task)
       return
     }
 
@@ -84,9 +94,41 @@ export function TaskKanbanBoard({
       return
     }
 
-    await changeStatus(blockedTask, 'blocked', blockedReason)
-    setBlockedTask(null)
-    setBlockedReason('')
+    try {
+      await updateStatus.mutateAsync({
+        id: blockedTask.id,
+        status: 'blocked',
+        blockedReason,
+      })
+      toast.success(t('wbs.taskStatusUpdated'))
+      setBlockedTask(null)
+      setBlockedReason('')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t('wbs.updateTaskStatusFailed')
+      toast.error(message)
+    }
+  }
+
+  const submitComplete = async (values: TaskCompletionValues) => {
+    if (!completingTask) {
+      return
+    }
+
+    try {
+      await updateStatus.mutateAsync({
+        id: completingTask.id,
+        status: 'done',
+        completion: values,
+      })
+      toast.success(t('wbs.taskStatusUpdated'))
+      setCompletingTask(null)
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t('wbs.updateTaskStatusFailed')
+      toast.error(message)
+      throw error
+    }
   }
 
   return (
@@ -223,6 +265,24 @@ export function TaskKanbanBoard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <TaskCompleteDialog
+        open={Boolean(completingTask)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCompletingTask(null)
+          }
+        }}
+        taskTitle={completingTask?.title ?? ''}
+        dueDate={completingTask?.due_date ?? null}
+        expectedCost={Number(completingTask?.expected_cost ?? 0)}
+        initialActualEndDate={completingTask?.actual_end_date}
+        initialActualCost={completingTask?.actual_cost}
+        initialScheduleReason={completingTask?.schedule_deviation_reason}
+        initialFinancialReason={completingTask?.financial_deviation_reason}
+        onSubmit={submitComplete}
+        isSubmitting={updateStatus.isPending}
+      />
     </>
   )
 }

@@ -59,6 +59,9 @@ const TASK_FORM_DEFAULTS: TaskFormValues = {
   expected_cost: 0,
   actual_cost: 0,
   cost_category: 'non_raw_material',
+  actual_end_date: '',
+  schedule_deviation_reason: '',
+  financial_deviation_reason: '',
 }
 
 export function TaskFormDialog({
@@ -115,19 +118,38 @@ export function TaskFormDialog({
       expected_cost: task?.expected_cost ?? 0,
       actual_cost: task?.actual_cost ?? 0,
       cost_category: task?.cost_category ?? 'non_raw_material',
+      actual_end_date: task?.actual_end_date ?? '',
+      schedule_deviation_reason: task?.schedule_deviation_reason ?? '',
+      financial_deviation_reason: task?.financial_deviation_reason ?? '',
     }),
     resetDependencies: [task, maxWeight],
   })
 
   const selectedStatus = useWatch({ control: form.control, name: 'status' })
-  const selectedCostCategory = useWatch({
+  const watchedActualEndDate = useWatch({
     control: form.control,
-    name: 'cost_category',
+    name: 'actual_end_date',
+  })
+  const watchedActualCost = useWatch({
+    control: form.control,
+    name: 'actual_cost',
+  })
+  const watchedDueDate = useWatch({ control: form.control, name: 'due_date' })
+  const watchedExpectedCost = useWatch({
+    control: form.control,
+    name: 'expected_cost',
   })
 
   const showCompletionFields = selectedStatus === 'done'
   const progressEditable =
     selectedStatus === 'in_progress' || selectedStatus === 'blocked'
+  const scheduleOverrun = Boolean(
+    watchedDueDate?.trim() &&
+    watchedActualEndDate?.trim() &&
+    watchedActualEndDate > watchedDueDate,
+  )
+  const financialOverrun =
+    Number(watchedActualCost) > Number(watchedExpectedCost) + 0.009
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const payload: TaskFormValues = task
@@ -135,10 +157,13 @@ export function TaskFormDialog({
         ? values
         : {
             ...values,
-            // Keep existing actuals unless marking done (fields not shown).
+            expected_duration_days: task.expected_duration_days,
             actual_duration_days: task.actual_duration_days,
             actual_cost: task.actual_cost,
             cost_category: task.cost_category,
+            actual_end_date: task.actual_end_date ?? '',
+            schedule_deviation_reason: task.schedule_deviation_reason ?? '',
+            financial_deviation_reason: task.financial_deviation_reason ?? '',
           }
       : {
           ...values,
@@ -146,9 +171,13 @@ export function TaskFormDialog({
           blocked_reason: '',
           assignee_id: null,
           progress_percent: 0,
+          expected_duration_days: 1,
           actual_duration_days: 0,
           actual_cost: 0,
           cost_category: 'non_raw_material',
+          actual_end_date: '',
+          schedule_deviation_reason: '',
+          financial_deviation_reason: '',
         }
 
     await onSubmit(payload)
@@ -221,42 +250,26 @@ export function TaskFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="task-expected-days">
-                {t('wbs.expectedDurationDays')}
+              <Label htmlFor="task-expected-cost">
+                {t('wbs.expectedCost')}
               </Label>
               <Input
-                id="task-expected-days"
+                id="task-expected-cost"
                 type="number"
                 min="0"
-                step="1"
-                {...form.register('expected_duration_days', {
-                  valueAsNumber: true,
-                })}
+                max={maxBudget}
+                step="0.01"
+                {...form.register('expected_cost', { valueAsNumber: true })}
               />
-              <FormFieldError
-                error={form.formState.errors.expected_duration_days}
-              />
+              <FormFieldError error={form.formState.errors.expected_cost} />
+              {maxBudget != null ? (
+                <p className="text-xs text-muted-foreground">
+                  {t('wbs.budgetRemaining', {
+                    remaining: maxBudget.toFixed(2),
+                  })}
+                </p>
+              ) : null}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="task-expected-cost">{t('wbs.expectedCost')}</Label>
-            <Input
-              id="task-expected-cost"
-              type="number"
-              min="0"
-              max={maxBudget}
-              step="0.01"
-              {...form.register('expected_cost', { valueAsNumber: true })}
-            />
-            <FormFieldError error={form.formState.errors.expected_cost} />
-            {maxBudget != null ? (
-              <p className="text-xs text-muted-foreground">
-                {t('wbs.budgetRemaining', {
-                  remaining: maxBudget.toFixed(2),
-                })}
-              </p>
-            ) : null}
           </div>
 
           {task ? (
@@ -281,17 +294,25 @@ export function TaskFormDialog({
                             form.getValues('progress_percent'),
                           ),
                         )
-                        if (
-                          value === 'done' &&
-                          form.getValues('actual_duration_days') <= 0
-                        ) {
-                          form.setValue(
-                            'actual_duration_days',
-                            Math.max(
-                              form.getValues('expected_duration_days'),
-                              1,
-                            ),
-                          )
+                        if (value === 'done') {
+                          if (!form.getValues('actual_end_date')?.trim()) {
+                            form.setValue(
+                              'actual_end_date',
+                              new Date().toISOString().slice(0, 10),
+                            )
+                          }
+                          if (form.getValues('actual_duration_days') <= 0) {
+                            form.setValue('actual_duration_days', 1)
+                          }
+                          if (
+                            !form.getValues('actual_cost') &&
+                            form.getValues('expected_cost') > 0
+                          ) {
+                            form.setValue(
+                              'actual_cost',
+                              form.getValues('expected_cost'),
+                            )
+                          }
                         }
                       }
                     }}
@@ -351,20 +372,16 @@ export function TaskFormDialog({
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="task-actual-days">
-                        {t('wbs.actualDurationDays')}
+                      <Label htmlFor="task-actual-end">
+                        {t('wbs.actualEndDate')}
                       </Label>
                       <Input
-                        id="task-actual-days"
-                        type="number"
-                        min="1"
-                        step="1"
-                        {...form.register('actual_duration_days', {
-                          valueAsNumber: true,
-                        })}
+                        id="task-actual-end"
+                        type="date"
+                        {...form.register('actual_end_date')}
                       />
                       <FormFieldError
-                        error={form.formState.errors.actual_duration_days}
+                        error={form.formState.errors.actual_end_date}
                       />
                     </div>
 
@@ -387,32 +404,37 @@ export function TaskFormDialog({
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>{t('wbs.costCategory')}</Label>
-                    <Select
-                      value={selectedCostCategory}
-                      onValueChange={(value) => {
-                        if (
-                          value === 'raw_material' ||
-                          value === 'non_raw_material'
-                        ) {
-                          form.setValue('cost_category', value)
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="raw_material">
-                          {t('wbs.costCategoryRaw')}
-                        </SelectItem>
-                        <SelectItem value="non_raw_material">
-                          {t('wbs.costCategoryNonRaw')}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {scheduleOverrun ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="task-schedule-reason">
+                        {t('wbs.scheduleDeviationReason')}
+                      </Label>
+                      <Textarea
+                        id="task-schedule-reason"
+                        rows={2}
+                        {...form.register('schedule_deviation_reason')}
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.schedule_deviation_reason}
+                      />
+                    </div>
+                  ) : null}
+
+                  {financialOverrun ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="task-financial-reason">
+                        {t('wbs.financialDeviationReason')}
+                      </Label>
+                      <Textarea
+                        id="task-financial-reason"
+                        rows={2}
+                        {...form.register('financial_deviation_reason')}
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.financial_deviation_reason}
+                      />
+                    </div>
+                  ) : null}
                 </>
               ) : null}
             </>

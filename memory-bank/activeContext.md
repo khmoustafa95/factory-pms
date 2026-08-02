@@ -2,10 +2,12 @@
 
 ## Current focus
 
-**Slim demo seed (accounts only)** — local reset injects factories + role accounts; no demo projects/phases/tasks. Next: smoke empty-data project flow.
+**Kanban task completion** — when marking a task done, capture actual end date + spent cost; require schedule/financial justification on overrun vs due date / expected cost.
 
 ## Recent changes
 
+- [2026-08-02] Migration `20260802160000_task_completion_tracking.sql`: `tasks.actual_end_date`, `schedule_deviation_reason`, `financial_deviation_reason`; Kanban opens `TaskCompleteDialog` on done; TaskFormDialog aligned
+- [2026-08-02] Task form: removed expected duration from UI; keep due date only for schedule; expected_duration_days defaults/preserved in payload
 - [2026-08-02] Task form: completion fields (actual duration/cost, cost category) appear only when status is `done`; create = planning only; edit = planning + status (+ progress/blocked); assignee removed from dialog
 - [2026-08-02] Task create form: planning fields only (title/description/due/weight/expected duration/cost); tracking (status/progress/actuals/cost category/assignee) on edit only
 - [2026-08-02] Phase create form: hide field-tracking fields (actual end, deviation reasons, problem/solution); show only when editing

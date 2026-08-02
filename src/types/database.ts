@@ -277,6 +277,9 @@ export interface Database {
           expected_cost: number
           actual_cost: number
           cost_category: CostCategory
+          actual_end_date: string | null
+          schedule_deviation_reason: string | null
+          financial_deviation_reason: string | null
           sort_order: number
           created_at: string
           updated_at: string
@@ -298,6 +301,9 @@ export interface Database {
           expected_cost?: number
           actual_cost?: number
           cost_category?: CostCategory
+          actual_end_date?: string | null
+          schedule_deviation_reason?: string | null
+          financial_deviation_reason?: string | null
           sort_order?: number
           created_at?: string
           updated_at?: string
@@ -319,6 +325,9 @@ export interface Database {
           expected_cost?: number
           actual_cost?: number
           cost_category?: CostCategory
+          actual_end_date?: string | null
+          schedule_deviation_reason?: string | null
+          financial_deviation_reason?: string | null
           sort_order?: number
           created_at?: string
           updated_at?: string

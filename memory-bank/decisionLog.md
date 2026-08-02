@@ -4,7 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
-- 2026-08-02 — Project flow hardening: unique `projects.code`; draft SELECT limited to factory manager; start execution is FM-only with DB `project_execution_ready` (weights 100% + budgets = project budget + valid phase dates); tasks gated until `in_progress`/`paused`/`completed`; proposal submit requires code/dates/budget/PM/description while draft stays flexible.
+- 2026-08-02 — Task completion on Kanban/form: require `actual_end_date` + `actual_cost`; overrun vs `due_date` / `expected_cost` requires schedule/financial deviation reasons (new task columns).
+
 - 2026-08-02 — Proposal calendar dates are the source of truth on submit; duration is derived as days and stored for schedule helpers — avoids dual conflicting inputs.
 - 2026-08-01 — Field tracking model: tasks are the source of actual duration/cost/progress (weights sum to 100% per phase in UI); phases hold planned baseline (`expected_budget`, schedule dates) plus deviation justifications and problem/solution — mirrors the legacy Excel tracker without importing spreadsheets.
 - 2026-08-01 — DB enforces task weight sum **≤ 100%** (not exact equality) because single-row SPA mutations cannot atomically rebalance siblings; UI requires exact 100% (same pattern as phase weights). Delete rebalances freed weight onto a sibling.

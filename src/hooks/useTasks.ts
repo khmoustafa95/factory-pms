@@ -4,7 +4,11 @@ import { queryKeys } from '@/lib/query-keys'
 import { joinMappers } from '@/lib/supabase-joins'
 import type { TaskListItem } from '@/types/joins'
 import { TASK_LIST_SELECT } from '@/types/joins'
-import { toTaskPayload, type TaskFormValues } from '@/lib/validations/task'
+import {
+  toTaskPayload,
+  type TaskCompletionValues,
+  type TaskFormValues,
+} from '@/lib/validations/task'
 import type { TaskStatus } from '@/types/database'
 
 export type { TaskListItem } from '@/types/joins'
@@ -147,19 +151,38 @@ export function useUpdateTaskStatus(projectId: string | undefined) {
       id,
       status,
       blockedReason,
+      completion,
     }: {
       id: string
       status: TaskStatus
       blockedReason?: string
+      completion?: TaskCompletionValues
     }) => {
       const supabase = getSupabase()
+
+      const payload =
+        status === 'done' && completion
+          ? {
+              status,
+              blocked_reason: null,
+              progress_percent: 100,
+              actual_end_date: completion.actual_end_date.trim(),
+              actual_cost: completion.actual_cost,
+              actual_duration_days: 1,
+              schedule_deviation_reason:
+                completion.schedule_deviation_reason?.trim() || null,
+              financial_deviation_reason:
+                completion.financial_deviation_reason?.trim() || null,
+            }
+          : {
+              status,
+              blocked_reason:
+                status === 'blocked' ? (blockedReason?.trim() ?? null) : null,
+            }
+
       const { data, error } = await supabase
         .from('tasks')
-        .update({
-          status,
-          blocked_reason:
-            status === 'blocked' ? (blockedReason?.trim() ?? null) : null,
-        })
+        .update(payload)
         .eq('id', id)
         .select('*')
         .single()

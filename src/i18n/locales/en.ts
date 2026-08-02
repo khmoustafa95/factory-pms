@@ -455,6 +455,7 @@ export const en = {
     blockedReason: 'Blocked reason',
     markBlocked: 'Mark task as blocked',
     blockedReasonLabel: 'Blocked reason',
+    markDone: 'Mark task as done',
     noTasksKanban: 'No tasks',
     taskStatusUpdated: 'Task status updated',
     updateTaskStatusFailed: 'Unable to update task status',
@@ -660,6 +661,7 @@ export const en = {
     assignedPmRequired: 'Assigned project manager is required',
     expectedBudgetRequired: 'Expected budget is required',
     actualCostRequired: 'Actual cost is required',
+    actualEndDateRequired: 'Actual end date is required',
     actualDurationWhenDone:
       'Actual duration must be at least 1 day when the task is done',
     progressRequired: 'Progress is required',

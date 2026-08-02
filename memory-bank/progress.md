@@ -53,6 +53,15 @@
 
 ## Changelog
 
+### 2026-08-02 (session 59)
+
+- Kanban: marking task done opens completion dialog for actual end date + spent cost; schedule/financial justification required when exceeding due date / expected cost
+- Migration `20260802160000_task_completion_tracking.sql` + TaskFormDialog completion fields aligned
+
+### 2026-08-02 (session 58)
+
+- Task form: removed expected duration field from UI; kept due date for scheduling (expected_duration_days still defaulted/preserved in DB payload)
+
 ### 2026-08-02 (session 57)
 
 - Task dialog: actual duration/cost + cost category only when status is `done` (not on every edit); create stays planning-only; assignee field removed from dialog; validation requires actual duration ≥ 1 when done
