@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**WBS readiness, phase remaining budget, start-execution UX, task gating** — project `code` + explicit proposed dates, `phases.actual_budget`, granular `canManagePhases`/`canManageTasks`/`canStartExecution`, execution-readiness reasons surfaced in UI, and RPC error → i18n mapping.
+**Slim demo seed (accounts only)** — local reset injects factories + role accounts; no demo projects/phases/tasks. Next: smoke empty-data project flow.
 
 ## Recent changes
 
+- [2026-08-02] Seed slimmed to accounts only: 2 factories (DMS/ALP) + 1 company director + 2 factory managers + 3 project managers (+ USD currency); removed demo projects/phases/tasks/inactive user; updated `demo-accounts.md` / `demo-accounts.ts` / i18n notes
 - [2026-08-02] Migration `20260802120000_project_flow_hardening.sql`: `projects.code` (unique), `phases.actual_budget`, `project_execution_ready()`; `get_dashboard_stats` extended with `draft_count`/`proposed_count`/`in_progress_count`/`overdue_task_count`
 - [2026-08-02] `src/lib/wbs.ts`: split `canManageWbs` into `canManagePhases` (approved/in_progress/paused) + `canManageTasks` (in_progress/paused, deprecated wrapper kept); added `canStartExecution` (FM + matching factory + `approved` status), `getExecutionReadiness()` (`ExecutionReadinessReason[]`), `remainingPhaseBudget`, `isPhaseBudgetSumValid`, `remainingTaskBudget`
 - [2026-08-02] `ProjectFormDialog` rewritten: explicit `code` + `proposed_start_date`/`proposed_end_date` (derived duration display) replacing numeric duration/unit picker; inline "add project manager" flow (`useCreateAccount`) that now also invalidates `factory-project-managers` query key
@@ -32,10 +33,9 @@
 
 ## Next steps (concrete)
 
-1. Apply migration locally: `npm run supabase:reset` (or `db push --local`) and verify `projects.code`, `phases.actual_budget`, and new `get_dashboard_stats` columns
-2. Smoke-test: start execution as FM with incomplete WBS → tooltip lists readiness reasons; complete WBS → button enables; trigger a known RPC failure (e.g. non-FM start) → toast shows localized message
-3. Smoke-test: mark a phase completed / set `actual_end_date` → `actual_budget` field appears; deviating amount requires financial reason
-4. Optional later: deviation history table, Excel import
+1. Run `npm run supabase:reset` — seed now injects accounts + 2 factories only (no demo projects)
+2. Smoke-test proposal → approval → WBS → start execution with empty data
+3. Optional later: deviation history table, Excel import
 
 ## Open questions
 

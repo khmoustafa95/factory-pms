@@ -154,10 +154,9 @@ export const en = {
       directorNote: 'Full access across all factories',
       fmDamascusNote: 'Damascus factory manager',
       fmAleppoNote: 'Aleppo factory manager',
-      pmAhmedNote: 'Assigned to an in-progress project',
-      pmSaraNote: 'Not assigned to a project yet',
+      pmAhmedNote: 'Damascus project manager',
+      pmSaraNote: 'Damascus project manager',
       pmKhalidNote: 'Aleppo project manager',
-      inactiveNote: 'Inactive account — sign-in is rejected',
       loginOnlyHint:
         'Trial accounts appear only on this sign-in page. Sign out to return here.',
       stagingSetupHint:

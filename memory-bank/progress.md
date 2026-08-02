@@ -29,7 +29,7 @@
 - [x] AdaptiveList mobile card view for list pages
 - [x] Route-level code splitting (React.lazy)
 - [x] Vitest unit tests for i18n + validation
-- [x] Comprehensive `supabase/seed.sql` demo data (all enums/statuses)
+- [x] `supabase/seed.sql` demo accounts (1 director, 2 FMs, 3 PMs + 2 factories)
 - [x] Security: restrict signup role metadata; enforce `is_active` on login
 - [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
 - [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
@@ -52,6 +52,11 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-02 (session 54)
+
+- Slimmed `supabase/seed.sql` to user accounts only (director + 2 factory managers + 3 project managers) plus 2 active factories and USD currency — no projects/phases/tasks
+- Updated `supabase/demo-accounts.md`, `src/lib/demo-accounts.ts`, and ar/en demo-account notes (removed inactive account)
 
 ### 2026-08-02 (session 53)
 

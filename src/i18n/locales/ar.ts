@@ -153,10 +153,9 @@ export const ar = {
       directorNote: 'صلاحيات كاملة على جميع المصانع',
       fmDamascusNote: 'مدير مصنع دمشق',
       fmAleppoNote: 'مدير مصنع حلب',
-      pmAhmedNote: 'معيّن على مشروع قيد التنفيذ',
-      pmSaraNote: 'غير معيّن على مشروع حالياً',
+      pmAhmedNote: 'مدير مشروع دمشق',
+      pmSaraNote: 'مدير مشروع دمشق',
       pmKhalidNote: 'مدير مشروع حلب',
-      inactiveNote: 'حساب غير نشط — يُرفض تسجيل الدخول',
       loginOnlyHint:
         'الحسابات التجريبية تظهر فقط في صفحة تسجيل الدخول. سجّل الخروج للعودة إليها.',
       stagingSetupHint:
