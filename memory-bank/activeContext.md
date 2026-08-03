@@ -2,9 +2,34 @@
 
 ## Current focus
 
-**Duration-based proposals + phase scheduling + demo login UX** — improved WBS timeline validation and trial login hints.
+**Kanban task completion** — when marking a task done, capture actual end date + spent cost; require schedule/financial justification on overrun vs due date / expected cost.
 
 ## Recent changes
+
+- [2026-08-02] Phase WBS metrics: replaced raw/non-raw material cost lines with a single actual cost total
+- [2026-08-02] Fix: completing last task failed when phase `actual_end_date` (today) preceded phase `start_date` — `sync_phase_status_from_tasks` now clamps to `start_date` / max task actual end; Kanban uses `toastMutationError`
+- [2026-08-02] Migration `20260802160000_task_completion_tracking.sql`: `tasks.actual_end_date`, `schedule_deviation_reason`, `financial_deviation_reason`; Kanban opens `TaskCompleteDialog` on done; TaskFormDialog aligned
+- [2026-08-02] Task form: removed expected duration from UI; keep due date only for schedule; expected_duration_days defaults/preserved in payload
+- [2026-08-02] Task form: completion fields (actual duration/cost, cost category) appear only when status is `done`; create = planning only; edit = planning + status (+ progress/blocked); assignee removed from dialog
+- [2026-08-02] Task create form: planning fields only (title/description/due/weight/expected duration/cost); tracking (status/progress/actuals/cost category/assignee) on edit only
+- [2026-08-02] Phase create form: hide field-tracking fields (actual end, deviation reasons, problem/solution); show only when editing
+- [2026-08-02] Seed slimmed to accounts only: 2 factories (DMS/ALP) + 1 company director + 2 factory managers + 3 project managers (+ USD currency); removed demo projects/phases/tasks/inactive user; updated `demo-accounts.md` / `demo-accounts.ts` / i18n notes
+- [2026-08-02] Migration `20260802120000_project_flow_hardening.sql`: `projects.code` (unique), `phases.actual_budget`, `project_execution_ready()`; `get_dashboard_stats` extended with `draft_count`/`proposed_count`/`in_progress_count`/`overdue_task_count`
+- [2026-08-02] `src/lib/wbs.ts`: split `canManageWbs` into `canManagePhases` (approved/in_progress/paused) + `canManageTasks` (in_progress/paused, deprecated wrapper kept); added `canStartExecution` (FM + matching factory + `approved` status), `getExecutionReadiness()` (`ExecutionReadinessReason[]`), `remainingPhaseBudget`, `isPhaseBudgetSumValid`, `remainingTaskBudget`
+- [2026-08-02] `ProjectFormDialog` rewritten: explicit `code` + `proposed_start_date`/`proposed_end_date` (derived duration display) replacing numeric duration/unit picker; inline "add project manager" flow (`useCreateAccount`) that now also invalidates `factory-project-managers` query key
+- [2026-08-02] `PhaseFormDialog`/`phase.ts`: accepts `remainingBudget`/`projectBudget`, caps `expected_budget`, shows remaining-weight + remaining-budget hints + project budget context; `actual_budget` field shown once phase is completed or `actual_end_date` is set; validation requires financial reason when `actual_budget` deviates from `expected_budget`, schedule reason when `actual_end_date` deviates from `planned_end_date`
+- [2026-08-02] `TaskFormDialog`/`task.ts`: optional `remainingBudget` caps `expected_cost` with a remaining-budget hint
+- [2026-08-02] `ProjectWbsTab`: takes `canManagePhases`/`canManageTasks` separately (edit/delete phase vs add/edit/delete task gated independently); added phase-budget summary (`wbs.budgetSummary`/`remainingBudget`/`budgetInvalid`)
+- [2026-08-02] `ProjectDetailPage`: "Start execution" gated by `canStartExecution` only, disabled with a readiness-reasons tooltip (`projects.executionNotReady.*`) when not ready; other execution actions (pause/resume/complete) + WBS management gated by `canManagePhases`/`canManageTasks`; passes `remainingBudget`/`projectBudget` to Phase/Task dialogs
+- [2026-08-02] `ProjectsPage`: list-row "Start execution" gated by `canStartExecution` (role/factory check only — no phases loaded here, so readiness relies on RPC error feedback); pause/resume/complete gated by `canManagePhases`
+- [2026-08-02] `mutation-error.ts`: `toastMutationError(error, fallback, t?)` now maps known `transition_project_status` RPC exception text to localized `projects.rpcErrors.*` keys
+- [2026-08-02] `useDashboard.ts`/`DashboardPage`: `DashboardStats` gained `draftCount`/`proposedCount`/`inProgressCount`/`overdueTaskCount`; factory managers see those 4 KPI cards instead of "Active factories" (directors unchanged)
+- [2026-08-02] `phase-metrics.ts` already used `phase.actual_budget` (falls back to summed task `actual_cost`) for financial deviation — confirmed still correct with new field
+- [2026-08-02] `validations.test.ts` updated: `createProjectFormSchema` (removed) → `createSubmitProjectSchema` with `code`/dates/`assigned_pm_id`; `npm run verify` + `npm run build` + `vitest run` (34 tests) all pass
+
+- [2026-08-01] Migration `20260801140000_phase_field_tracking.sql`: task `weight_percent` / `progress_percent` / duration / cost / `cost_category`; phase `expected_budget` / `actual_end_date` / deviation reasons / problem+solution; progress formula uses weighted task progress; phase completion sets `actual_end_date`
+- [2026-08-01] Frontend: `phase-metrics.ts`, updated `progress.ts`, Phase/Task form dialogs, WBS metrics cards, field-health badge on progress overview; seed updated; i18n ar/en
+- [2026-08-01] Task weight DB constraint: reject sum **> 100%** only (exact 100% enforced in UI like phase weights) so single-row edits remain possible
 
 - [2026-07-28] Proposal duration UX: project form now uses numeric duration + unit (day/week/year) instead of manual start/end dates; execution start sets `actual_start_date`/`actual_end_date` from duration via `transition_project_status`
 - [2026-07-28] Phase scheduling: added `start_date`/`end_date` on phases with DB + frontend validation against project window; phase status auto-syncs from task progress (removed manual status editing)
@@ -13,34 +38,11 @@
 - [2026-07-28] Login page: `DemoAccountsDialog` shows trial credentials + copy actions (`demo123456`)
 - [2026-07-28] Migration `20260728130000_duration_and_phase_dates.sql` + seed updates for duration/phase dates
 
-- [2026-07-28] Fixed migration compatibility for `get_project_activity`: dropped the old function signature before recreating the unified return shape; `supabase db push --local` now applies `20260728114500` and `20260728120000` successfully
-- [2026-07-28] Comment write path moved to RPC: added `create_comment(entity_type, entity_id, body)` using `auth.uid()` and switched frontend comment mutations to `.rpc('create_comment')` (removed client-side `authorId`)
-- [2026-07-28] Unified project activity stream: `get_project_activity` now returns comments + `project_status_transitions` in one chronological feed (`activity_kind` discriminator) and `ProjectActivityTab` renders a single timeline
-- [2026-07-28] Audit trail implemented: added `project_status_transitions` table + RLS and extended `transition_project_status` to append immutable status-change records (from/to, actor, role, reason, timestamp)
-- [2026-07-28] Project activity UX enhanced: `ProjectActivityTab` now shows status transition history alongside comments with localized status labels and actor metadata
-- [2026-07-28] Execution permission UX parity: added locked execution-action hint in `ProjectDetailPage` with the same tooltip reason model used in `ProjectsPage`
-- [2026-07-28] Execution permission UX: added locked execution-action hint in `ProjectsPage` (tooltip + reason) when project is in execution statuses but user cannot perform transitions
-- [2026-07-28] Projects list quick actions: added Start/Pause/Resume/Complete controls in `ProjectsPage` with role-aware execution permissions (`canManageWbs`) and pause-reason dialog support
-- [2026-07-28] Lifecycle UI actions expanded: added pause/resume/complete project actions on project detail and wired all to `transition_project_status`; pause uses a reason-required dialog with localized validation/messages
-- [2026-07-28] RLS tightening phase: restricted PM direct `projects` updates to execution statuses only (`approved`, `in_progress`, `paused`) and aligned DB comment-insert policy with proposal discussion rule (director + factory manager only during proposal statuses)
-- [2026-07-28] Lifecycle/RBAC review: audited project status flow across UI + Supabase RLS; identified transition-governance gaps (missing server-side state machine, over-permissive update rights for FM/PM, and UI/RLS mismatch for proposal discussion permissions)
-- [2026-07-28] Project execution start action: added "Start execution" button on project detail when status is approved and user can manage WBS; wired status transition `approved -> in_progress` with localized success/error toasts
-- [2026-07-28] Dashboard advanced project filters: added progress-range, blocked-state, and task-activity filters plus per-project task metrics (done, in-progress, todo, total, blocked)
-- [2026-07-28] Dashboard projects details: added role-scoped detailed projects table with filters (search, status, and factory for directors), localized labels, and blocked tasks per project
-- [2026-07-28] Dashboard UX upgrade: added richer KPIs (total projects/tasks, overdue, upcoming deadlines), responsive status distribution charts (projects/tasks), progress buckets, and top blocked projects panel using role-scoped Supabase data
-- [2026-07-27] Staging deploy guide: `docs/staging-deployment.md` (free Supabase + Cloudflare/Vercel); `public/_redirects` for SPA routing; README link
-- [2026-07-27] UX terminology update: renamed user-facing "Escalations" labels to "Critical alerts" / "التنبيهات الحرجة" across nav, dashboard, actions, dialog copy, and validation messages (no logic/schema changes)
-- [2026-07-27] Consolidated 12 migrations → 8: merged `handle_new_user` patches, FM profile policy, `revoke_user_sessions` fix; moved `grant_api_privileges` last with explicit revokes on internal SECURITY DEFINER functions
-- [2026-07-27] Security: removed SVG logo uploads (public bucket XSS risk); `is_auth_active()` on currencies/app_settings director policies
-- [2026-07-27] Frontend: AuthContext `refreshProfile` + loading guard on auth state change; attachment/factory cache invalidation; WBS queries gated by status; activity `canComment` fixed; dead `HomePage` removed
-- [2026-07-27] Proposal discussion restricted to company director + factory manager; approval UI restored to director
-
 ## Next steps (concrete)
 
-1. Start local Supabase and apply migration: `npm run supabase:reset` (or `supabase start` + `db push --local`)
-2. Validate proposal → approval → start execution flow computes actual dates correctly
-3. Create phases/tasks and confirm schedule validation + auto phase status from tasks
-4. Gather feedback on duration units (consider adding "month" if stakeholders prefer it)
+1. Run `npm run supabase:reset` — seed now injects accounts + 2 factories only (no demo projects)
+2. Smoke-test proposal → approval → WBS → start execution with empty data
+3. Optional later: deviation history table, Excel import
 
 ## Open questions
 

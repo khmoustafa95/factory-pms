@@ -293,16 +293,62 @@ export function DashboardPage() {
       >
         {stats ? (
           <StaggerGroup className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <Card size="sm">
-              <CardHeader className="pb-2">
-                <CardDescription>
-                  {t('dashboard.activeFactories')}
-                </CardDescription>
-                <CardTitle className="text-3xl font-semibold tabular-nums">
-                  {stats.factoryCount}
-                </CardTitle>
-              </CardHeader>
-            </Card>
+            {isDirector ? (
+              <Card size="sm">
+                <CardHeader className="pb-2">
+                  <CardDescription>
+                    {t('dashboard.activeFactories')}
+                  </CardDescription>
+                  <CardTitle className="text-3xl font-semibold tabular-nums">
+                    {stats.factoryCount}
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            ) : null}
+            {isManager ? (
+              <>
+                <Card size="sm">
+                  <CardHeader className="pb-2">
+                    <CardDescription>
+                      {t('dashboard.draftProjects')}
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-semibold tabular-nums">
+                      {stats.draftCount}
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card size="sm">
+                  <CardHeader className="pb-2">
+                    <CardDescription>
+                      {t('dashboard.proposedProjects')}
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-semibold tabular-nums">
+                      {stats.proposedCount}
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card size="sm">
+                  <CardHeader className="pb-2">
+                    <CardDescription>
+                      {t('dashboard.inProgressProjects')}
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-semibold tabular-nums">
+                      {stats.inProgressCount}
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+                <Card size="sm">
+                  <CardHeader className="pb-2">
+                    <CardDescription>
+                      {t('dashboard.overdueTasks')}
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-semibold tabular-nums text-destructive">
+                      {stats.overdueTaskCount}
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+              </>
+            ) : null}
             <Card size="sm">
               <CardHeader className="pb-2">
                 <CardDescription>

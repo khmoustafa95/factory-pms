@@ -35,12 +35,6 @@ export const DEMO_ACCOUNTS = [
     factory: 'ALP',
     notesKey: 'auth.demoAccounts.pmKhalidNote',
   },
-  {
-    email: 'inactive@demo.local',
-    roleKey: 'roles.project_manager',
-    factory: 'DMS',
-    notesKey: 'auth.demoAccounts.inactiveNote',
-  },
 ] as const
 
 export const DEMO_PASSWORD = 'demo123456'

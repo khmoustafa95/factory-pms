@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-08-02 — Completing the last task can set `phases.actual_end_date` to `current_date`; if that precedes `phases.start_date`, constraint `phases_actual_end_after_start` rejects the task update. Clamp resolved actual end to `start_date` (prefer max task `actual_end_date`).
+- 2026-08-01 — Enforcing exact weight-sum = 100% on every single-row INSERT/UPDATE breaks editing (freeing weight on one task leaves sum < 100 and fails). Prefer DB ceiling (≤ 100) + UI exact-sum warning, or a multi-row RPC/transaction for rebalancing.
 - 2026-07-28 — If a mutation moves from direct table insert to RPC, update every caller payload immediately (e.g., remove legacy fields like `authorId`) or TypeScript catches stale contract usage in unrelated pages.
 - 2026-07-28 — When evolving an existing RPC into a union feed, keep legacy comment fields and add a minimal discriminator (`activity_kind`) plus nullable transition fields; this minimizes frontend churn while enabling richer timeline items.
 - 2026-07-28 — For audit feeds under strict RLS, avoid client-side secondary profile lookups for actor names; denormalize `changed_by_name` and `changed_by_role` at write time to keep reads reliable across roles.

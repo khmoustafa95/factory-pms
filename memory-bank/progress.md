@@ -2,6 +2,8 @@
 
 ## Done
 
+- [x] WBS readiness + start-execution UX: granular `canManagePhases`/`canManageTasks`/`canStartExecution`, `getExecutionReadiness()` with tooltip reasons, phase/task remaining-budget capping, RPC error → i18n mapping, FM dashboard KPI cards (draft/proposed/in-progress/overdue)
+- [x] Field tracking: phase budget/deviations/problems + task weight/duration/cost/progress (Excel-aligned rollups)
 - [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
 - [x] Vite + React 19 + TypeScript + Tailwind v4 scaffold
 - [x] React Router + basic layout / home page
@@ -27,7 +29,7 @@
 - [x] AdaptiveList mobile card view for list pages
 - [x] Route-level code splitting (React.lazy)
 - [x] Vitest unit tests for i18n + validation
-- [x] Comprehensive `supabase/seed.sql` demo data (all enums/statuses)
+- [x] `supabase/seed.sql` demo accounts (1 director, 2 FMs, 3 PMs + 2 factories)
 - [x] Security: restrict signup role metadata; enforce `is_active` on login
 - [x] Error Boundary + global query error handling (`QueryState`, `AppErrorBoundary`)
 - [x] General settings: configurable app name, logo, sign-in branding (`/settings`, director-only)
@@ -50,6 +52,60 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-02 (session 61)
+
+- Phase WBS metrics: removed raw/non-raw material cost breakdown; show single actual cost rolled up from tasks (or phase `actual_budget`)
+
+### 2026-08-02 (session 60)
+
+- Root cause of Kanban "unable to update task status": completing last task set phase `actual_end_date` to today before phase `start_date` → constraint failure; fixed in `20260802170000_fix_phase_actual_end_on_complete.sql`; improved error toast extraction
+
+### 2026-08-02 (session 59)
+
+- Kanban: marking task done opens completion dialog for actual end date + spent cost; schedule/financial justification required when exceeding due date / expected cost
+- Migration `20260802160000_task_completion_tracking.sql` + TaskFormDialog completion fields aligned
+
+### 2026-08-02 (session 58)
+
+- Task form: removed expected duration field from UI; kept due date for scheduling (expected_duration_days still defaulted/preserved in DB payload)
+
+### 2026-08-02 (session 57)
+
+- Task dialog: actual duration/cost + cost category only when status is `done` (not on every edit); create stays planning-only; assignee field removed from dialog; validation requires actual duration ≥ 1 when done
+
+### 2026-08-02 (session 56)
+
+- Task create dialog audited: only planning fields (title, description, due date, weight, expected duration, expected cost); status defaults to `todo`; progress/actuals/cost category/assignee shown on edit only
+
+### 2026-08-02 (session 55)
+
+- Phase create dialog: hide field-tracking fields (actual end date, actual budget, deviation reasons, problem/solution); those appear only when editing an existing phase
+
+### 2026-08-02 (session 54)
+
+- Slimmed `supabase/seed.sql` to user accounts only (director + 2 factory managers + 3 project managers) plus 2 active factories and USD currency — no projects/phases/tasks
+- Updated `supabase/demo-accounts.md`, `src/lib/demo-accounts.ts`, and ar/en demo-account notes (removed inactive account)
+
+### 2026-08-02 (session 53)
+
+- Migration `20260802120000_project_flow_hardening.sql`: `projects.code`, `phases.actual_budget`, `project_execution_ready()`, extended `get_dashboard_stats`
+- `wbs.ts`: split `canManageWbs` into `canManagePhases`/`canManageTasks`; added `canStartExecution`, `getExecutionReadiness` (typed `ExecutionReadinessReason`), `remainingPhaseBudget`, `isPhaseBudgetSumValid`, `remainingTaskBudget`
+- `PhaseFormDialog`/`phase.ts`: remaining-budget cap + hints, conditional `actual_budget` field, financial/schedule deviation-reason enforcement tied to `actual_budget`/`actual_end_date`
+- `TaskFormDialog`/`task.ts`: optional remaining-budget cap on `expected_cost`
+- `ProjectWbsTab`: independent `canManagePhases`/`canManageTasks` gating + phase-budget summary
+- `ProjectDetailPage`/`ProjectsPage`: "Start execution" gated strictly by `canStartExecution` with readiness-reasons tooltip on the detail page; RPC failures mapped to localized `projects.rpcErrors.*` via updated `toastMutationError(error, fallback, t)`
+- `useDashboard.ts`/`DashboardPage`: factory-manager-only KPI cards for draft/proposed/in-progress/overdue counts
+- `useCreateAccount` invalidates `factory-project-managers` query key so inline PM creation refreshes assignment dropdowns
+- `validations.test.ts` updated for `createSubmitProjectSchema` (code/dates/PM) after `createProjectFormSchema` removal
+- Validation: `npm run verify`, `npm run build`, and `vitest run` (34 tests) all passed
+
+### 2026-08-01 (session 52)
+
+- Field tracking (Excel-aligned): tasks carry weight/progress/duration/cost/category; phases carry expected budget, actual end, deviation reasons, problem/solution
+- Progress: `Σ (phase.weight × Σ (task.weight × task.progress))`; DB `recalculate_project_progress` updated
+- UI: WBS phase metric cards (planned vs actual, deviations), task weight/progress columns, field-health badge on progress overview
+- Migration `20260801140000_phase_field_tracking.sql` + seed; `npm run verify` + progress unit tests passed
 
 ### 2026-07-27 (session 36)
 

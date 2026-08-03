@@ -122,7 +122,7 @@ export const en = {
     done: 'Done',
   },
   phaseStatus: {
-    pending: 'Pending',
+    pending: 'Not started',
     in_progress: 'In progress',
     completed: 'Completed',
   },
@@ -154,10 +154,9 @@ export const en = {
       directorNote: 'Full access across all factories',
       fmDamascusNote: 'Damascus factory manager',
       fmAleppoNote: 'Aleppo factory manager',
-      pmAhmedNote: 'Assigned to an in-progress project',
-      pmSaraNote: 'Not assigned to a project yet',
+      pmAhmedNote: 'Damascus project manager',
+      pmSaraNote: 'Damascus project manager',
       pmKhalidNote: 'Aleppo project manager',
-      inactiveNote: 'Inactive account — sign-in is rejected',
       loginOnlyHint:
         'Trial accounts appear only on this sign-in page. Sign out to return here.',
       stagingSetupHint:
@@ -220,6 +219,9 @@ export const en = {
     tasksDone: 'Done tasks',
     tasksInProgress: 'In-progress tasks',
     tasksTotal: 'Total tasks',
+    draftProjects: 'Draft proposals',
+    proposedProjects: 'Proposals awaiting review',
+    inProgressProjects: 'Projects in progress',
   },
   projects: {
     title: 'Projects',
@@ -297,6 +299,41 @@ export const en = {
     awaitingDirectorReview: 'Awaiting company director review',
     discussionParticipantsOnly:
       'Only the company director and factory manager can post in this discussion.',
+    code: 'Project code',
+    proposedStartDate: 'Proposed start date',
+    proposedEndDate: 'Proposed end date',
+    derivedDuration: 'Duration: {{days}} days',
+    datesHint:
+      'Select start and end dates to calculate the duration automatically.',
+    addProjectManager: 'Add new project manager',
+    pmCreatedWithPassword:
+      'Project manager account created. Temporary password: {{password}}',
+    executionNotReady: {
+      not_approved: 'The project must be approved before starting execution.',
+      no_phases: 'Add at least one phase before starting execution.',
+      weights_incomplete: 'Phase weights must total exactly 100%.',
+      budgets_incomplete: 'Phase budgets must total the project budget.',
+      missing_dates: 'All phases need start and end dates.',
+      dates_outside_project:
+        'Phase dates must fall within the project schedule.',
+      phase_budget_exceeds_project:
+        'A phase budget exceeds the project budget.',
+      missing_project_budget:
+        'Set the project budget before starting execution.',
+      missing_project_schedule:
+        'Set the project schedule before starting execution.',
+    },
+    rpcErrors: {
+      wbsNotReady:
+        'Project WBS is not ready: phase weights and budgets must total 100% with valid dates.',
+      missingDuration:
+        'Project duration is required before starting execution.',
+      startNotFactoryManager:
+        'Only the factory manager for this project can start execution.',
+      tasksNotDone:
+        'All tasks must be done before marking the project completed.',
+      notAllowed: 'You are not allowed to perform this action on this project.',
+    },
     attachments: {
       title: 'Supporting files',
       description:
@@ -348,11 +385,20 @@ export const en = {
   wbs: {
     title: 'Work breakdown structure',
     manageDescription:
-      'Define phases with weights that total 100%, then add tasks under each phase.',
+      'Define phases with weights that total 100%, then add weighted tasks under each phase. Actual duration and cost roll up from tasks.',
     viewDescription: 'View phases and tasks for this project.',
     weightSummary: 'Phase weights: {{total}}% / 100%',
     weightRemaining: '{{remaining}}% remaining',
     weightInvalid: 'Phase weights must total exactly 100%.',
+    budgetSummary: 'Phase budgets: {{total}} / {{projectBudget}}',
+    remainingBudget: 'Remaining budget: {{remaining}}',
+    budgetRemaining: '{{remaining}} remaining',
+    budgetInvalid: 'Phase budgets must total the project budget.',
+    expectedBudgetRemaining:
+      'Expected budget cannot exceed {{remaining}} of the remaining project budget',
+    taskWeightSummary: 'Task weights: {{total}}% / 100%',
+    taskWeightInvalid: 'Task weights in this phase must total exactly 100%.',
+    taskWeightRemaining: '{{remaining}}% task weight remaining',
     noPhases: 'No phases yet. Add the first phase to build the WBS.',
     weight: 'Weight',
     dueDate: 'Due date',
@@ -367,7 +413,22 @@ export const en = {
     phaseStatusHint:
       'Status is derived automatically from task progress (pending → in progress → completed).',
     startDate: 'Start date',
-    endDate: 'End date',
+    endDate: 'Planned end date',
+    actualEndDate: 'Actual end date',
+    expectedBudget: 'Expected phase budget',
+    actualBudget: 'Actual phase budget',
+    scheduleDeviationReason: 'Schedule deviation reason',
+    financialDeviationReason: 'Financial deviation reason',
+    problemDescription: 'Problem',
+    solutionInProgress: 'Solutions in progress',
+    plannedDuration: 'Planned duration',
+    actualDuration: 'Actual duration (tasks)',
+    scheduleDeviation: 'Schedule deviation',
+    financialDeviation: 'Financial deviation',
+    phaseProgress: 'Phase progress',
+    daysValue: '{{days}} days',
+    daysValueSigned: '{{days}} days',
+    actualCostHint: 'Actual cost from tasks: {{amount}}',
     phaseScheduleHint:
       'Phase dates must fall within the project schedule: {{range}}',
     projectDurationDays: 'Project duration: {{days}} days',
@@ -380,9 +441,19 @@ export const en = {
     taskDescription: 'Task description',
     taskStatus: 'Task status',
     taskDueDate: 'Due date',
+    taskWeight: 'Weight (%)',
+    taskProgress: 'Progress (%)',
+    expectedDurationDays: 'Expected duration (days)',
+    actualDurationDays: 'Actual duration (days)',
+    expectedCost: 'Expected cost',
+    actualCost: 'Actual cost',
+    costCategory: 'Cost category',
+    costCategoryRaw: 'Raw materials',
+    costCategoryNonRaw: 'Non-raw materials',
     blockedReason: 'Blocked reason',
     markBlocked: 'Mark task as blocked',
     blockedReasonLabel: 'Blocked reason',
+    markDone: 'Mark task as done',
     noTasksKanban: 'No tasks',
     taskStatusUpdated: 'Task status updated',
     updateTaskStatusFailed: 'Unable to update task status',
@@ -390,11 +461,17 @@ export const en = {
   progress: {
     title: 'Progress overview',
     description:
-      'Weighted progress across phases and task completion within each phase.',
+      'Weighted progress from phase weights and task weights × completion.',
     overall: 'Overall progress',
     byPhase: 'By phase',
     tasksComplete: '{{done}} / {{total}} tasks complete',
     noPhases: 'No phases defined yet.',
+    fieldHealth: {
+      on_track: 'On track',
+      delayed: 'Delayed',
+      over_budget: 'Over budget',
+      delayed_and_over_budget: 'Delayed & over budget',
+    },
   },
   timeline: {
     title: 'Timeline',
@@ -576,12 +653,30 @@ export const en = {
     factoryRequired: 'Factory is required for this role',
     directorNoFactory: 'Company directors are not assigned to a factory',
     budgetPositive: 'Budget must be greater than zero',
+    budgetNonNegative: 'Amount cannot be negative',
+    budgetRequired: 'Budget is required',
+    descriptionMin: 'Description must be at least 3 characters',
+    assignedPmRequired: 'Assigned project manager is required',
+    expectedBudgetRequired: 'Expected budget is required',
+    actualCostRequired: 'Actual cost is required',
+    actualEndDateRequired: 'Actual end date is required',
+    actualDurationWhenDone:
+      'Actual duration must be at least 1 day when the task is done',
+    progressRequired: 'Progress is required',
+    progressMin: 'Progress must be at least 0',
+    progressMax: 'Progress cannot exceed 100',
     durationRequired: 'Duration is required',
     durationInteger: 'Duration must be a whole number',
     durationMin: 'Duration must be at least 1',
+    durationNonNegative: 'Duration cannot be negative',
     startDateRequired: 'Start date is required',
     endDateRequired: 'End date is required',
     endAfterStart: 'End date must be on or after start date',
+    actualEndAfterStart: 'Actual end date must be on or after the start date',
+    scheduleDeviationReasonRequired:
+      'Schedule deviation reason is required when the phase is off plan',
+    financialDeviationReasonRequired:
+      'Financial deviation reason is required when cost differs from the expected budget',
     phaseExceedsProjectDuration: 'Phase duration exceeds the project duration',
     phaseBeforeProjectStart: 'Phase starts before the project schedule',
     phaseAfterProjectEnd: 'Phase ends after the project schedule',
@@ -596,6 +691,7 @@ export const en = {
       'Weight cannot exceed {{remaining}}% for the remaining budget',
     codeMin: 'Code must be at least 2 characters',
     codeMax: 'Code must be at most 12 characters',
+    projectCodeMax: 'Code must be at most 32 characters',
     codeFormat: 'Code must be uppercase letters, numbers, _ or -',
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
     pauseReasonMin: 'Pause reason must be at least 3 characters',

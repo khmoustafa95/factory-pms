@@ -8,6 +8,10 @@ export type DashboardStats = {
   activeProjectCount: number
   averageProgress: number
   blockedTaskCount: number
+  draftCount: number
+  proposedCount: number
+  inProgressCount: number
+  overdueTaskCount: number
 }
 
 type StatusCount<T extends string> = Record<T, number>
@@ -97,6 +101,10 @@ export function useDashboardStats() {
           activeProjectCount: 0,
           averageProgress: 0,
           blockedTaskCount: 0,
+          draftCount: 0,
+          proposedCount: 0,
+          inProgressCount: 0,
+          overdueTaskCount: 0,
         }
       }
 
@@ -105,6 +113,10 @@ export function useDashboardStats() {
         activeProjectCount: Number(row.active_project_count),
         averageProgress: Number(row.average_progress),
         blockedTaskCount: Number(row.blocked_task_count),
+        draftCount: Number(row.draft_count),
+        proposedCount: Number(row.proposed_count),
+        inProgressCount: Number(row.in_progress_count),
+        overdueTaskCount: Number(row.overdue_task_count),
       }
     },
   })

@@ -64,6 +64,7 @@ import {
 import { formatLocalizedBudget } from '@/lib/i18n-format'
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { getProjectScheduleBounds } from '@/lib/duration'
+import { calculatePhaseMetrics } from '@/lib/phase-metrics'
 import { formatProgress } from '@/lib/progress'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
@@ -79,9 +80,17 @@ import type {
   ProjectRejectValues,
 } from '@/lib/validations/approval'
 import {
-  canManageWbs,
+  canManagePhases,
+  canManageTasks,
+  canStartExecution,
+  getExecutionReadiness,
   canViewWbs,
+  isPhaseBudgetSumValid,
   isPhaseWeightSumValid,
+  remainingPhaseBudget,
+  remainingTaskBudget,
+  remainingTaskWeight,
+  sumPhaseExpectedBudgets,
   sumPhaseWeights,
 } from '@/lib/wbs'
 import type { PhaseFormValues } from '@/lib/validations/phase'
@@ -170,11 +179,20 @@ export function ProjectDetailPage() {
   const totalWeight = sumPhaseWeights(phases)
   const weightsValid = isPhaseWeightSumValid(phases)
   const remainingWeight = Math.max(0, 100 - totalWeight)
+  const totalBudget = sumPhaseExpectedBudgets(phases)
+  const budgetValid = isPhaseBudgetSumValid(project?.budget, phases)
+  const remainingBudget = remainingPhaseBudget(project?.budget, phases)
   const projectSchedule = useMemo(
     () => (project ? getProjectScheduleBounds(project) : null),
     [project],
   )
-  const canManage = project ? canManageWbs(project, profile) : false
+  const canPhases = project ? canManagePhases(project, profile) : false
+  const canTasks = project ? canManageTasks(project, profile) : false
+  const canManage = canPhases || canTasks
+  const canStart = project ? canStartExecution(project, profile) : false
+  const executionReadiness = project
+    ? getExecutionReadiness(project, phases)
+    : null
   const canEditDetails =
     isFactoryManager(profile?.role) &&
     Boolean(profile?.factory_id) &&
@@ -220,7 +238,7 @@ export function ProjectDetailPage() {
       await approveProject.mutateAsync({ id: project.id, userId: user.id })
       toast.success(t('projects.proposalApproved'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.approveFailed'))
+      toastMutationError(submitError, t('projects.approveFailed'), t)
     }
   }
 
@@ -236,7 +254,7 @@ export function ProjectDetailPage() {
       })
       toast.success(t('projects.proposalRejected'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.rejectFailed'))
+      toastMutationError(submitError, t('projects.rejectFailed'), t)
       throw submitError
     }
   }
@@ -250,7 +268,7 @@ export function ProjectDetailPage() {
       await startProjectExecution.mutateAsync({ id: project.id })
       toast.success(t('projects.executionStarted'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.startExecutionFailed'))
+      toastMutationError(submitError, t('projects.startExecutionFailed'), t)
     }
   }
 
@@ -266,7 +284,7 @@ export function ProjectDetailPage() {
       })
       toast.success(t('projects.executionPaused'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.pauseExecutionFailed'))
+      toastMutationError(submitError, t('projects.pauseExecutionFailed'), t)
       throw submitError
     }
   }
@@ -280,7 +298,7 @@ export function ProjectDetailPage() {
       await resumeProjectExecution.mutateAsync({ id: project.id })
       toast.success(t('projects.executionResumed'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.resumeExecutionFailed'))
+      toastMutationError(submitError, t('projects.resumeExecutionFailed'), t)
     }
   }
 
@@ -293,7 +311,7 @@ export function ProjectDetailPage() {
       await completeProjectExecution.mutateAsync({ id: project.id })
       toast.success(t('projects.executionCompleted'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.completeExecutionFailed'))
+      toastMutationError(submitError, t('projects.completeExecutionFailed'), t)
     }
   }
 
@@ -397,7 +415,26 @@ export function ProjectDetailPage() {
   }
 
   const activePhase = phases.find((phase) => phase.id === activePhaseId) ?? null
-
+  const activePhaseTasks = activePhaseId
+    ? (tasksByPhase.get(activePhaseId) ?? [])
+    : []
+  const editingPhaseTasks = editingPhase
+    ? (tasksByPhase.get(editingPhase.id) ?? [])
+    : []
+  const editingPhaseMetrics = editingPhase
+    ? calculatePhaseMetrics(editingPhase, editingPhaseTasks)
+    : null
+  const taskRemainingWeight = remainingTaskWeight(
+    activePhaseTasks,
+    editingTask?.id,
+  )
+  const taskRemainingBudget = activePhase
+    ? remainingTaskBudget(
+        Number(activePhase.expected_budget),
+        activePhaseTasks,
+        editingTask?.id,
+      )
+    : undefined
   return (
     <section className="space-y-6">
       <QueryState
@@ -471,15 +508,46 @@ export function ProjectDetailPage() {
                     {t('common.edit')}
                   </Button>
                 ) : null}
-                {canManage && project.status === 'approved' ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => void handleStartExecution()}
-                    disabled={isStartingExecution}
-                  >
-                    {t('common.startExecution')}
-                  </Button>
+                {canStart && project.status === 'approved' ? (
+                  executionReadiness?.ready ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => void handleStartExecution()}
+                      disabled={isStartingExecution}
+                    >
+                      {t('common.startExecution')}
+                    </Button>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              disabled
+                            >
+                              <Lock className="size-4" />
+                              {t('common.startExecution')}
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent sideOffset={6}>
+                          <ul className="list-disc space-y-1 ps-4">
+                            {(executionReadiness?.reasons ?? []).map(
+                              (reason) => (
+                                <li key={reason}>
+                                  {t(`projects.executionNotReady.${reason}`)}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )
                 ) : null}
                 {canManage && project.status === 'in_progress' ? (
                   <>
@@ -513,6 +581,7 @@ export function ProjectDetailPage() {
                   </Button>
                 ) : null}
                 {!canManage &&
+                !canStart &&
                 (project.status === 'approved' ||
                   project.status === 'in_progress' ||
                   project.status === 'paused') ? (
@@ -685,10 +754,15 @@ export function ProjectDetailPage() {
               <ProjectWbsTab
                 phases={phases}
                 tasksByPhase={tasksByPhase}
-                canManage={canManage}
+                canManagePhases={canPhases}
+                canManageTasks={canTasks}
                 remainingWeight={remainingWeight}
                 totalWeight={totalWeight}
                 weightsValid={weightsValid}
+                remainingBudget={remainingBudget}
+                totalBudget={totalBudget}
+                budgetValid={budgetValid}
+                projectBudget={project.budget}
                 onCreatePhase={openCreatePhase}
                 onEditPhase={openEditPhase}
                 onDeletePhase={handleDeletePhase}
@@ -703,7 +777,7 @@ export function ProjectDetailPage() {
                 projectId={projectId}
                 phases={phases}
                 tasks={tasks}
-                canManage={canManage}
+                canManage={canTasks}
               />
             </TabsContent>
 
@@ -761,36 +835,44 @@ export function ProjectDetailPage() {
         />
       ) : null}
 
-      {project && canManage ? (
-        <>
-          <PhaseFormDialog
-            open={phaseDialogOpen}
-            onOpenChange={setPhaseDialogOpen}
-            phase={editingPhase}
-            remainingWeight={remainingWeight}
-            schedule={
-              projectSchedule ?? {
-                start: null,
-                end: null,
-                durationDays: null,
-                hasFixedDates: false,
-              }
+      {project && canPhases ? (
+        <PhaseFormDialog
+          open={phaseDialogOpen}
+          onOpenChange={setPhaseDialogOpen}
+          phase={editingPhase}
+          remainingWeight={remainingWeight}
+          remainingBudget={remainingBudget}
+          projectBudget={project.budget}
+          schedule={
+            projectSchedule ?? {
+              start: null,
+              end: null,
+              durationDays: null,
+              hasFixedDates: false,
             }
-            onSubmit={handlePhaseSubmit}
-            isSubmitting={createPhase.isPending || updatePhase.isPending}
-          />
-          <TaskFormDialog
-            open={taskDialogOpen}
-            onOpenChange={setTaskDialogOpen}
-            task={editingTask}
-            phaseName={activePhase?.name ?? t('common.phase')}
-            phaseStartDate={activePhase?.start_date ?? null}
-            phaseEndDate={activePhase?.end_date ?? null}
-            factoryId={project.factory_id}
-            onSubmit={handleTaskSubmit}
-            isSubmitting={createTask.isPending || updateTask.isPending}
-          />
-        </>
+          }
+          actualCostTotal={editingPhaseMetrics?.actualCost ?? 0}
+          scheduleDeviationDays={
+            editingPhaseMetrics?.scheduleDeviationDays ?? null
+          }
+          onSubmit={handlePhaseSubmit}
+          isSubmitting={createPhase.isPending || updatePhase.isPending}
+        />
+      ) : null}
+
+      {project && canTasks ? (
+        <TaskFormDialog
+          open={taskDialogOpen}
+          onOpenChange={setTaskDialogOpen}
+          task={editingTask}
+          phaseName={activePhase?.name ?? t('common.phase')}
+          phaseStartDate={activePhase?.start_date ?? null}
+          phaseEndDate={activePhase?.end_date ?? null}
+          remainingWeight={taskRemainingWeight}
+          remainingBudget={taskRemainingBudget}
+          onSubmit={handleTaskSubmit}
+          isSubmitting={createTask.isPending || updateTask.isPending}
+        />
       ) : null}
     </section>
   )

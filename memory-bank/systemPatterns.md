@@ -29,21 +29,14 @@ src/
 - `cn()` in `src/lib/utils.ts` (clsx + tailwind-merge)
 - Add components with `npx shadcn add <name>`
 
-## Planned domain model
+## Domain model (implemented)
 
-Tables: `profiles`, `factories`, `projects`, `phases`, `tasks`, `comments`
+Hierarchy: `factories` → `projects` → `phases` → `tasks` (+ `comments`, attachments, status transitions).
 
-Enums (planned):
-
-- `user_role`: `company_director` | `factory_manager` | `project_manager`
-- `project_status`: `draft` | `proposed` | `approved` | `rejected` | `in_progress` | `completed` | `paused`
-- `phase_status`: `pending` | `in_progress` | `completed`
-- `task_status`: `todo` | `in_progress` | `blocked` | `done`
-- `entity_type`: `project` | `phase` | `task` (for comments)
-
-Helpers (planned): `get_auth_role()`, `get_auth_factory_id()` for RLS.
-
-Realtime (planned): publish `tasks`, `comments`, `projects`.
+- **Phases:** `weight_percent` (sum 100% in UI), planned `start_date`/`end_date`, `expected_budget`, `actual_end_date`, schedule/financial deviation reasons, problem/solution text. Status auto-synced from tasks.
+- **Tasks:** `weight_percent` (sum 100% per phase in UI), `progress_percent`, expected/actual duration days, expected/actual cost, `cost_category` (`raw_material` | `non_raw_material`).
+- **Progress:** project% = Σ (phase.weight/100 × Σ (task.weight/100 × task.progress)); recalculated by DB trigger.
+- **Field metrics:** actual duration/cost roll up from tasks; schedule/financial deviation computed in `src/lib/phase-metrics.ts`; derived field health on progress overview.
 
 ## Conventions
 

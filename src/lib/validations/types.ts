@@ -1,1 +1,4 @@
-export type ValidationTranslator = (key: string) => string
+export type ValidationTranslator = (
+  key: string,
+  params?: Record<string, string | number>,
+) => string

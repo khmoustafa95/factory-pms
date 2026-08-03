@@ -128,6 +128,9 @@ export function useCreateAccount() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.accounts })
+      await queryClient.invalidateQueries({
+        queryKey: ['factory-project-managers'],
+      })
     },
   })
 }

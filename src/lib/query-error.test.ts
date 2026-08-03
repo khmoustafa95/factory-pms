@@ -11,4 +11,10 @@ describe('getQueryErrorMessage', () => {
   it('returns fallback for non-error values', () => {
     expect(getQueryErrorMessage('oops', 'Fallback')).toBe('Fallback')
   })
+
+  it('returns message from plain error-like objects', () => {
+    expect(
+      getQueryErrorMessage({ message: 'column missing' }, 'Fallback'),
+    ).toBe('column missing')
+  })
 })
