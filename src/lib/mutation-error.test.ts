@@ -23,4 +23,15 @@ describe('toastMutationError', () => {
       getQueryErrorMessage('oops', 'Fallback'),
     )
   })
+
+  it('localizes Unauthorized when a translator is provided', () => {
+    const t = vi.fn((key: string) =>
+      key === 'errors.unauthorized' ? 'غير مصرح' : key,
+    )
+
+    toastMutationError(new Error('Unauthorized'), 'Fallback', t)
+
+    expect(t).toHaveBeenCalledWith('errors.unauthorized')
+    expect(toast.error).toHaveBeenCalledWith('غير مصرح')
+  })
 })

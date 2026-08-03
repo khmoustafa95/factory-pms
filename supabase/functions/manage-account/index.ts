@@ -90,8 +90,11 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get('Authorization')
-  if (!authHeader) {
-    return jsonResponse({ error: 'Missing authorization' }, 401)
+  if (!authHeader?.startsWith('Bearer ')) {
+    return jsonResponse(
+      { error: 'Missing authorization. Sign in again and retry.' },
+      401,
+    )
   }
 
   const userClient = createClient(supabaseUrl, anonKey, {
@@ -105,7 +108,14 @@ Deno.serve(async (req) => {
   } = await userClient.auth.getUser()
 
   if (userError || !user) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
+    return jsonResponse(
+      {
+        error:
+          userError?.message ??
+          'Invalid or expired session. Sign in again and retry.',
+      },
+      401,
+    )
   }
 
   const { data: actor, error: actorError } = await admin
@@ -115,10 +125,14 @@ Deno.serve(async (req) => {
     .maybeSingle()
 
   if (actorError || !actor) {
-    return jsonResponse({ error: 'Profile not found' }, 403)
+    return jsonResponse({ error: 'Profile not found for this user' }, 403)
   }
 
   const actorProfile = actor as ActorProfile
+
+  if (!actorProfile.is_active) {
+    return jsonResponse({ error: 'Your account is inactive' }, 403)
+  }
 
   let body: RequestBody
   try {
@@ -142,7 +156,13 @@ Deno.serve(async (req) => {
     }
 
     if (!canProvisionRole(actorProfile, role, factoryId)) {
-      return jsonResponse({ error: 'Forbidden' }, 403)
+      return jsonResponse(
+        {
+          error:
+            'You are not allowed to create this account role or factory assignment',
+        },
+        403,
+      )
     }
 
     const password = generatePassword()
@@ -227,7 +247,10 @@ Deno.serve(async (req) => {
         targetProfile.factory_id,
       )
     ) {
-      return jsonResponse({ error: 'Forbidden' }, 403)
+      return jsonResponse(
+        { error: 'You are not allowed to reset this account password' },
+        403,
+      )
     }
 
     const password = generatePassword()

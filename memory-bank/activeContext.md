@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Dialog UX** — no outside-click dismiss; fixed header/footer via `DialogBody`; RTL close at `end-2` (left in Arabic).
+**Account create Unauthorized** — pass session JWT to `manage-account`, localize API errors, clearer password copy dialog.
 
 ## Recent changes
 
+- [2026-08-03] Account create: explicit `Authorization` bearer on `manage-account` invoke; clearer edge-function error strings; `toastMutationError` maps Unauthorized/Forbidden/session/email-taken to i18n; GeneratedPasswordDialog has full-width copy button; ProjectFormDialog opens password dialog after PM create
 - [2026-08-03] Re-applied full dialog shell (`dismissOnOutsideClick` default false, `DialogBody`, header/footer layout, close `end-2`) + ProjectFormDialog and all similar form dialogs; Sheet close `end-3`
 - [2026-08-03] Dialog layout pattern applied to all form dialogs: `DialogBody` wraps fields; forms use `flex min-h-0 flex-1 flex-col`
 - [2026-08-03] Fix staging seed: enable `pgcrypto` + use `extensions.crypt` / `extensions.gen_salt` so `db reset --linked` works on hosted Supabase

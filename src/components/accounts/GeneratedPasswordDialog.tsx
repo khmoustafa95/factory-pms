@@ -31,6 +31,13 @@ export function GeneratedPasswordDialog({
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      setCopied(false)
+    }
+    onOpenChange(nextOpen)
+  }
+
   const handleCopy = async () => {
     if (!password) {
       return
@@ -47,7 +54,7 @@ export function GeneratedPasswordDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('accounts.generatedPasswordTitle')}</DialogTitle>
@@ -65,29 +72,33 @@ export function GeneratedPasswordDialog({
           ) : null}
           <div className="space-y-2">
             <Label>{t('auth.password')}</Label>
-            <div className="flex gap-2">
-              <Input
-                value={password ?? ''}
-                readOnly
-                className="font-mono"
-                type="text"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => void handleCopy()}
-                aria-label={t('accounts.copyPassword')}
-              >
-                <Copy className="size-4" />
-              </Button>
-            </div>
+            <Input
+              value={password ?? ''}
+              readOnly
+              className="font-mono"
+              type="text"
+            />
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => void handleCopy()}
+              disabled={!password}
+            >
+              <Copy className="size-4" />
+              {copied
+                ? t('accounts.passwordCopied')
+                : t('accounts.copyPassword')}
+            </Button>
           </div>
         </DialogBody>
 
         <DialogFooter>
-          <Button type="button" onClick={() => onOpenChange(false)}>
-            {copied ? t('accounts.passwordCopied') : t('common.close')}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+          >
+            {t('common.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

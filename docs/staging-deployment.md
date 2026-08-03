@@ -384,19 +384,19 @@ git push origin staging      # يُعيد بناء ونشر الواجهة تل�
 
 ## استكشاف الأخطاء
 
-| المشكلة                                                          | الحل المحتمل                                                                                                      |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| "Supabase: not configured"                                       | تأكد من متغيرات `VITE_*` في لوحة الاستضافة وأعد البناء                                                            |
-| 404 عند تحديث الصفحة أو فتح رابط مباشر                           | تأكد من `not_found_handling: "single-page-application"` في `wrangler.jsonc`؛ لا تستخدم `_redirects` مع Workers    |
-| `Infinite loop detected` في `_redirects` عند النشر               | احذف `public/_redirects` — wrangler يتولى SPA routing                                                             |
-| فشل تسجيل الدخول بعد النشر                                       | راجع Site URL و Redirect URLs في Supabase Auth                                                                    |
-| `manage-account` 401/500                                         | تأكد من نشر الدالة وأن المستخدم له صلاحية في `profiles`                                                           |
-| `db push` — `forcibly closed` / `failed to connect as temp role` | مرّر `SUPABASE_DB_PASSWORD` أو `-p` باقتباس مفرد `'...'`                                                          |
-| `db push` — `tls error` / `i/o timeout`                          | أوقف VPN (ProtonVPN/Radmin)؛ جرّب شبكة أخرى أو GitHub Actions                                                     |
-| `db push` — `password authentication failed`                     | على PowerShell لا تستخدم `"..."` إذا كانت كلمة المرور فيها `$` — استخدم `'...'`                                   |
-| `db reset --linked` — `gen_salt` / `crypt` does not exist        | الـ seed يستخدم `extensions.crypt` / `extensions.gen_salt` ويفعّل `pgcrypto` — اسحب آخر `seed.sql` وأعد الـ reset |
-| `db push` يرفض التغيير                                           | راجع تعارض الهجرات؛ لا تعدّل هجرات قديمة — أنشئ migration جديدة                                                   |
-| CORS من الواجهة                                                  | عادة Supabase يتعامل معها؛ تحقق من أن `VITE_SUPABASE_URL` صحيح                                                    |
+| المشكلة                                                          | الحل المحتمل                                                                                                                           |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| "Supabase: not configured"                                       | تأكد من متغيرات `VITE_*` في لوحة الاستضافة وأعد البناء                                                                                 |
+| 404 عند تحديث الصفحة أو فتح رابط مباشر                           | تأكد من `not_found_handling: "single-page-application"` في `wrangler.jsonc`؛ لا تستخدم `_redirects` مع Workers                         |
+| `Infinite loop detected` في `_redirects` عند النشر               | احذف `public/_redirects` — wrangler يتولى SPA routing                                                                                  |
+| فشل تسجيل الدخول بعد النشر                                       | راجع Site URL و Redirect URLs في Supabase Auth                                                                                         |
+| `Unauthorized` عند إنشاء حساب                                    | انشر الدالة: `npx supabase functions deploy manage-account`؛ سجّل الخروج ثم الدخول؛ تأكد أن `VITE_SUPABASE_URL` يشير لنفس مشروع الدالة |
+| `db push` — `forcibly closed` / `failed to connect as temp role` | مرّر `SUPABASE_DB_PASSWORD` أو `-p` باقتباس مفرد `'...'`                                                                               |
+| `db push` — `tls error` / `i/o timeout`                          | أوقف VPN (ProtonVPN/Radmin)؛ جرّب شبكة أخرى أو GitHub Actions                                                                          |
+| `db push` — `password authentication failed`                     | على PowerShell لا تستخدم `"..."` إذا كانت كلمة المرور فيها `$` — استخدم `'...'`                                                        |
+| `db reset --linked` — `gen_salt` / `crypt` does not exist        | الـ seed يستخدم `extensions.crypt` / `extensions.gen_salt` ويفعّل `pgcrypto` — اسحب آخر `seed.sql` وأعد الـ reset                      |
+| `db push` يرفض التغيير                                           | راجع تعارض الهجرات؛ لا تعدّل هجرات قديمة — أنشئ migration جديدة                                                                        |
+| CORS من الواجهة                                                  | عادة Supabase يتعامل معها؛ تحقق من أن `VITE_SUPABASE_URL` صحيح                                                                         |
 
 ---
 

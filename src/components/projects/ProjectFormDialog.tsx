@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
+import { GeneratedPasswordDialog } from '@/components/accounts/GeneratedPasswordDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
 import { Button } from '@/components/ui/button'
@@ -92,6 +93,10 @@ export function ProjectFormDialog({
   const createAccount = useCreateAccount()
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [addPmOpen, setAddPmOpen] = useState(false)
+  const [passwordReveal, setPasswordReveal] = useState<{
+    email?: string
+    password: string
+  } | null>(null)
 
   const draftSchema = useMemo(() => createDraftProjectSchema(t), [t])
   const submitSchema = useMemo(() => createSubmitProjectSchema(t), [t])
@@ -238,12 +243,14 @@ export function ProjectFormDialog({
       })
       await refetchManagers()
       form.setValue('assigned_pm_id', result.user_id, { shouldDirty: true })
-      toast.success(
-        t('projects.pmCreatedWithPassword', { password: result.password }),
-      )
+      toast.success(t('accounts.created'))
+      setPasswordReveal({
+        email: result.email ?? accountValues.email,
+        password: result.password,
+      })
       setAddPmOpen(false)
     } catch (error) {
-      toastMutationError(error, t('accounts.createFailed'))
+      toastMutationError(error, t('accounts.createFailed'), t)
       throw error
     }
   }
@@ -482,6 +489,17 @@ export function ProjectFormDialog({
         onCreate={handleCreatePm}
         onUpdate={async () => undefined}
         isSubmitting={createAccount.isPending}
+      />
+
+      <GeneratedPasswordDialog
+        open={passwordReveal !== null}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setPasswordReveal(null)
+          }
+        }}
+        email={passwordReveal?.email}
+        password={passwordReveal?.password ?? null}
       />
     </>
   )

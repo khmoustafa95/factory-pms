@@ -20,18 +20,33 @@ export type ManageAccountResult = {
   email?: string
 }
 
-function getFunctionsErrorMessage(error: unknown, fallback: string): string {
+async function readFunctionsErrorMessage(
+  error: unknown,
+  fallback: string,
+): Promise<string> {
   if (
     error &&
     typeof error === 'object' &&
     'context' in error &&
     error.context instanceof Response
   ) {
-    return fallback
+    try {
+      const payload = (await error.context.clone().json()) as {
+        error?: string
+        message?: string
+        msg?: string
+      }
+      const fromBody = payload.error ?? payload.message ?? payload.msg
+      if (typeof fromBody === 'string' && fromBody.trim().length > 0) {
+        return fromBody.trim()
+      }
+    } catch {
+      // fall through
+    }
   }
 
-  if (error instanceof Error && error.message) {
-    return error.message
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return error.message.trim()
   }
 
   return fallback
@@ -41,31 +56,31 @@ async function invokeManageAccount(
   body: Record<string, unknown>,
 ): Promise<ManageAccountResult> {
   const supabase = getSupabase()
+
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession()
+
+  if (sessionError || !session?.access_token) {
+    throw new Error('Missing authorization. Sign in again and retry.')
+  }
+
   const { data, error } = await supabase.functions.invoke('manage-account', {
     body,
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
   })
 
   if (error) {
-    let message = getFunctionsErrorMessage(error, 'Request failed')
-
-    if (error.context instanceof Response) {
-      try {
-        const payload = (await error.context.json()) as { error?: string }
-        if (payload.error) {
-          message = payload.error
-        }
-      } catch {
-        // keep fallback message
-      }
-    }
-
-    throw new Error(message)
+    throw new Error(await readFunctionsErrorMessage(error, 'Request failed'))
   }
 
   const result = data as ManageAccountResult | { error?: string } | null
   if (!result || typeof result !== 'object' || !('password' in result)) {
     throw new Error(
-      result && 'error' in result && result.error
+      result && 'error' in result && typeof result.error === 'string'
         ? result.error
         : 'Unexpected response',
     )

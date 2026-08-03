@@ -116,7 +116,7 @@ export function AccountsPage() {
         password: result.password,
       })
     } catch (submitError) {
-      toastMutationError(submitError, t('accounts.createFailed'))
+      toastMutationError(submitError, t('accounts.createFailed'), t)
       throw submitError
     }
   }
@@ -138,7 +138,7 @@ export function AccountsPage() {
       })
       toast.success(t('accounts.updated'))
     } catch (submitError) {
-      toastMutationError(submitError, t('accounts.updateFailed'))
+      toastMutationError(submitError, t('accounts.updateFailed'), t)
       throw submitError
     }
   }
@@ -157,7 +157,7 @@ export function AccountsPage() {
         password: result.password,
       })
     } catch (submitError) {
-      toastMutationError(submitError, t('accounts.passwordResetFailed'))
+      toastMutationError(submitError, t('accounts.passwordResetFailed'), t)
     }
   }
 
