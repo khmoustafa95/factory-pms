@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-08-03 — Hosted Supabase seed cannot call bare `crypt`/`gen_salt`; enable `pgcrypto` in schema `extensions` and qualify as `extensions.crypt` / `extensions.gen_salt` (local Docker often has them on search_path).
 - 2026-08-02 — Completing the last task can set `phases.actual_end_date` to `current_date`; if that precedes `phases.start_date`, constraint `phases_actual_end_after_start` rejects the task update. Clamp resolved actual end to `start_date` (prefer max task `actual_end_date`).
 - 2026-08-01 — Enforcing exact weight-sum = 100% on every single-row INSERT/UPDATE breaks editing (freeing weight on one task leaves sum < 100 and fails). Prefer DB ceiling (≤ 100) + UI exact-sum warning, or a multi-row RPC/transaction for rebalancing.
 - 2026-07-28 — If a mutation moves from direct table insert to RPC, update every caller payload immediately (e.g., remove legacy fields like `authorId`) or TypeScript catches stale contract usage in unrelated pages.

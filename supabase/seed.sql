@@ -1,10 +1,15 @@
 -- =============================================================================
 -- نظام إدارة المشاريع — حسابات تجريبية فقط
 -- التشغيل المحلي: `npm run supabase:reset`
+-- Staging البعيد: `npx supabase db reset --linked`
 -- الحسابات وكلمة المرور: انظر `supabase/demo-accounts.md`
 -- =============================================================================
 
 begin;
+
+-- pgcrypto lives in schema `extensions` on hosted Supabase; local Docker
+-- often exposes crypt/gen_salt via search_path, but remote seed does not.
+create extension if not exists pgcrypto with schema extensions;
 
 -- ---------------------------------------------------------------------------
 -- المصانع (مطلوبة لربط مدراء المصانع ومدراء المشاريع)
@@ -45,7 +50,7 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'director@demo.local',
-    crypt('demo123456', gen_salt('bf')),
+    extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"company_director"}'::jsonb,
     '{"full_name":"عمر الراشد"}'::jsonb,
@@ -60,7 +65,7 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'fm.damascus@demo.local',
-    crypt('demo123456', gen_salt('bf')),
+    extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"factory_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
     '{"full_name":"فاطمة الحربي"}'::jsonb,
@@ -75,7 +80,7 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'fm.aleppo@demo.local',
-    crypt('demo123456', gen_salt('bf')),
+    extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"factory_manager","factory_id":"f2222222-2222-4222-8222-222222222222"}'::jsonb,
     '{"full_name":"يوسف الغامدي"}'::jsonb,
@@ -90,7 +95,7 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'pm.ahmed@demo.local',
-    crypt('demo123456', gen_salt('bf')),
+    extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
     '{"full_name":"أحمد المطيري"}'::jsonb,
@@ -105,7 +110,7 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'pm.sara@demo.local',
-    crypt('demo123456', gen_salt('bf')),
+    extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
     '{"full_name":"سارة القحطاني"}'::jsonb,
@@ -120,7 +125,7 @@ insert into auth.users (
     'authenticated',
     'authenticated',
     'pm.khalid@demo.local',
-    crypt('demo123456', gen_salt('bf')),
+    extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f2222222-2222-4222-8222-222222222222"}'::jsonb,
     '{"full_name":"خالد الدوسري"}'::jsonb,

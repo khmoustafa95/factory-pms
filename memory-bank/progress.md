@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Staging seed: `pgcrypto` + `extensions.crypt`/`gen_salt` for `db reset --linked`
 - [x] WBS readiness + start-execution UX: granular `canManagePhases`/`canManageTasks`/`canStartExecution`, `getExecutionReadiness()` with tooltip reasons, phase/task remaining-budget capping, RPC error → i18n mapping, FM dashboard KPI cards (draft/proposed/in-progress/overdue)
 - [x] Field tracking: phase budget/deviations/problems + task weight/duration/cost/progress (Excel-aligned rollups)
 - [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
@@ -52,6 +53,11 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-03
+
+- Fixed remote staging seed failure (`gen_salt does not exist`): `seed.sql` enables `pgcrypto` and uses `extensions.crypt` / `extensions.gen_salt`
+- Documented troubleshooting in `docs/staging-deployment.md`
 
 ### 2026-08-02 (session 61)
 

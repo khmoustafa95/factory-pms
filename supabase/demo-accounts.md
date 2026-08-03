@@ -9,7 +9,11 @@ demo123456
 أعد تحميل البيانات بعد التعديل:
 
 ```bash
+# محلي
 npm run supabase:reset
+
+# Staging البعيد (بعد supabase link)
+npx supabase db reset --linked
 ```
 
 | البريد                   | الدور       | المصنع     |
