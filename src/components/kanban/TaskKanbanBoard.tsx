@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -235,7 +236,7 @@ export function TaskKanbanBoard({
           <DialogHeader>
             <DialogTitle>{t('wbs.markBlocked')}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <DialogBody className="space-y-2">
             <Label htmlFor="kanban-blocked-reason">
               {t('wbs.blockedReasonLabel')}
             </Label>
@@ -245,7 +246,7 @@ export function TaskKanbanBoard({
               value={blockedReason}
               onChange={(event) => setBlockedReason(event.target.value)}
             />
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBlockedTask(null)}>
               {t('common.cancel')}

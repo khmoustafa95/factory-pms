@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Dialog UX: dismiss-on-outside default off, RTL close button, fixed header/footer + `DialogBody` scroll region (all form dialogs)
 - [x] WBS readiness + start-execution UX: granular `canManagePhases`/`canManageTasks`/`canStartExecution`, `getExecutionReadiness()` with tooltip reasons, phase/task remaining-budget capping, RPC error → i18n mapping, FM dashboard KPI cards (draft/proposed/in-progress/overdue)
 - [x] Field tracking: phase budget/deviations/problems + task weight/duration/cost/progress (Excel-aligned rollups)
 - [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
@@ -52,6 +53,10 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-03 (session 62)
+
+- Dialog UX: no outside-click dismiss by default; RTL close (`end-*`); `DialogBody` + fixed header/footer on form dialogs app-wide; Sheet close RTL-aligned
 
 ### 2026-08-02 (session 61)
 

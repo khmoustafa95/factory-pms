@@ -5,6 +5,7 @@ import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -155,7 +156,7 @@ export function PhaseFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {phase ? t('wbs.editPhase') : t('wbs.newPhase')}
@@ -167,193 +168,205 @@ export function PhaseFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
-            <Input id="phase-name" {...form.register('name')} />
-            <FormFieldError error={form.formState.errors.name} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phase-description">{t('common.description')}</Label>
-            <Textarea
-              id="phase-description"
-              rows={3}
-              {...form.register('description')}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
+        <form
+          key={locale}
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleSubmit}
+        >
+          <DialogBody className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="phase-weight">{t('wbs.phaseWeight')}</Label>
-              <Input
-                id="phase-weight"
-                type="number"
-                min="0"
-                max={maxWeight}
-                step="0.1"
-                {...form.register('weight_percent', { valueAsNumber: true })}
-              />
-              <FormFieldError error={form.formState.errors.weight_percent} />
+              <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
+              <Input id="phase-name" {...form.register('name')} />
+              <FormFieldError error={form.formState.errors.name} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phase-expected-budget">
-                {t('wbs.expectedBudget')}
+              <Label htmlFor="phase-description">
+                {t('common.description')}
               </Label>
-              <Input
-                id="phase-expected-budget"
-                type="number"
-                min="0"
-                max={maxBudget}
-                step="0.01"
-                {...form.register('expected_budget', { valueAsNumber: true })}
+              <Textarea
+                id="phase-description"
+                rows={3}
+                {...form.register('description')}
               />
-              <FormFieldError error={form.formState.errors.expected_budget} />
-              {projectBudget != null ? (
-                <p className="text-xs text-muted-foreground">
-                  {t('common.budget')}: {Number(projectBudget).toFixed(2)}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          {phase ? (
-            <div className="space-y-2">
-              <Label>{t('wbs.phaseStatus')}</Label>
-              <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
-                {getPhaseStatusLabel(t, phase.status)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t('wbs.phaseStatusHint')}
-              </p>
-            </div>
-          ) : null}
-
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              {t('wbs.phaseScheduleHint', { range: scheduleHint })}
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="phase-start">{t('wbs.startDate')}</Label>
-              <Input
-                id="phase-start"
-                type="date"
-                min={schedule.start ?? undefined}
-                max={schedule.end ?? undefined}
-                {...form.register('start_date')}
-              />
-              <FormFieldError error={form.formState.errors.start_date} />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phase-end">{t('wbs.endDate')}</Label>
-              <Input
-                id="phase-end"
-                type="date"
-                min={schedule.start ?? undefined}
-                max={schedule.end ?? undefined}
-                {...form.register('end_date')}
-              />
-              <FormFieldError error={form.formState.errors.end_date} />
-            </div>
-          </div>
-
-          {/* Field tracking: only when editing an existing phase */}
-          {phase ? (
-            <>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="phase-actual-end">
-                  {t('wbs.actualEndDate')}
+                <Label htmlFor="phase-weight">{t('wbs.phaseWeight')}</Label>
+                <Input
+                  id="phase-weight"
+                  type="number"
+                  min="0"
+                  max={maxWeight}
+                  step="0.1"
+                  {...form.register('weight_percent', { valueAsNumber: true })}
+                />
+                <FormFieldError error={form.formState.errors.weight_percent} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phase-expected-budget">
+                  {t('wbs.expectedBudget')}
                 </Label>
                 <Input
-                  id="phase-actual-end"
-                  type="date"
-                  {...form.register('actual_end_date')}
+                  id="phase-expected-budget"
+                  type="number"
+                  min="0"
+                  max={maxBudget}
+                  step="0.01"
+                  {...form.register('expected_budget', { valueAsNumber: true })}
                 />
-                <FormFieldError error={form.formState.errors.actual_end_date} />
-              </div>
-
-              {showActualBudget ? (
-                <div className="space-y-2">
-                  <Label htmlFor="phase-actual-budget">
-                    {t('wbs.actualBudget')}
-                  </Label>
-                  <Input
-                    id="phase-actual-budget"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    {...form.register('actual_budget', {
-                      setValueAs: (value) =>
-                        value === '' || value === null ? null : Number(value),
-                    })}
-                  />
-                  <FormFieldError error={form.formState.errors.actual_budget} />
-                </div>
-              ) : null}
-
-              <div className="space-y-2">
-                <Label htmlFor="phase-schedule-reason">
-                  {t('wbs.scheduleDeviationReason')}
-                </Label>
-                <Textarea
-                  id="phase-schedule-reason"
-                  rows={2}
-                  {...form.register('schedule_deviation_reason')}
-                />
-                <FormFieldError
-                  error={form.formState.errors.schedule_deviation_reason}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phase-financial-reason">
-                  {t('wbs.financialDeviationReason')}
-                </Label>
-                <Textarea
-                  id="phase-financial-reason"
-                  rows={2}
-                  {...form.register('financial_deviation_reason')}
-                />
-                <FormFieldError
-                  error={form.formState.errors.financial_deviation_reason}
-                />
-                {actualCostTotal > 0 ? (
+                <FormFieldError error={form.formState.errors.expected_budget} />
+                {projectBudget != null ? (
                   <p className="text-xs text-muted-foreground">
-                    {t('wbs.actualCostHint', {
-                      amount: actualCostTotal.toFixed(2),
-                    })}
+                    {t('common.budget')}: {Number(projectBudget).toFixed(2)}
                   </p>
                 ) : null}
               </div>
+            </div>
 
+            {phase ? (
               <div className="space-y-2">
-                <Label htmlFor="phase-problem">
-                  {t('wbs.problemDescription')}
-                </Label>
-                <Textarea
-                  id="phase-problem"
-                  rows={2}
-                  {...form.register('problem_description')}
+                <Label>{t('wbs.phaseStatus')}</Label>
+                <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
+                  {getPhaseStatusLabel(t, phase.status)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('wbs.phaseStatusHint')}
+                </p>
+              </div>
+            ) : null}
+
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                {t('wbs.phaseScheduleHint', { range: scheduleHint })}
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="phase-start">{t('wbs.startDate')}</Label>
+                <Input
+                  id="phase-start"
+                  type="date"
+                  min={schedule.start ?? undefined}
+                  max={schedule.end ?? undefined}
+                  {...form.register('start_date')}
                 />
+                <FormFieldError error={form.formState.errors.start_date} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phase-solution">
-                  {t('wbs.solutionInProgress')}
-                </Label>
-                <Textarea
-                  id="phase-solution"
-                  rows={2}
-                  {...form.register('solution_in_progress')}
+                <Label htmlFor="phase-end">{t('wbs.endDate')}</Label>
+                <Input
+                  id="phase-end"
+                  type="date"
+                  min={schedule.start ?? undefined}
+                  max={schedule.end ?? undefined}
+                  {...form.register('end_date')}
                 />
+                <FormFieldError error={form.formState.errors.end_date} />
               </div>
-            </>
-          ) : null}
+            </div>
+
+            {/* Field tracking: only when editing an existing phase */}
+            {phase ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="phase-actual-end">
+                    {t('wbs.actualEndDate')}
+                  </Label>
+                  <Input
+                    id="phase-actual-end"
+                    type="date"
+                    {...form.register('actual_end_date')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.actual_end_date}
+                  />
+                </div>
+
+                {showActualBudget ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="phase-actual-budget">
+                      {t('wbs.actualBudget')}
+                    </Label>
+                    <Input
+                      id="phase-actual-budget"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      {...form.register('actual_budget', {
+                        setValueAs: (value) =>
+                          value === '' || value === null ? null : Number(value),
+                      })}
+                    />
+                    <FormFieldError
+                      error={form.formState.errors.actual_budget}
+                    />
+                  </div>
+                ) : null}
+
+                <div className="space-y-2">
+                  <Label htmlFor="phase-schedule-reason">
+                    {t('wbs.scheduleDeviationReason')}
+                  </Label>
+                  <Textarea
+                    id="phase-schedule-reason"
+                    rows={2}
+                    {...form.register('schedule_deviation_reason')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.schedule_deviation_reason}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phase-financial-reason">
+                    {t('wbs.financialDeviationReason')}
+                  </Label>
+                  <Textarea
+                    id="phase-financial-reason"
+                    rows={2}
+                    {...form.register('financial_deviation_reason')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.financial_deviation_reason}
+                  />
+                  {actualCostTotal > 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      {t('wbs.actualCostHint', {
+                        amount: actualCostTotal.toFixed(2),
+                      })}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phase-problem">
+                    {t('wbs.problemDescription')}
+                  </Label>
+                  <Textarea
+                    id="phase-problem"
+                    rows={2}
+                    {...form.register('problem_description')}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phase-solution">
+                    {t('wbs.solutionInProgress')}
+                  </Label>
+                  <Textarea
+                    id="phase-solution"
+                    rows={2}
+                    {...form.register('solution_in_progress')}
+                  />
+                </div>
+              </>
+            ) : null}
+          </DialogBody>
 
           <DialogFooter>
             <Button

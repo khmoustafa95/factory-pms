@@ -7,6 +7,7 @@ import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -252,7 +253,7 @@ export function ProjectFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {isDetailsEdit
@@ -268,165 +269,167 @@ export function ProjectFormDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <form key={locale} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="project-code">{t('projects.code')}</Label>
-              <Input
-                id="project-code"
-                className="uppercase"
-                {...form.register('code')}
-              />
-              <FormFieldError error={form.formState.errors.code} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="project-title">{t('common.title')}</Label>
-              <Input id="project-title" {...form.register('title')} />
-              <FormFieldError error={form.formState.errors.title} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="project-description">
-                {t('common.description')}
-              </Label>
-              <Textarea
-                id="project-description"
-                rows={4}
-                {...form.register('description')}
-              />
-              <FormFieldError error={form.formState.errors.description} />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
+          <form key={locale} className="flex min-h-0 flex-1 flex-col">
+            <DialogBody className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="project-budget">{t('common.budget')}</Label>
+                <Label htmlFor="project-code">{t('projects.code')}</Label>
                 <Input
-                  id="project-budget"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  inputMode="decimal"
-                  {...form.register('budget')}
+                  id="project-code"
+                  className="uppercase"
+                  {...form.register('code')}
                 />
-                <FormFieldError error={form.formState.errors.budget} />
+                <FormFieldError error={form.formState.errors.code} />
               </div>
 
               <div className="space-y-2">
-                <Label>{t('projects.currency')}</Label>
+                <Label htmlFor="project-title">{t('common.title')}</Label>
+                <Input id="project-title" {...form.register('title')} />
+                <FormFieldError error={form.formState.errors.title} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project-description">
+                  {t('common.description')}
+                </Label>
+                <Textarea
+                  id="project-description"
+                  rows={4}
+                  {...form.register('description')}
+                />
+                <FormFieldError error={form.formState.errors.description} />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="project-budget">{t('common.budget')}</Label>
+                  <Input
+                    id="project-budget"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    {...form.register('budget')}
+                  />
+                  <FormFieldError error={form.formState.errors.budget} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t('projects.currency')}</Label>
+                  <Select
+                    value={selectedCurrency}
+                    onValueChange={(value) =>
+                      form.setValue('currency', value, { shouldDirty: true })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((c) => (
+                        <SelectItem key={c.id} value={c.code}>
+                          {c.code}
+                          {c.symbol ? ` (${c.symbol})` : ''}
+                        </SelectItem>
+                      ))}
+                      {currencies.length === 0 ? (
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                      ) : null}
+                    </SelectContent>
+                  </Select>
+                  <FormFieldError error={form.formState.errors.currency} />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="project-start">
+                    {t('projects.proposedStartDate')}
+                  </Label>
+                  <Input
+                    id="project-start"
+                    type="date"
+                    {...form.register('proposed_start_date')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.proposed_start_date}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project-end">
+                    {t('projects.proposedEndDate')}
+                  </Label>
+                  <Input
+                    id="project-end"
+                    type="date"
+                    {...form.register('proposed_end_date')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.proposed_end_date}
+                  />
+                </div>
+              </div>
+
+              {derivedDurationDays != null ? (
+                <p className="text-xs text-muted-foreground">
+                  {t('projects.derivedDuration', { days: derivedDurationDays })}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {t('projects.datesHint')}
+                </p>
+              )}
+
+              <div className="space-y-2">
+                <Label>{t('projects.assignedPm')}</Label>
                 <Select
-                  value={selectedCurrency}
-                  onValueChange={(value) =>
-                    form.setValue('currency', value, { shouldDirty: true })
-                  }
+                  value={formatNullableSelectValue(selectedPmId)}
+                  onValueChange={(value) => {
+                    if (value === ADD_PM_VALUE) {
+                      setAddPmOpen(true)
+                      return
+                    }
+                    form.setValue(
+                      'assigned_pm_id',
+                      parseNullableSelectValue(value),
+                    )
+                  }}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder={t('common.optional')} />
                   </SelectTrigger>
                   <SelectContent>
-                    {currencies.map((c) => (
-                      <SelectItem key={c.id} value={c.code}>
-                        {c.code}
-                        {c.symbol ? ` (${c.symbol})` : ''}
+                    <SelectItem value={NULL_SELECT_VALUE}>
+                      {t('common.unassigned')}
+                    </SelectItem>
+                    {projectManagers.map((manager) => (
+                      <SelectItem key={manager.id} value={manager.id}>
+                        {manager.full_name}
                       </SelectItem>
                     ))}
-                    {currencies.length === 0 ? (
-                      <SelectItem value="USD">USD ($)</SelectItem>
+                    {factoryId ? (
+                      <SelectItem value={ADD_PM_VALUE}>
+                        {t('projects.addProjectManager')}
+                      </SelectItem>
                     ) : null}
                   </SelectContent>
                 </Select>
-                <FormFieldError error={form.formState.errors.currency} />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="project-start">
-                  {t('projects.proposedStartDate')}
-                </Label>
-                <Input
-                  id="project-start"
-                  type="date"
-                  {...form.register('proposed_start_date')}
-                />
-                <FormFieldError
-                  error={form.formState.errors.proposed_start_date}
-                />
+                <FormFieldError error={form.formState.errors.assigned_pm_id} />
+                {allowSubmitProposal ? (
+                  <p className="text-xs text-muted-foreground">
+                    {t('projects.pmRequiredToSubmit')}
+                  </p>
+                ) : null}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="project-end">
-                  {t('projects.proposedEndDate')}
-                </Label>
-                <Input
-                  id="project-end"
-                  type="date"
-                  {...form.register('proposed_end_date')}
-                />
-                <FormFieldError
-                  error={form.formState.errors.proposed_end_date}
-                />
-              </div>
-            </div>
-
-            {derivedDurationDays != null ? (
-              <p className="text-xs text-muted-foreground">
-                {t('projects.derivedDuration', { days: derivedDurationDays })}
-              </p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {t('projects.datesHint')}
-              </p>
-            )}
-
-            <div className="space-y-2">
-              <Label>{t('projects.assignedPm')}</Label>
-              <Select
-                value={formatNullableSelectValue(selectedPmId)}
-                onValueChange={(value) => {
-                  if (value === ADD_PM_VALUE) {
-                    setAddPmOpen(true)
-                    return
-                  }
-                  form.setValue(
-                    'assigned_pm_id',
-                    parseNullableSelectValue(value),
-                  )
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common.optional')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={NULL_SELECT_VALUE}>
-                    {t('common.unassigned')}
-                  </SelectItem>
-                  {projectManagers.map((manager) => (
-                    <SelectItem key={manager.id} value={manager.id}>
-                      {manager.full_name}
-                    </SelectItem>
-                  ))}
-                  {factoryId ? (
-                    <SelectItem value={ADD_PM_VALUE}>
-                      {t('projects.addProjectManager')}
-                    </SelectItem>
-                  ) : null}
-                </SelectContent>
-              </Select>
-              <FormFieldError error={form.formState.errors.assigned_pm_id} />
               {allowSubmitProposal ? (
-                <p className="text-xs text-muted-foreground">
-                  {t('projects.pmRequiredToSubmit')}
-                </p>
+                <ProposalFilePicker
+                  files={pendingFiles}
+                  onChange={setPendingFiles}
+                  disabled={isSubmitting}
+                />
               ) : null}
-            </div>
-
-            {allowSubmitProposal ? (
-              <ProposalFilePicker
-                files={pendingFiles}
-                onChange={setPendingFiles}
-                disabled={isSubmitting}
-              />
-            ) : null}
+            </DialogBody>
 
             <DialogFooter className="gap-2 sm:gap-0">
               <Button

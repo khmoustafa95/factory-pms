@@ -3,6 +3,7 @@ import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -64,9 +65,15 @@ export function EscalationFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
-          <Textarea rows={4} {...form.register('message')} />
-          <FormFieldError error={form.formState.errors.message} />
+        <form
+          key={locale}
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleSubmit}
+        >
+          <DialogBody className="space-y-4">
+            <Textarea rows={4} {...form.register('message')} />
+            <FormFieldError error={form.formState.errors.message} />
+          </DialogBody>
 
           <DialogFooter>
             <Button

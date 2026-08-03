@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-08-03 — Dialogs default to `dismissOnOutsideClick={false}`; structure is `DialogHeader` + `DialogBody` (scroll) + `DialogFooter` with close button via logical `end-*` — prevents accidental form loss, keeps actions visible on long forms, and flips close icon correctly in RTL.
+
 - 2026-08-02 — Task completion on Kanban/form: require `actual_end_date` + `actual_cost`; overrun vs `due_date` / `expected_cost` requires schedule/financial deviation reasons (new task columns).
 
 - 2026-08-02 — Proposal calendar dates are the source of truth on submit; duration is derived as days and stored for schedule helpers — avoids dual conflicting inputs.

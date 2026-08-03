@@ -3,6 +3,7 @@ import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -62,18 +63,24 @@ export function ProjectRejectDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="rejection-reason">
-              {t('projects.rejectionReason')}
-            </Label>
-            <Textarea
-              id="rejection-reason"
-              rows={4}
-              {...form.register('rejection_reason')}
-            />
-            <FormFieldError error={form.formState.errors.rejection_reason} />
-          </div>
+        <form
+          key={locale}
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleSubmit}
+        >
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="rejection-reason">
+                {t('projects.rejectionReason')}
+              </Label>
+              <Textarea
+                id="rejection-reason"
+                rows={4}
+                {...form.register('rejection_reason')}
+              />
+              <FormFieldError error={form.formState.errors.rejection_reason} />
+            </div>
+          </DialogBody>
 
           <DialogFooter>
             <Button

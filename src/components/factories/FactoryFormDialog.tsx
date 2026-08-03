@@ -5,6 +5,7 @@ import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -75,34 +76,40 @@ export function FactoryFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="factory-name">{t('common.name')}</Label>
-            <Input id="factory-name" {...form.register('name')} />
-            <FormFieldError error={form.formState.errors.name} />
-          </div>
+        <form
+          key={locale}
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleSubmit}
+        >
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="factory-name">{t('common.name')}</Label>
+              <Input id="factory-name" {...form.register('name')} />
+              <FormFieldError error={form.formState.errors.name} />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="factory-code">{t('common.code')}</Label>
-            <Input
-              id="factory-code"
-              className="uppercase"
-              {...form.register('code')}
+            <div className="space-y-2">
+              <Label htmlFor="factory-code">{t('common.code')}</Label>
+              <Input
+                id="factory-code"
+                className="uppercase"
+                {...form.register('code')}
+              />
+              <FormFieldError error={form.formState.errors.code} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="factory-location">{t('common.location')}</Label>
+              <Input id="factory-location" {...form.register('location')} />
+            </div>
+
+            <FormCheckboxField
+              id="factory-active"
+              label={t('factories.activeFactory')}
+              checked={isActive}
+              onCheckedChange={(checked) => form.setValue('is_active', checked)}
             />
-            <FormFieldError error={form.formState.errors.code} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="factory-location">{t('common.location')}</Label>
-            <Input id="factory-location" {...form.register('location')} />
-          </div>
-
-          <FormCheckboxField
-            id="factory-active"
-            label={t('factories.activeFactory')}
-            checked={isActive}
-            onCheckedChange={(checked) => form.setValue('is_active', checked)}
-          />
+          </DialogBody>
 
           <DialogFooter>
             <Button

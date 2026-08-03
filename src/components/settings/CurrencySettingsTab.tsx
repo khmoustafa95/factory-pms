@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -269,42 +270,44 @@ export function CurrencySettingsTab() {
                 : t('settings.currencies.addTitle')}
             </DialogTitle>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={onSubmit}>
-            <div className="space-y-2">
-              <Label>{t('settings.currencies.code')}</Label>
-              <Input
-                className="uppercase"
-                maxLength={3}
-                disabled={Boolean(editing)}
-                {...form.register('code')}
-              />
-              <FormFieldError error={form.formState.errors.code} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+          <form className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
+            <DialogBody className="space-y-4">
               <div className="space-y-2">
-                <Label>{t('settings.currencies.nameEn')}</Label>
-                <Input {...form.register('name_en')} />
-                <FormFieldError error={form.formState.errors.name_en} />
+                <Label>{t('settings.currencies.code')}</Label>
+                <Input
+                  className="uppercase"
+                  maxLength={3}
+                  disabled={Boolean(editing)}
+                  {...form.register('code')}
+                />
+                <FormFieldError error={form.formState.errors.code} />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>{t('settings.currencies.nameEn')}</Label>
+                  <Input {...form.register('name_en')} />
+                  <FormFieldError error={form.formState.errors.name_en} />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('settings.currencies.nameAr')}</Label>
+                  <Input dir="rtl" {...form.register('name_ar')} />
+                  <FormFieldError error={form.formState.errors.name_ar} />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>{t('settings.currencies.nameAr')}</Label>
-                <Input dir="rtl" {...form.register('name_ar')} />
-                <FormFieldError error={form.formState.errors.name_ar} />
+                <Label>{t('settings.currencies.symbol')}</Label>
+                <Input maxLength={5} {...form.register('symbol')} />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>{t('settings.currencies.symbol')}</Label>
-              <Input maxLength={5} {...form.register('symbol')} />
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={isActiveValue}
-                onCheckedChange={(checked) =>
-                  form.setValue('is_active', checked)
-                }
-              />
-              <Label>{t('common.active')}</Label>
-            </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={isActiveValue}
+                  onCheckedChange={(checked) =>
+                    form.setValue('is_active', checked)
+                  }
+                />
+                <Label>{t('common.active')}</Label>
+              </div>
+            </DialogBody>
             <DialogFooter>
               <Button
                 type="button"
