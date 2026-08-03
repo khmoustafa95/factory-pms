@@ -4,13 +4,19 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
-import type { Session, User } from '@supabase/supabase-js'
+import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 import { AuthError } from '@/lib/auth-errors'
 import type { Profile } from '@/types/database'
+
+/** Events that only refresh tokens / rehydrate — do not blank the UI. */
+function isSilentAuthEvent(event: AuthChangeEvent): boolean {
+  return event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION'
+}
 
 interface AuthContextValue {
   session: Session | null
@@ -64,6 +70,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const isConfigured = isSupabaseConfigured()
   const [isLoading, setIsLoading] = useState(isConfigured)
+  const profileRef = useRef<Profile | null>(null)
+
+  useEffect(() => {
+    profileRef.current = profile
+  }, [profile])
 
   useEffect(() => {
     if (!isConfigured) {
@@ -72,6 +83,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const supabase = getSupabase()
     let isMounted = true
+
+    const applyProfileForUser = (userId: string, showLoading: boolean) => {
+      if (showLoading) {
+        setIsLoading(true)
+      }
+
+      // Defer so auth callbacks do not deadlock with session-backed queries.
+      window.setTimeout(() => {
+        void assertActiveProfile(supabase, userId)
+          .then((nextProfile) => {
+            if (isMounted) {
+              setProfile(nextProfile)
+            }
+          })
+          .catch(() => {
+            if (isMounted) {
+              setSession(null)
+              setProfile(null)
+            }
+          })
+          .finally(() => {
+            if (isMounted) {
+              setIsLoading(false)
+            }
+          })
+      }, 0)
+    }
 
     const loadSession = async () => {
       const { data, error } = await supabase.auth.getSession()
@@ -115,12 +153,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!isMounted) {
         return
       }
 
-      setIsLoading(true)
       setSession(nextSession)
 
       if (!nextSession?.user) {
@@ -129,23 +166,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      void assertActiveProfile(supabase, nextSession.user.id)
-        .then((nextProfile) => {
-          if (isMounted) {
-            setProfile(nextProfile)
-          }
-        })
-        .catch(() => {
-          if (isMounted) {
-            setSession(null)
-            setProfile(null)
-          }
-        })
-        .finally(() => {
-          if (isMounted) {
-            setIsLoading(false)
-          }
-        })
+      const sameUser = profileRef.current?.id === nextSession.user.id
+
+      // Tab focus / JWT refresh: keep the existing UI; session is already updated.
+      if (isSilentAuthEvent(event) && sameUser) {
+        return
+      }
+
+      // Same user already loaded (e.g. sign-in path set profile first) — soft refresh.
+      if (sameUser) {
+        applyProfileForUser(nextSession.user.id, false)
+        return
+      }
+
+      applyProfileForUser(nextSession.user.id, true)
     })
 
     return () => {
