@@ -5,6 +5,7 @@ import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -131,62 +132,70 @@ export function TaskCompleteDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form key={locale} className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="complete-actual-end">
-              {t('wbs.actualEndDate')}
-            </Label>
-            <Input
-              id="complete-actual-end"
-              type="date"
-              {...form.register('actual_end_date')}
-            />
-            <FormFieldError error={form.formState.errors.actual_end_date} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="complete-actual-cost">{t('wbs.actualCost')}</Label>
-            <Input
-              id="complete-actual-cost"
-              type="number"
-              min="0"
-              step="0.01"
-              {...form.register('actual_cost', { valueAsNumber: true })}
-            />
-            <FormFieldError error={form.formState.errors.actual_cost} />
-          </div>
-
-          {scheduleOverrun ? (
+        <form
+          key={locale}
+          className="flex min-h-0 flex-1 flex-col"
+          onSubmit={handleSubmit}
+        >
+          <DialogBody className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="complete-schedule-reason">
-                {t('wbs.scheduleDeviationReason')}
+              <Label htmlFor="complete-actual-end">
+                {t('wbs.actualEndDate')}
               </Label>
-              <Textarea
-                id="complete-schedule-reason"
-                rows={3}
-                {...form.register('schedule_deviation_reason')}
+              <Input
+                id="complete-actual-end"
+                type="date"
+                {...form.register('actual_end_date')}
               />
-              <FormFieldError
-                error={form.formState.errors.schedule_deviation_reason}
-              />
+              <FormFieldError error={form.formState.errors.actual_end_date} />
             </div>
-          ) : null}
 
-          {financialOverrun ? (
             <div className="space-y-2">
-              <Label htmlFor="complete-financial-reason">
-                {t('wbs.financialDeviationReason')}
+              <Label htmlFor="complete-actual-cost">
+                {t('wbs.actualCost')}
               </Label>
-              <Textarea
-                id="complete-financial-reason"
-                rows={3}
-                {...form.register('financial_deviation_reason')}
+              <Input
+                id="complete-actual-cost"
+                type="number"
+                min="0"
+                step="0.01"
+                {...form.register('actual_cost', { valueAsNumber: true })}
               />
-              <FormFieldError
-                error={form.formState.errors.financial_deviation_reason}
-              />
+              <FormFieldError error={form.formState.errors.actual_cost} />
             </div>
-          ) : null}
+
+            {scheduleOverrun ? (
+              <div className="space-y-2">
+                <Label htmlFor="complete-schedule-reason">
+                  {t('wbs.scheduleDeviationReason')}
+                </Label>
+                <Textarea
+                  id="complete-schedule-reason"
+                  rows={3}
+                  {...form.register('schedule_deviation_reason')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.schedule_deviation_reason}
+                />
+              </div>
+            ) : null}
+
+            {financialOverrun ? (
+              <div className="space-y-2">
+                <Label htmlFor="complete-financial-reason">
+                  {t('wbs.financialDeviationReason')}
+                </Label>
+                <Textarea
+                  id="complete-financial-reason"
+                  rows={3}
+                  {...form.register('financial_deviation_reason')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.financial_deviation_reason}
+                />
+              </div>
+            ) : null}
+          </DialogBody>
 
           <DialogFooter>
             <Button

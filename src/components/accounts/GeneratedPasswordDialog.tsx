@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -55,7 +56,7 @@ export function GeneratedPasswordDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           {email ? (
             <div className="space-y-2">
               <Label>{t('common.email')}</Label>
@@ -82,7 +83,7 @@ export function GeneratedPasswordDialog({
               </Button>
             </div>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button type="button" onClick={() => onOpenChange(false)}>

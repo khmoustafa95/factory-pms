@@ -51,9 +51,14 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  dismissOnOutsideClick = false,
+  onPointerDownOutside,
+  onInteractOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  /** When false (default), clicking the overlay does not close the dialog. */
+  dismissOnOutsideClick?: boolean
 }) {
   return (
     <DialogPortal>
@@ -61,17 +66,29 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          'fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
+          'fixed top-1/2 left-1/2 z-50 flex w-full max-h-[90vh] max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
           className,
         )}
         {...props}
+        onPointerDownOutside={(event) => {
+          if (!dismissOnOutsideClick) {
+            event.preventDefault()
+          }
+          onPointerDownOutside?.(event)
+        }}
+        onInteractOutside={(event) => {
+          if (!dismissOnOutsideClick) {
+            event.preventDefault()
+          }
+          onInteractOutside?.(event)
+        }}
       >
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
+              className="absolute top-2 inset-e-2 z-10"
               size="icon-sm"
             >
               <XIcon />
@@ -88,7 +105,20 @@ function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn('flex flex-col gap-2', className)}
+      className={cn(
+        'shrink-0 flex flex-col gap-1.5 border-b bg-popover px-4 pt-4 pb-3 pe-12',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function DialogBody({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-4', className)}
       {...props}
     />
   )
@@ -106,7 +136,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        '-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end',
+        'shrink-0 flex flex-col-reverse gap-2 border-t bg-muted/50 p-4 sm:flex-row sm:justify-end',
         className,
       )}
       {...props}
@@ -157,6 +187,7 @@ export {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogBody,
   DialogDescription,
   DialogFooter,
   DialogHeader,

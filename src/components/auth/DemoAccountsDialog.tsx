@@ -4,6 +4,7 @@ import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -43,7 +44,7 @@ export function DemoAccountsDialog() {
           {t('auth.demoAccounts.button')}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('auth.demoAccounts.title')}</DialogTitle>
           <DialogDescription>
@@ -51,70 +52,72 @@ export function DemoAccountsDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        {isStaging ? (
-          <StatusMessage variant="warning">
-            {t('auth.demoAccounts.stagingSetupHint')}
-          </StatusMessage>
-        ) : null}
+        <DialogBody className="space-y-4">
+          {isStaging ? (
+            <StatusMessage variant="warning">
+              {t('auth.demoAccounts.stagingSetupHint')}
+            </StatusMessage>
+          ) : null}
 
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
-          <div>
-            <p className="text-sm font-medium">{t('auth.password')}</p>
-            <p className="font-mono text-sm">{DEMO_PASSWORD}</p>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
+            <div>
+              <p className="text-sm font-medium">{t('auth.password')}</p>
+              <p className="font-mono text-sm">{DEMO_PASSWORD}</p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                void copyToClipboard(DEMO_PASSWORD, t('auth.password'))
+              }
+            >
+              <Copy className="size-4" />
+              {t('auth.demoAccounts.copyPassword')}
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() =>
-              void copyToClipboard(DEMO_PASSWORD, t('auth.password'))
-            }
-          >
-            <Copy className="size-4" />
-            {t('auth.demoAccounts.copyPassword')}
-          </Button>
-        </div>
 
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('common.email')}</TableHead>
-                <TableHead>{t('common.role')}</TableHead>
-                <TableHead>{t('common.factory')}</TableHead>
-                <TableHead>{t('common.notes')}</TableHead>
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {DEMO_ACCOUNTS.map((account) => (
-                <TableRow key={account.email}>
-                  <TableCell className="font-mono text-xs sm:text-sm">
-                    {account.email}
-                  </TableCell>
-                  <TableCell>{t(account.roleKey)}</TableCell>
-                  <TableCell>{account.factory}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {t(account.notesKey)}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() =>
-                        void copyToClipboard(account.email, t('common.email'))
-                      }
-                      aria-label={t('auth.demoAccounts.copyEmail')}
-                    >
-                      <Copy className="size-4" />
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('common.email')}</TableHead>
+                  <TableHead>{t('common.role')}</TableHead>
+                  <TableHead>{t('common.factory')}</TableHead>
+                  <TableHead>{t('common.notes')}</TableHead>
+                  <TableHead className="w-12" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {DEMO_ACCOUNTS.map((account) => (
+                  <TableRow key={account.email}>
+                    <TableCell className="font-mono text-xs sm:text-sm">
+                      {account.email}
+                    </TableCell>
+                    <TableCell>{t(account.roleKey)}</TableCell>
+                    <TableCell>{account.factory}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {t(account.notesKey)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() =>
+                          void copyToClipboard(account.email, t('common.email'))
+                        }
+                        aria-label={t('auth.demoAccounts.copyEmail')}
+                      >
+                        <Copy className="size-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )

@@ -2,11 +2,12 @@
 
 ## Current focus
 
-**Auth session UX** — avoid full-screen “loading session” flash when returning to a browser tab after token refresh.
+**Dialog UX** — no outside-click dismiss; fixed header/footer via `DialogBody`; RTL close at `end-2` (left in Arabic).
 
 ## Recent changes
 
-- [2026-08-03] `AuthContext`: do not set `isLoading` on `TOKEN_REFRESHED` / `INITIAL_SESSION` when the same user profile is already loaded; soft-refresh profile for other same-user events
+- [2026-08-03] Re-applied full dialog shell (`dismissOnOutsideClick` default false, `DialogBody`, header/footer layout, close `end-2`) + ProjectFormDialog and all similar form dialogs; Sheet close `end-3`
+- [2026-08-03] Dialog layout pattern applied to all form dialogs: `DialogBody` wraps fields; forms use `flex min-h-0 flex-1 flex-col`
 - [2026-08-03] Fix staging seed: enable `pgcrypto` + use `extensions.crypt` / `extensions.gen_salt` so `db reset --linked` works on hosted Supabase
 - [2026-08-02] Phase WBS metrics: replaced raw/non-raw material cost lines with a single actual cost total
 - [2026-08-02] Fix: completing last task failed when phase `actual_end_date` (today) preceded phase `start_date` — `sync_phase_status_from_tasks` now clamps to `start_date` / max task actual end; Kanban uses `toastMutationError`
