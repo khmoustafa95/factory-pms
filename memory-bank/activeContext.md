@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Account create Unauthorized** — pass session JWT to `manage-account`, localize API errors, clearer password copy dialog.
+**Dashboard attention + drill-down** — live KPIs, Recharts, phase signals; factories/accounts remain in nav only.
 
 ## Recent changes
 
+- [2026-08-05] Dashboard redesign: attention-first KPIs (blocked/overdue/proposed/deadlines/phase issues); removed factory count + quick-link cards; Recharts donut/bar with click-to-filter drill-down into project table; phase overdue/schedule/budget signals in `useDashboardInsights`/`useDashboardProjects`; i18n ar/en
 - [2026-08-03] Account create: explicit `Authorization` bearer on `manage-account` invoke; clearer edge-function error strings; `toastMutationError` maps Unauthorized/Forbidden/session/email-taken to i18n; GeneratedPasswordDialog has full-width copy button; ProjectFormDialog opens password dialog after PM create
 - [2026-08-03] Re-applied full dialog shell (`dismissOnOutsideClick` default false, `DialogBody`, header/footer layout, close `end-2`) + ProjectFormDialog and all similar form dialogs; Sheet close `end-3`
 - [2026-08-03] Dialog layout pattern applied to all form dialogs: `DialogBody` wraps fields; forms use `flex min-h-0 flex-1 flex-col`
@@ -44,9 +45,8 @@
 
 ## Next steps (concrete)
 
-1. Run `npm run supabase:reset` — seed now injects accounts + 2 factories only (no demo projects)
-2. Smoke-test proposal → approval → WBS → start execution with empty data
-3. Optional later: deviation history table, Excel import
+1. Smoke-test dashboard drill-down with seeded projects (blocked/overdue/phase issues)
+2. Optional later: historical snapshot charts (time-series), deviation history table, Excel import
 
 ## Open questions
 

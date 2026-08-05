@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
-import type { ProjectStatus, TaskStatus } from '@/types/database'
+import type { DurationUnit, ProjectStatus, TaskStatus } from '@/types/database'
 
 export type DashboardStats = {
   factoryCount: number
@@ -21,6 +21,11 @@ export type DashboardInsights = {
   totalTasks: number
   overdueTaskCount: number
   upcomingDueTaskCount: number
+  proposedCount: number
+  overduePhaseCount: number
+  scheduleDeviationPhaseCount: number
+  financialDeviationPhaseCount: number
+  phaseIssueCount: number
   projectStatusCounts: StatusCount<ProjectStatus>
   taskStatusCounts: StatusCount<TaskStatus>
   progressBuckets: Array<{
@@ -35,8 +40,6 @@ export type DashboardInsights = {
     blockedTaskCount: number
   }>
 }
-
-import type { DurationUnit } from '@/types/database'
 
 export type DashboardProjectDetail = {
   id: string
@@ -61,6 +64,9 @@ export type DashboardProjectDetail = {
   inProgressTaskCount: number
   doneTaskCount: number
   blockedTaskCount: number
+  overdueTaskCount: number
+  overduePhaseCount: number
+  hasPhaseIssue: boolean
 }
 
 const PROJECT_STATUSES: ProjectStatus[] = [
@@ -81,6 +87,60 @@ function createCountMap<T extends string>(keys: readonly T[]): StatusCount<T> {
     map[key] = 0
   }
   return map
+}
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function isPhaseOverdue(
+  phase: {
+    status: string
+    end_date: string | null
+  },
+  todayIso: string,
+): boolean {
+  return (
+    phase.status !== 'completed' &&
+    phase.end_date != null &&
+    phase.end_date < todayIso
+  )
+}
+
+function hasScheduleDeviation(
+  phase: {
+    status: string
+    end_date: string | null
+    actual_end_date: string | null
+    schedule_deviation_reason: string | null
+  },
+  todayIso: string,
+): boolean {
+  if (phase.schedule_deviation_reason) {
+    return true
+  }
+  if (
+    phase.actual_end_date &&
+    phase.end_date &&
+    phase.actual_end_date > phase.end_date
+  ) {
+    return true
+  }
+  return isPhaseOverdue(phase, todayIso)
+}
+
+function hasFinancialDeviation(phase: {
+  expected_budget: number
+  actual_budget: number | null
+  financial_deviation_reason: string | null
+}): boolean {
+  if (phase.financial_deviation_reason) {
+    return true
+  }
+  if (phase.actual_budget == null) {
+    return false
+  }
+  return Number(phase.actual_budget) > Number(phase.expected_budget) + 0.009
 }
 
 export function useDashboardStats() {
@@ -127,22 +187,29 @@ export function useDashboardInsights() {
     queryKey: queryKeys.dashboardInsights,
     queryFn: async (): Promise<DashboardInsights> => {
       const supabase = getSupabase()
-      const todayIso = new Date().toISOString().slice(0, 10)
+      const todayIso = todayIsoDate()
       const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         .toISOString()
         .slice(0, 10)
 
-      const [projectsResult, tasksResult, blockedByProjectResult] =
-        await Promise.all([
-          supabase
-            .from('projects')
-            .select('id, title, status, progress_percent'),
-          supabase.from('tasks').select('id, status, due_date'),
-          supabase
-            .from('tasks')
-            .select('project_id, projects(title)')
-            .eq('status', 'blocked'),
-        ])
+      const [
+        projectsResult,
+        tasksResult,
+        blockedByProjectResult,
+        phasesResult,
+      ] = await Promise.all([
+        supabase.from('projects').select('id, title, status, progress_percent'),
+        supabase.from('tasks').select('id, status, due_date'),
+        supabase
+          .from('tasks')
+          .select('project_id, projects(title)')
+          .eq('status', 'blocked'),
+        supabase
+          .from('phases')
+          .select(
+            'id, project_id, status, end_date, actual_end_date, expected_budget, actual_budget, schedule_deviation_reason, financial_deviation_reason',
+          ),
+      ])
 
       if (projectsResult.error) {
         throw projectsResult.error
@@ -152,6 +219,9 @@ export function useDashboardInsights() {
       }
       if (blockedByProjectResult.error) {
         throw blockedByProjectResult.error
+      }
+      if (phasesResult.error) {
+        throw phasesResult.error
       }
 
       const projectStatusCounts = createCountMap(PROJECT_STATUSES)
@@ -243,11 +313,40 @@ export function useDashboardInsights() {
         .sort((left, right) => right.blockedTaskCount - left.blockedTaskCount)
         .slice(0, 5)
 
+      let overduePhaseCount = 0
+      let scheduleDeviationPhaseCount = 0
+      let financialDeviationPhaseCount = 0
+      const phaseIssueIds = new Set<string>()
+
+      for (const phase of phasesResult.data) {
+        const overdue = isPhaseOverdue(phase, todayIso)
+        const schedule = hasScheduleDeviation(phase, todayIso)
+        const financial = hasFinancialDeviation(phase)
+
+        if (overdue) {
+          overduePhaseCount += 1
+        }
+        if (schedule) {
+          scheduleDeviationPhaseCount += 1
+        }
+        if (financial) {
+          financialDeviationPhaseCount += 1
+        }
+        if (overdue || schedule || financial) {
+          phaseIssueIds.add(phase.id)
+        }
+      }
+
       return {
         totalProjects: projectsResult.data.length,
         totalTasks: tasksResult.data.length,
         overdueTaskCount,
         upcomingDueTaskCount,
+        proposedCount: projectStatusCounts.proposed,
+        overduePhaseCount,
+        scheduleDeviationPhaseCount,
+        financialDeviationPhaseCount,
+        phaseIssueCount: phaseIssueIds.size,
         projectStatusCounts,
         taskStatusCounts,
         progressBuckets,
@@ -284,15 +383,21 @@ export function useDashboardProjects() {
     queryKey: queryKeys.dashboardProjects,
     queryFn: async (): Promise<DashboardProjectDetail[]> => {
       const supabase = getSupabase()
+      const todayIso = todayIsoDate()
 
-      const [projectsResult, tasksResult] = await Promise.all([
+      const [projectsResult, tasksResult, phasesResult] = await Promise.all([
         supabase
           .from('projects')
           .select(
             'id, title, status, progress_percent, budget, currency, proposed_start_date, proposed_end_date, proposed_duration_value, proposed_duration_unit, actual_start_date, actual_end_date, factory_id, factories(id, name, code)',
           )
           .order('updated_at', { ascending: false }),
-        supabase.from('tasks').select('project_id, status'),
+        supabase.from('tasks').select('project_id, status, due_date'),
+        supabase
+          .from('phases')
+          .select(
+            'id, project_id, status, end_date, actual_end_date, expected_budget, actual_budget, schedule_deviation_reason, financial_deviation_reason',
+          ),
       ])
 
       if (projectsResult.error) {
@@ -303,6 +408,10 @@ export function useDashboardProjects() {
         throw tasksResult.error
       }
 
+      if (phasesResult.error) {
+        throw phasesResult.error
+      }
+
       const taskCountsByProject = new Map<
         string,
         {
@@ -311,6 +420,7 @@ export function useDashboardProjects() {
           inProgressTaskCount: number
           doneTaskCount: number
           blockedTaskCount: number
+          overdueTaskCount: number
         }
       >()
 
@@ -325,6 +435,7 @@ export function useDashboardProjects() {
           inProgressTaskCount: 0,
           doneTaskCount: 0,
           blockedTaskCount: 0,
+          overdueTaskCount: 0,
         }
 
         current.totalTaskCount += 1
@@ -340,12 +451,47 @@ export function useDashboardProjects() {
         if (row.status === 'blocked') {
           current.blockedTaskCount += 1
         }
+        if (row.due_date && row.status !== 'done' && row.due_date < todayIso) {
+          current.overdueTaskCount += 1
+        }
 
         taskCountsByProject.set(row.project_id, current)
       }
 
+      const phaseSignalsByProject = new Map<
+        string,
+        { overduePhaseCount: number; hasPhaseIssue: boolean }
+      >()
+
+      for (const phase of phasesResult.data) {
+        if (!phase.project_id) {
+          continue
+        }
+
+        const current = phaseSignalsByProject.get(phase.project_id) ?? {
+          overduePhaseCount: 0,
+          hasPhaseIssue: false,
+        }
+
+        const overdue = isPhaseOverdue(phase, todayIso)
+        const issue =
+          overdue ||
+          hasScheduleDeviation(phase, todayIso) ||
+          hasFinancialDeviation(phase)
+
+        if (overdue) {
+          current.overduePhaseCount += 1
+        }
+        if (issue) {
+          current.hasPhaseIssue = true
+        }
+
+        phaseSignalsByProject.set(phase.project_id, current)
+      }
+
       return projectsResult.data.map((project) => {
         const taskCounts = taskCountsByProject.get(project.id)
+        const phaseSignals = phaseSignalsByProject.get(project.id)
         return {
           id: project.id,
           title: project.title,
@@ -367,6 +513,9 @@ export function useDashboardProjects() {
           inProgressTaskCount: taskCounts?.inProgressTaskCount ?? 0,
           doneTaskCount: taskCounts?.doneTaskCount ?? 0,
           blockedTaskCount: taskCounts?.blockedTaskCount ?? 0,
+          overdueTaskCount: taskCounts?.overdueTaskCount ?? 0,
+          overduePhaseCount: phaseSignals?.overduePhaseCount ?? 0,
+          hasPhaseIssue: phaseSignals?.hasPhaseIssue ?? false,
         }
       })
     },

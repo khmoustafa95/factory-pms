@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-08-05 — Dashboard prioritizes attention signals (blocked/overdue/proposals/phase issues) over static asset counts; Recharts + in-page filter drill-down instead of embedding Power BI — fits SPA RLS scope and current (non-historical) data model.
 - 2026-08-03 — Auth `isLoading` only for bootstrap / user change; `TOKEN_REFRESHED` and same-user `INITIAL_SESSION` keep the UI mounted — tab focus must not look like a re-login.
 - 2026-08-02 — Task completion on Kanban/form: require `actual_end_date` + `actual_cost`; overrun vs `due_date` / `expected_cost` requires schedule/financial deviation reasons (new task columns).
 

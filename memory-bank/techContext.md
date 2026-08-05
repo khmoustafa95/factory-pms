@@ -11,6 +11,7 @@
 | Forms        | `react-hook-form` + `zod` + `@hookform/resolvers`         |
 | Dates        | `date-fns`                                                |
 | Icons        | `lucide-react`                                            |
+| Charts       | `recharts` (dashboard donut/bar + drill-down filters)     |
 | Toasts       | `sonner` + `next-themes`                                  |
 | Backend      | Supabase JS (`@supabase/supabase-js`)                     |
 | Tooling      | ESLint, Prettier, Husky + lint-staged, `shadcn` CLI (dev) |

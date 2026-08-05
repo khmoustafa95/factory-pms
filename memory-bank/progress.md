@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Dashboard attention KPIs + Recharts + click-to-filter drill-down + phase health signals
 - [x] Dialog layout: `DialogBody` + flex form pattern across all form/content dialogs (except already-migrated `ProjectFormDialog`)
 - [x] Staging seed: `pgcrypto` + `extensions.crypt`/`gen_salt` for `db reset --linked`
 - [x] WBS readiness + start-execution UX: granular `canManagePhases`/`canManageTasks`/`canStartExecution`, `getExecutionReadiness()` with tooltip reasons, phase/task remaining-budget capping, RPC error → i18n mapping, FM dashboard KPI cards (draft/proposed/in-progress/overdue)
@@ -54,6 +55,14 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-05
+
+- Dashboard redesign: attention-first KPIs (blocked, overdue, proposals, deadlines, phase issues); removed factory-count hero KPI and quick-nav cards
+- Added `recharts` donut/bar charts with click-to-filter drill-down into the project details table; bar click opens project detail
+- `useDashboardInsights`/`useDashboardProjects` include phase overdue/schedule/budget deviation signals and per-project overdue task/phase flags
+- New UI: `DashboardKpiCard`, `StatusDonutChart`, `BlockedProjectsBarChart`; i18n ar/en updated
+- Validation: `npm run verify` + `npm run build` passed
 
 ### 2026-08-03
 
