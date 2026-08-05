@@ -2,7 +2,8 @@
 
 ## Done
 
-- [x] Dialog UX: dismiss-on-outside default off, RTL close button, fixed header/footer + `DialogBody` scroll region (all form dialogs)
+- [x] Dialog layout: `DialogBody` + flex form pattern across all form/content dialogs (except already-migrated `ProjectFormDialog`)
+- [x] Staging seed: `pgcrypto` + `extensions.crypt`/`gen_salt` for `db reset --linked`
 - [x] WBS readiness + start-execution UX: granular `canManagePhases`/`canManageTasks`/`canStartExecution`, `getExecutionReadiness()` with tooltip reasons, phase/task remaining-budget capping, RPC error → i18n mapping, FM dashboard KPI cards (draft/proposed/in-progress/overdue)
 - [x] Field tracking: phase budget/deviations/problems + task weight/duration/cost/progress (Excel-aligned rollups)
 - [x] Collapsible sidebar shell (brand header, icon collapse, RTL, mobile sheet)
@@ -54,9 +55,13 @@
 
 ## Changelog
 
-### 2026-08-03 (session 62)
+### 2026-08-03
 
-- Dialog UX: no outside-click dismiss by default; RTL close (`end-*`); `DialogBody` + fixed header/footer on form dialogs app-wide; Sheet close RTL-aligned
+- Account create Unauthorized: pass user JWT to `manage-account`; localize API/auth errors; password dialog full-width copy button; ProjectFormDialog shows password dialog after PM create
+- Dialog layout pattern: `DialogBody` wraps scrollable content; forms use `flex min-h-0 flex-1 flex-col`; removed redundant `max-h-[90vh] overflow-y-auto` from individual `DialogContent` usages
+- Auth: tab focus no longer flashes «loading session» — skip full-screen `isLoading` for `TOKEN_REFRESHED` / `INITIAL_SESSION` when the same user profile is already loaded
+- Fixed remote staging seed failure (`gen_salt does not exist`): `seed.sql` enables `pgcrypto` and uses `extensions.crypt` / `extensions.gen_salt`
+- Documented troubleshooting in `docs/staging-deployment.md`
 
 ### 2026-08-02 (session 61)
 

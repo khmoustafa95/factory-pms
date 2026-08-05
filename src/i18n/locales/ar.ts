@@ -569,6 +569,11 @@ export const ar = {
     copyPassword: 'نسخ كلمة المرور',
     passwordCopied: 'تم نسخ كلمة المرور',
     passwordCopyFailed: 'تعذر نسخ كلمة المرور',
+    errors: {
+      createForbidden: 'ليست لديك صلاحية لإنشاء هذا الدور أو تعيين هذا المصنع',
+      resetForbidden: 'ليست لديك صلاحية لإعادة تعيين كلمة مرور هذا الحساب',
+      emailTaken: 'هذا البريد الإلكتروني مستخدم بالفعل',
+    },
   },
   settings: {
     title: 'الإعدادات',
@@ -624,6 +629,21 @@ export const ar = {
     generic: 'حدث خطأ ما',
     boundaryTitle: 'حدث خطأ غير متوقع',
     boundaryDescription: 'حدث خطأ غير متوقع. حاول إعادة تحميل الصفحة.',
+    unauthorized: 'غير مصرح — سجّل الدخول من جديد ثم أعد المحاولة',
+    sessionExpired:
+      'انتهت الجلسة أو غير صالحة. سجّل الدخول من جديد ثم أعد المحاولة',
+    forbidden: 'ليست لديك صلاحية لتنفيذ هذا الإجراء',
+    profileNotFound:
+      'لم يُعثر على ملف المستخدم. تأكد أن الحساب مفعّل في النظام',
+    accountInactive: 'حسابك غير نشط. تواصل مع المدير',
+    edgeFunctionUnavailable:
+      'تعذر الوصول لخدمة إدارة الحسابات. تأكد أن دالة manage-account منشورة على Supabase',
+    edgeFunctionFailed:
+      'فشلت خدمة إدارة الحسابات. حاول مرة أخرى أو راجع نشر الدالة',
+    serverMisconfigured: 'إعدادات الخادم غير مكتملة. راجع إعدادات Supabase',
+    missingFields: 'حقول مطلوبة ناقصة',
+    unexpectedResponse: 'استجابة غير متوقعة من الخادم',
+    requestFailed: 'فشل الطلب. تحقق من الاتصال وحاول مرة أخرى',
   },
   validation: {
     nameMin: 'يجب أن يكون الاسم حرفين على الأقل',

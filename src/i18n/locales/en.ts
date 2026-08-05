@@ -587,6 +587,12 @@ export const en = {
     copyPassword: 'Copy password',
     passwordCopied: 'Password copied',
     passwordCopyFailed: 'Unable to copy password',
+    errors: {
+      createForbidden:
+        'You are not allowed to create this role or factory assignment',
+      resetForbidden: 'You are not allowed to reset this account password',
+      emailTaken: 'This email is already registered',
+    },
   },
   settings: {
     title: 'Settings',
@@ -643,6 +649,22 @@ export const en = {
     boundaryTitle: 'Something went wrong',
     boundaryDescription:
       'An unexpected error occurred. Try reloading the page.',
+    unauthorized: 'Unauthorized — sign in again and retry',
+    sessionExpired:
+      'Your session is missing or expired. Sign in again and retry',
+    forbidden: 'You are not allowed to perform this action',
+    profileNotFound:
+      'User profile was not found. Confirm the account exists in the system',
+    accountInactive: 'Your account is inactive. Contact an administrator',
+    edgeFunctionUnavailable:
+      'Account service is unreachable. Confirm the manage-account Edge Function is deployed',
+    edgeFunctionFailed:
+      'Account service failed. Retry or check the Edge Function deployment',
+    serverMisconfigured:
+      'Server is misconfigured. Check Supabase project settings',
+    missingFields: 'Required fields are missing',
+    unexpectedResponse: 'Unexpected response from the server',
+    requestFailed: 'Request failed. Check your connection and retry',
   },
   validation: {
     nameMin: 'Name must be at least 2 characters',

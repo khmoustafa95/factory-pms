@@ -2,11 +2,14 @@
 
 ## Current focus
 
-**Dialog UX polish** — form dialogs no longer dismiss on outside click; RTL-aware close button; fixed header/footer with scrollable body (`DialogBody`).
+**Account create Unauthorized** — pass session JWT to `manage-account`, localize API errors, clearer password copy dialog.
 
 ## Recent changes
 
-- [2026-08-03] Dialog shell: `dismissOnOutsideClick` default false; close button uses `end-2` (left in RTL); added `DialogBody`; form dialogs (project/phase/task/account/factory/etc.) use sticky header+footer; Sheet close uses `end-3`
+- [2026-08-03] Account create: explicit `Authorization` bearer on `manage-account` invoke; clearer edge-function error strings; `toastMutationError` maps Unauthorized/Forbidden/session/email-taken to i18n; GeneratedPasswordDialog has full-width copy button; ProjectFormDialog opens password dialog after PM create
+- [2026-08-03] Re-applied full dialog shell (`dismissOnOutsideClick` default false, `DialogBody`, header/footer layout, close `end-2`) + ProjectFormDialog and all similar form dialogs; Sheet close `end-3`
+- [2026-08-03] Dialog layout pattern applied to all form dialogs: `DialogBody` wraps fields; forms use `flex min-h-0 flex-1 flex-col`
+- [2026-08-03] Fix staging seed: enable `pgcrypto` + use `extensions.crypt` / `extensions.gen_salt` so `db reset --linked` works on hosted Supabase
 - [2026-08-02] Phase WBS metrics: replaced raw/non-raw material cost lines with a single actual cost total
 - [2026-08-02] Fix: completing last task failed when phase `actual_end_date` (today) preceded phase `start_date` — `sync_phase_status_from_tasks` now clamps to `start_date` / max task actual end; Kanban uses `toastMutationError`
 - [2026-08-02] Migration `20260802160000_task_completion_tracking.sql`: `tasks.actual_end_date`, `schedule_deviation_reason`, `financial_deviation_reason`; Kanban opens `TaskCompleteDialog` on done; TaskFormDialog aligned
