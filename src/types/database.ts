@@ -31,6 +31,28 @@ export type EntityType = 'project' | 'phase' | 'task'
 export type FieldHealthStatus =
   'on_track' | 'delayed' | 'over_budget' | 'delayed_and_over_budget'
 
+export type NotificationType =
+  | 'project_proposed'
+  | 'project_approved'
+  | 'project_rejected'
+  | 'project_started'
+  | 'project_paused'
+  | 'project_resumed'
+  | 'project_completed'
+  | 'task_blocked'
+  | 'comment_project'
+  | 'comment_task'
+  | 'comment_mention'
+
+export interface NotificationPayload {
+  projectTitle?: string
+  projectCode?: string
+  taskTitle?: string
+  actorName?: string
+  reason?: string | null
+  preview?: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -564,6 +586,50 @@ export interface Database {
           },
         ]
       }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: string
+          payload: Json
+          link_path: string | null
+          entity_type: string | null
+          entity_id: string | null
+          is_read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: string
+          payload?: Json
+          link_path?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          is_read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: string
+          payload?: Json
+          link_path?: string | null
+          entity_type?: string | null
+          entity_id?: string | null
+          is_read?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -635,8 +701,22 @@ export interface Database {
           p_entity_type: EntityType
           p_entity_id: string
           p_body: string
+          p_mentioned_user_ids?: string[]
         }
         Returns: Database['public']['Tables']['comments']['Row']
+      }
+      list_mentionable_profiles: {
+        Args: { p_project_id: string }
+        Returns: {
+          id: string
+          full_name: string
+          email: string
+          role: UserRole
+        }[]
+      }
+      mark_all_notifications_read: {
+        Args: Record<string, never>
+        Returns: number
       }
     }
     Enums: {
@@ -661,6 +741,8 @@ export type Project = Database['public']['Tables']['projects']['Row']
 export type Phase = Database['public']['Tables']['phases']['Row']
 export type Task = Database['public']['Tables']['tasks']['Row']
 export type Comment = Database['public']['Tables']['comments']['Row']
+export type AppNotification =
+  Database['public']['Tables']['notifications']['Row']
 export type Currency = Database['public']['Tables']['currencies']['Row']
 export type CurrencyInsert =
   Database['public']['Tables']['currencies']['Insert']

@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-08-05 — Comment mentions store `@[Name](user:uuid)` tokens + `comment_mentions` rows validated against `list_mentionable_profiles` (SECURITY DEFINER) so PMs can mention without broad profiles RLS; mention notifications reuse the in-app inbox.
+- 2026-08-05 — In-app notifications stay fully on-prem capable: Postgres rows + Supabase Realtime (or future polling), no FCM/email SaaS; inserts only via SECURITY DEFINER helpers/triggers so the SPA cannot forge inbox spam.
 - 2026-08-05 — Dashboard prioritizes attention signals (blocked/overdue/proposals/phase issues) over static asset counts; Recharts + in-page filter drill-down instead of embedding Power BI — fits SPA RLS scope and current (non-historical) data model.
 - 2026-08-03 — Auth `isLoading` only for bootstrap / user change; `TOKEN_REFRESHED` and same-user `INITIAL_SESSION` keep the UI mounted — tab focus must not look like a re-login.
 - 2026-08-02 — Task completion on Kanban/form: require `actual_end_date` + `actual_cost`; overrun vs `due_date` / `expected_cost` requires schedule/financial deviation reasons (new task columns).
@@ -36,3 +38,4 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 - 2026-07-22 — Shared list/mutation helpers (`list-filters`, `toastMutationError`, `formatFactoryLabel`) over a generic `PaginatedListPage` — incremental DRY without a high-risk layout abstraction; i18n labels live in locale files only.
 - 2026-07-22 — `types/joins.ts` as canonical join-type layer with `fetchPaginatedList` + `joinMappers` — typed selects documented in one place until `supabase gen types` supports nested relations; hooks import from joins instead of inline casts.
 - 2026-07-23 — Local seed provisions Auth users with `app_metadata` and lets `on_auth_user_created` create profiles — avoids ownership errors on `auth.users` and matches production provisioning path.
+- 2026-08-05 — Prefer removing deprecated TS 6 options (`baseUrl`) over `ignoreDeprecations: "6.0"` — the flag is transitional (gone in TS 7) and IDE language services still on 5.x reject `"6.0"` with TS5103.

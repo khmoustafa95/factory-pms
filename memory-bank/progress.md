@@ -2,6 +2,8 @@
 
 ## Done
 
+- [x] In-app notifications (DB + Realtime + bell inbox; no external push)
+- [x] Comment @mentions (autocomplete + mention notifications)
 - [x] Dashboard attention KPIs + Recharts + click-to-filter drill-down + phase health signals
 - [x] Dialog layout: `DialogBody` + flex form pattern across all form/content dialogs (except already-migrated `ProjectFormDialog`)
 - [x] Staging seed: `pgcrypto` + `extensions.crypt`/`gen_salt` for `db reset --linked`
@@ -48,6 +50,7 @@
 
 - [ ] Apply migration to live Supabase project + verify RLS
 - [ ] E2E tests (Playwright)
+- [ ] Orientation-lite / custom project fields (optional TaskFlow ports)
 
 ## Blockers / issues
 
@@ -55,6 +58,23 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-05 (tsconfig)
+
+- Removed deprecated `baseUrl` and transitional `ignoreDeprecations: "6.0"` from `tsconfig.app.json` and root `tsconfig.json`; `@/*` paths remain `./src/*` (relative to config). `npm run typecheck` passed.
+
+### 2026-08-05 (mentions)
+
+- Migration `20260805150000_comment_mentions.sql`: `comment_mentions`, `list_mentionable_profiles`, extended `create_comment` with `p_mentioned_user_ids`, mention → notification trigger
+- UI: `@` autocomplete in `CommentThread`, stored tokens `@[Name](user:uuid)`, highlighted render; i18n ar/en + `comment_mention` inbox copy
+- `npm run verify` passed; migration applied locally
+
+### 2026-08-05 (notifications)
+
+- Migration `20260805140000_in_app_notifications.sql`: `notifications` table, RLS (own rows only), Realtime publication, `create_notification` / director+FM helpers, `mark_all_notifications_read`
+- Events: project status transitions, task blocked, comment insert (proposal discussion + task/escalation)
+- UI: `NotificationBell` sheet in top bar; hooks + Realtime; i18n ar/en; no external push/email services
+- Applied locally via `supabase db push --local`; `npm run verify` passed
 
 ### 2026-08-05
 

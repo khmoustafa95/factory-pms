@@ -2,10 +2,13 @@
 
 ## Current focus
 
-**Dashboard attention + drill-down** — live KPIs, Recharts, phase signals; factories/accounts remain in nav only.
+**Comment @mentions** — autocomplete + mention notifications (builds on in-app inbox).
 
 ## Recent changes
 
+- [2026-08-05] TS 6 tsconfig: removed deprecated `baseUrl` + `ignoreDeprecations: "6.0"` from `tsconfig.app.json` / root `tsconfig.json` (paths already relative; fixes IDE TS5103 when language service is still on 5.x)
+- [2026-08-05] Comment @mentions: `comment_mentions` table, `list_mentionable_profiles`, `create_comment(..., mentioned_ids)`, UI `@` autocomplete + highlighted tokens, `comment_mention` notification type
+- [2026-08-05] In-app notifications: `notifications` table + RLS; server-side events from `transition_project_status`, task-blocked trigger, comment-insert trigger; bell + sheet in `AppLayout`; ar/en copy; Realtime invalidate
 - [2026-08-05] Dashboard redesign: attention-first KPIs (blocked/overdue/proposed/deadlines/phase issues); removed factory count + quick-link cards; Recharts donut/bar with click-to-filter drill-down into project table; phase overdue/schedule/budget signals in `useDashboardInsights`/`useDashboardProjects`; i18n ar/en
 - [2026-08-03] Account create: explicit `Authorization` bearer on `manage-account` invoke; clearer edge-function error strings; `toastMutationError` maps Unauthorized/Forbidden/session/email-taken to i18n; GeneratedPasswordDialog has full-width copy button; ProjectFormDialog opens password dialog after PM create
 - [2026-08-03] Re-applied full dialog shell (`dismissOnOutsideClick` default false, `DialogBody`, header/footer layout, close `end-2`) + ProjectFormDialog and all similar form dialogs; Sheet close `end-3`
@@ -32,7 +35,7 @@
 - [2026-08-02] `phase-metrics.ts` already used `phase.actual_budget` (falls back to summed task `actual_cost`) for financial deviation — confirmed still correct with new field
 - [2026-08-02] `validations.test.ts` updated: `createProjectFormSchema` (removed) → `createSubmitProjectSchema` with `code`/dates/`assigned_pm_id`; `npm run verify` + `npm run build` + `vitest run` (34 tests) all pass
 
-- [2026-08-01] Migration `20260801140000_phase_field_tracking.sql`: task `weight_percent` / `progress_percent` / duration / cost / `cost_category`; phase `expected_budget` / `actual_end_date` / deviation reasons / problem+solution; progress formula uses weighted task progress; phase completion sets `actual_end_date`
+- [2026-08-01] Migration `20260801140000_phase_field_tracking.sql`: task `weight_percent` / `progress_percent` / duration / cost / `cost_category`; phase `expected_budget` / `actual_end_date` / deviation reasons / problem/solution; progress formula uses weighted task progress; phase completion sets `actual_end_date`
 - [2026-08-01] Frontend: `phase-metrics.ts`, updated `progress.ts`, Phase/Task form dialogs, WBS metrics cards, field-health badge on progress overview; seed updated; i18n ar/en
 - [2026-08-01] Task weight DB constraint: reject sum **> 100%** only (exact 100% enforced in UI like phase weights) so single-row edits remain possible
 
@@ -45,9 +48,9 @@
 
 ## Next steps (concrete)
 
-1. Smoke-test dashboard drill-down with seeded projects (blocked/overdue/phase issues)
-2. Optional later: historical snapshot charts (time-series), deviation history table, Excel import
+1. Smoke-test notifications + @mentions across roles (propose → comment with @ → approve → block task)
+2. Optional later: Orientation-lite, custom fields, historical charts, Excel import
 
 ## Open questions
 
-- Hosting target (Vercel vs Netlify)
+- Hosting: company on-prem / self-hosted Supabase (preferred for air-gapped) vs cloud SPA + self-hosted API

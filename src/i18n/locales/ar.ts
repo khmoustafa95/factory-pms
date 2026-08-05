@@ -101,6 +101,63 @@ export const ar = {
     accounts: 'الحسابات',
     settings: 'الإعدادات',
   },
+  notifications: {
+    title: 'الإشعارات',
+    empty: 'لا توجد إشعارات بعد.',
+    markAllRead: 'تعليمليم الكل كمقروء',
+    allCaughtUp: 'لا توجد إشعارات جديدة.',
+    unreadCount: '{{count}} غير مقروء',
+    types: {
+      project_proposed: {
+        title: 'مقترح جديد',
+        body: 'أرسل {{actorName}} «{{projectTitle}}» للمراجعة.',
+      },
+      project_approved: {
+        title: 'تمت الموافقة على المقترح',
+        body: 'وافق {{actorName}} على «{{projectTitle}}».',
+      },
+      project_rejected: {
+        title: 'رُفض المقترح',
+        body: 'رفض {{actorName}} «{{projectTitle}}». {{reason}}',
+      },
+      project_started: {
+        title: 'بدء التنفيذ',
+        body: 'بدأ {{actorName}} تنفيذ «{{projectTitle}}».',
+      },
+      project_paused: {
+        title: 'إيقاف المشروع',
+        body: 'أوقف {{actorName}} «{{projectTitle}}». {{reason}}',
+      },
+      project_resumed: {
+        title: 'استئناف المشروع',
+        body: 'استأنف {{actorName}} «{{projectTitle}}».',
+      },
+      project_completed: {
+        title: 'اكتمال المشروع',
+        body: 'أنهى {{actorName}} «{{projectTitle}}».',
+      },
+      task_blocked: {
+        title: 'مهمة محظورة',
+        body: 'المهمة «{{taskTitle}}» في «{{projectTitle}}» محظورة. {{reason}}',
+      },
+      comment_project: {
+        title: 'تعليق على المشروع',
+        body: '{{actorName}} على «{{projectTitle}}»: {{preview}}',
+      },
+      comment_task: {
+        title: 'تعليق على مهمة',
+        body: '{{actorName}} على «{{taskTitle}}»: {{preview}}',
+      },
+      comment_mention: {
+        title: 'تمت الإشارة إليك',
+        body: 'أشار إليك {{actorName}}: {{preview}}',
+      },
+      unknown: {
+        title: 'إشعار',
+        body: 'لديك تحديث جديد.',
+      },
+    },
+  },
   roles: {
     company_director: 'مدير الشركة',
     factory_manager: 'مدير المصنع',
@@ -517,6 +574,9 @@ export const ar = {
     commentsDescription:
       'نقاشات المشروع والمراحل والمهام بما فيها التنبيهات الحرجة.',
     placeholder: 'اكتب تعليقاً…',
+    placeholderWithMention: 'اكتب تعليقاً… استخدم @ للإشارة إلى شخص',
+    mentionHint: 'اكتب @ للإشارة إلى زميل',
+    mentionSuggestions: 'اقتراحات الإشارة',
     post: 'نشر تعليق',
     posting: 'جاري النشر…',
     empty: 'لا يوجد نشاط بعد. كن أول من يعلّق.',
@@ -736,5 +796,7 @@ export const ar = {
     openMenu: 'فتح قائمة التنقل',
     toggleSidebar: 'طي أو توسيع الشريط الجانبي',
     moveTaskTo: 'نقل المهمة إلى {{status}}',
+    notifications: 'الإشعارات',
+    notificationsUnread: 'الإشعارات، {{count}} غير مقروء',
   },
 } as const

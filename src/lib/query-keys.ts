@@ -37,4 +37,8 @@ export const queryKeys = {
   currencies: ['currencies'] as const,
   factoryProjectManagers: (factoryId: string | null | undefined) =>
     ['factory-project-managers', factoryId] as const,
+  notifications: (userId: string | undefined) =>
+    ['notifications', userId] as const,
+  mentionableProfiles: (projectId: string | undefined) =>
+    ['mentionable-profiles', projectId] as const,
 }

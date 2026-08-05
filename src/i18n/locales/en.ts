@@ -101,6 +101,63 @@ export const en = {
     accounts: 'Accounts',
     settings: 'Settings',
   },
+  notifications: {
+    title: 'Notifications',
+    empty: 'No notifications yet.',
+    markAllRead: 'Mark all read',
+    allCaughtUp: 'You are up to date.',
+    unreadCount: '{{count}} unread',
+    types: {
+      project_proposed: {
+        title: 'New proposal submitted',
+        body: '{{actorName}} submitted «{{projectTitle}}» for review.',
+      },
+      project_approved: {
+        title: 'Proposal approved',
+        body: '{{actorName}} approved «{{projectTitle}}».',
+      },
+      project_rejected: {
+        title: 'Proposal rejected',
+        body: '{{actorName}} rejected «{{projectTitle}}». {{reason}}',
+      },
+      project_started: {
+        title: 'Execution started',
+        body: '{{actorName}} started execution on «{{projectTitle}}».',
+      },
+      project_paused: {
+        title: 'Project paused',
+        body: '{{actorName}} paused «{{projectTitle}}». {{reason}}',
+      },
+      project_resumed: {
+        title: 'Project resumed',
+        body: '{{actorName}} resumed «{{projectTitle}}».',
+      },
+      project_completed: {
+        title: 'Project completed',
+        body: '{{actorName}} marked «{{projectTitle}}» as completed.',
+      },
+      task_blocked: {
+        title: 'Task blocked',
+        body: '«{{taskTitle}}» on «{{projectTitle}}» is blocked. {{reason}}',
+      },
+      comment_project: {
+        title: 'New project comment',
+        body: '{{actorName}} on «{{projectTitle}}»: {{preview}}',
+      },
+      comment_task: {
+        title: 'New task comment',
+        body: '{{actorName}} on «{{taskTitle}}»: {{preview}}',
+      },
+      comment_mention: {
+        title: 'You were mentioned',
+        body: '{{actorName}} mentioned you: {{preview}}',
+      },
+      unknown: {
+        title: 'Notification',
+        body: 'You have a new update.',
+      },
+    },
+  },
   roles: {
     company_director: 'Company Director',
     factory_manager: 'Factory Manager',
@@ -534,6 +591,9 @@ export const en = {
     commentsDescription:
       'Project, phase, and task discussions including critical alerts.',
     placeholder: 'Write a comment…',
+    placeholderWithMention: 'Write a comment… Use @ to mention someone',
+    mentionHint: 'Type @ to mention a teammate',
+    mentionSuggestions: 'Mention suggestions',
     post: 'Post comment',
     posting: 'Posting…',
     empty: 'No activity yet. Be the first to comment.',
@@ -757,5 +817,7 @@ export const en = {
     openMenu: 'Open navigation menu',
     toggleSidebar: 'Toggle sidebar',
     moveTaskTo: 'Move task to {{status}}',
+    notifications: 'Notifications',
+    notificationsUnread: 'Notifications, {{count}} unread',
   },
 } as const

@@ -160,6 +160,7 @@ export function ProjectActivityTab({
           <CommentThread
             entityType="project"
             entityId={projectId}
+            projectId={projectId}
             title={t('activity.onProject')}
             canComment={canComment}
           />

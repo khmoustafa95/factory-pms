@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 import { queryKeys } from '@/lib/query-keys'
 import { joinMappers } from '@/lib/supabase-joins'
+import type { MentionCandidate } from '@/lib/mentions'
 import type { CommentListItem } from '@/types/joins'
 import { COMMENT_LIST_SELECT } from '@/types/joins'
 import type { EntityType, ProjectStatus } from '@/types/database'
@@ -41,7 +42,13 @@ export function useCreateComment(
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ values }: { values: CommentFormValues }) => {
+    mutationFn: async ({
+      values,
+      mentionedUserIds = [],
+    }: {
+      values: CommentFormValues
+      mentionedUserIds?: string[]
+    }) => {
       if (!entityId) {
         throw new Error('Entity is required')
       }
@@ -51,6 +58,7 @@ export function useCreateComment(
         p_entity_type: entityType,
         p_entity_id: entityId,
         p_body: values.body,
+        p_mentioned_user_ids: mentionedUserIds,
       })
 
       if (error) {
@@ -69,6 +77,30 @@ export function useCreateComment(
       await queryClient.invalidateQueries({
         queryKey: queryKeys.projectStatusTransitions(entityId),
       })
+    },
+  })
+}
+
+export function useMentionableProfiles(projectId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.mentionableProfiles(projectId),
+    enabled: Boolean(projectId) && isSupabaseConfigured(),
+    queryFn: async (): Promise<MentionCandidate[]> => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('list_mentionable_profiles', {
+        p_project_id: projectId!,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return (data ?? []).map((row) => ({
+        id: row.id,
+        full_name: row.full_name,
+        email: row.email,
+        role: row.role,
+      }))
     },
   })
 }

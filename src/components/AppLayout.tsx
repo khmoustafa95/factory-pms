@@ -14,6 +14,7 @@ import { NavLink, Outlet, useMatch } from 'react-router-dom'
 import { PageTransition } from '@/components/motion'
 import { AppBrand } from '@/components/AppBrand'
 import { LocaleToggle } from '@/components/LocaleToggle'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
@@ -210,6 +211,7 @@ function AppTopBar() {
         <AppBrand showFullName={false} />
       </span>
       <div className="ms-auto flex items-center gap-1">
+        <NotificationBell />
         <LocaleToggle />
         <ThemeToggle />
       </div>

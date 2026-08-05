@@ -706,6 +706,7 @@ export function ProjectDetailPage() {
                 <CommentThread
                   entityType="project"
                   entityId={projectId}
+                  projectId={projectId}
                   title=""
                   canComment={canCommentOnProposal}
                 />
