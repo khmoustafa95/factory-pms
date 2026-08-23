@@ -670,6 +670,52 @@ export interface Database {
           overdue_task_count: number
         }[]
       }
+      get_dashboard_insights: {
+        Args: Record<string, never>
+        Returns: {
+          total_projects: number
+          total_tasks: number
+          overdue_task_count: number
+          upcoming_due_task_count: number
+          proposed_count: number
+          overdue_phase_count: number
+          schedule_deviation_phase_count: number
+          financial_deviation_phase_count: number
+          phase_issue_count: number
+          project_status_counts: Json
+          task_status_counts: Json
+          progress_buckets: Json
+          top_blocked_projects: Json
+        }[]
+      }
+      get_dashboard_projects: {
+        Args: Record<string, never>
+        Returns: {
+          id: string
+          title: string
+          status: ProjectStatus
+          progress_percent: number
+          budget: number | null
+          currency: string
+          proposed_start_date: string | null
+          proposed_end_date: string | null
+          proposed_duration_value: number | null
+          proposed_duration_unit: DurationUnit | null
+          actual_start_date: string | null
+          actual_end_date: string | null
+          factory_id: string | null
+          factory_name: string | null
+          factory_code: string | null
+          total_task_count: number
+          todo_task_count: number
+          in_progress_task_count: number
+          done_task_count: number
+          blocked_task_count: number
+          overdue_task_count: number
+          overdue_phase_count: number
+          has_phase_issue: boolean
+        }[]
+      }
       get_project_activity: {
         Args: { p_project_id: string }
         Returns: {

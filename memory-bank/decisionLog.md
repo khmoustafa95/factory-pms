@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-08-16 — Dashboard insights/project rows move to `get_dashboard_insights` / `get_dashboard_projects` (`security invoker`) — client-side full-table aggregation silently breaks past PostgREST row caps; SQL aggregates stay RLS-scoped like `get_dashboard_stats`.
+- 2026-08-16 — CI gates PRs with typecheck/lint/test/i18n-parity/build; locale parity is a Vitest leaf-key walk (en↔ar) because `ar as TranslationDictionary` cannot catch missing Arabic keys at compile time.
 - 2026-08-05 — Comment mentions store `@[Name](user:uuid)` tokens + `comment_mentions` rows validated against `list_mentionable_profiles` (SECURITY DEFINER) so PMs can mention without broad profiles RLS; mention notifications reuse the in-app inbox.
 - 2026-08-05 — In-app notifications stay fully on-prem capable: Postgres rows + Supabase Realtime (or future polling), no FCM/email SaaS; inserts only via SECURITY DEFINER helpers/triggers so the SPA cannot forge inbox spam.
 - 2026-08-05 — Dashboard prioritizes attention signals (blocked/overdue/proposals/phase issues) over static asset counts; Recharts + in-page filter drill-down instead of embedding Power BI — fits SPA RLS scope and current (non-historical) data model.

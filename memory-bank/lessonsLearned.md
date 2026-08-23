@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-08-17 — `supabase db push --local` fails if schema_migrations has versions not in `supabase/migrations/` (leftover from discarded WIP). Repair those versions as `reverted` locally; do not pull them into the repo unless the files still exist.
 - 2026-08-03 — Hosted Supabase seed cannot call bare `crypt`/`gen_salt`; enable `pgcrypto` in schema `extensions` and qualify as `extensions.crypt` / `extensions.gen_salt` (local Docker often has them on search_path).
 - 2026-08-02 — Completing the last task can set `phases.actual_end_date` to `current_date`; if that precedes `phases.start_date`, constraint `phases_actual_end_after_start` rejects the task update. Clamp resolved actual end to `start_date` (prefer max task `actual_end_date`).
 - 2026-08-01 — Enforcing exact weight-sum = 100% on every single-row INSERT/UPDATE breaks editing (freeing weight on one task leaves sum < 100 and fails). Prefer DB ceiling (≤ 100) + UI exact-sum warning, or a multi-row RPC/transaction for rebalancing.

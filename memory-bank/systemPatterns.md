@@ -37,6 +37,7 @@ Hierarchy: `factories` → `projects` → `phases` → `tasks` (+ `comments`, at
 - **Tasks:** `weight_percent` (sum 100% per phase in UI), `progress_percent`, expected/actual duration days, expected/actual cost, `cost_category` (`raw_material` | `non_raw_material`).
 - **Progress:** project% = Σ (phase.weight/100 × Σ (task.weight/100 × task.progress)); recalculated by DB trigger.
 - **Field metrics:** actual duration/cost roll up from tasks; schedule/financial deviation computed in `src/lib/phase-metrics.ts`; derived field health on progress overview.
+- **Dashboard:** `get_dashboard_stats`, `get_dashboard_insights`, `get_dashboard_projects` RPCs (`security invoker`); SPA filters explore rows client-side after RPC.
 
 ## Conventions
 

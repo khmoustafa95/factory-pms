@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Scorecard Phase 1: GitHub CI + locale key parity + dashboard insight/project RPCs + attention/explore dashboard split
 - [x] In-app notifications (DB + Realtime + bell inbox; no external push)
 - [x] Comment @mentions (autocomplete + mention notifications)
 - [x] Dashboard attention KPIs + Recharts + click-to-filter drill-down + phase health signals
@@ -48,16 +49,36 @@
 
 ## Backlog
 
-- [ ] Apply migration to live Supabase project + verify RLS
-- [ ] E2E tests (Playwright)
+- [ ] Apply migration to live/staging Supabase project + verify RLS
+- [x] Apply `20260816120000_dashboard_insight_rpcs.sql` locally (`supabase db push --local`)
+- [ ] E2E tests (Playwright) + optional CI job with Supabase
+- [ ] RLS policy snapshot / pgTAP role tests
+- [ ] `app_settings` feature flags for WIP modules
+- [ ] Optional `supabase:seed:demo` rich workflow seed
+- [ ] Client error reporting (Sentry) behind env
+- [ ] Further split `ProjectDetailPage` / `ProjectsPage`; paged `get_dashboard_projects`
 - [ ] Orientation-lite / custom project fields (optional TaskFlow ports)
 
 ## Blockers / issues
 
-- Migration not yet applied to a live Supabase project — UI needs `.env.local` + SQL run
+- Migration not yet applied to a live/staging Supabase project — UI needs `.env.local` + SQL run
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-17 (dashboard RPCs applied locally)
+
+- `npx supabase db push --local` applied `20260816120000_dashboard_insight_rpcs.sql`; `get_dashboard_insights` + `get_dashboard_projects` present
+- Local schema history had leftover `20260805160000` / `20260805170000` (not in repo); repaired as reverted so push could proceed
+- Re-ran `npm run verify`, `npm test` (40), `npm run build` — passed
+
+### 2026-08-16 (scorecard Phase 1)
+
+- CI: `.github/workflows/ci.yml` runs typecheck, lint, test, `check:i18n`, build on PR/push to `main`
+- i18n: `src/i18n/locale-parity.test.ts` + `npm run check:i18n`; `verify` includes parity
+- Dashboard performance: `get_dashboard_insights()` + `get_dashboard_projects()` (`security invoker`); hooks no longer aggregate full table selects in JS
+- Dashboard UX: `DashboardAttentionSection` + `DashboardProjectsPanel`; explore section heading; KPI drill still scrolls/filters explore
+- Validation: `npm run verify`, `npm test` (40), `npm run build` passed
 
 ### 2026-08-05 (tsconfig)
 

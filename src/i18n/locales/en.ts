@@ -248,7 +248,10 @@ export const en = {
     upcomingDeadlines: 'Deadlines in next 7 days',
     attentionTitle: 'Needs attention',
     attentionDescription:
-      'Live signals for blocked work, overdue items, proposals, and phase issues. Click a card to drill into the list below.',
+      'Live signals for blocked work, overdue items, proposals, and phase issues. Click a card to filter the explore list below.',
+    exploreTitle: 'Explore projects',
+    exploreDescription:
+      'Search and filter every project in your scope. KPI and chart clicks land here with filters applied.',
     drillHint: 'Click to filter the project list',
     phaseIssues: 'Phase issues',
     phaseIssuesDescription:
