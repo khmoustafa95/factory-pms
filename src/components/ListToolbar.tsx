@@ -51,8 +51,20 @@ export function ListToolbar({
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder={searchPlaceholder}
-              className="ps-8"
+              className={search ? 'ps-8 pe-8' : 'ps-8'}
             />
+            {search ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="absolute inset-e-1 top-1/2 size-6 -translate-y-1/2 text-muted-foreground"
+                aria-label={t('list.clearSearch')}
+                onClick={() => onSearchChange('')}
+              >
+                <X className="size-3.5" />
+              </Button>
+            ) : null}
           </div>
         </div>
 

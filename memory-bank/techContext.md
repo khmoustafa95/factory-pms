@@ -9,9 +9,10 @@
 | Routing      | react-router-dom v7                                       |
 | Server state | `@tanstack/react-query`                                   |
 | Forms        | `react-hook-form` + `zod` + `@hookform/resolvers`         |
-| Dates        | `date-fns`                                                |
+| Dates        | `date-fns` + lazy `react-day-picker` calendar             |
 | Icons        | `lucide-react`                                            |
 | Charts       | `recharts` (dashboard donut/bar + drill-down filters)     |
+| Command UI   | `cmdk` palette; `@tanstack/react-virtual` for long tables |
 | Toasts       | `sonner` + `next-themes`                                  |
 | Backend      | Supabase JS (`@supabase/supabase-js`)                     |
 | Tooling      | ESLint, Prettier, Husky + lint-staged, `shadcn` CLI (dev) |

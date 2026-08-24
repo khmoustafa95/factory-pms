@@ -1,18 +1,12 @@
 import {
-  AlertTriangle,
-  Building2,
-  ClipboardList,
-  LayoutDashboard,
   LogOut,
   PanelLeft,
   PanelRight,
-  Settings,
-  Users,
-  type LucideIcon,
 } from 'lucide-react'
 import { NavLink, Outlet, useMatch } from 'react-router-dom'
 import { PageTransition } from '@/components/motion'
 import { AppBrand } from '@/components/AppBrand'
+import { CommandPalette } from '@/components/CommandPalette'
 import { LocaleToggle } from '@/components/LocaleToggle'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -39,13 +33,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import { getRoleLabel } from '@/lib/i18n-format'
-
-interface NavItem {
-  to: string
-  label: string
-  icon: LucideIcon
-  end?: boolean
-}
+import { getAppNavItems, type AppNavItem } from '@/lib/nav'
 
 function profileInitials(fullName: string) {
   return (
@@ -58,7 +46,7 @@ function profileInitials(fullName: string) {
   )
 }
 
-function AppSidebarNavItem({ item }: { item: NavItem }) {
+function AppSidebarNavItem({ item }: { item: AppNavItem }) {
   const { dir } = useTranslation()
   const { isMobile, setOpenMobile } = useSidebar()
   const match = useMatch({ path: item.to, end: item.end ?? false })
@@ -91,7 +79,7 @@ function AppSidebarNavItem({ item }: { item: NavItem }) {
   )
 }
 
-function AppSidebar({ navItems }: { navItems: NavItem[] }) {
+function AppSidebar({ navItems }: { navItems: AppNavItem[] }) {
   const { profile, signOut } = useAuth()
   const { t, dir } = useTranslation()
 
@@ -202,7 +190,7 @@ function AppSidebarToggle() {
   )
 }
 
-function AppTopBar() {
+function AppTopBar({ navItems }: { navItems: AppNavItem[] }) {
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/90 px-3 backdrop-blur supports-backdrop-filter:bg-background/75 sm:px-4">
       <AppSidebarToggle />
@@ -211,6 +199,7 @@ function AppTopBar() {
         <AppBrand showFullName={false} />
       </span>
       <div className="ms-auto flex items-center gap-1">
+        <CommandPalette navItems={navItems} />
         <NotificationBell />
         <LocaleToggle />
         <ThemeToggle />
@@ -225,24 +214,11 @@ export function AppLayout() {
   const isDirector = isCompanyDirector(profile?.role)
   const canManageAccounts = isDirector || isFactoryManager(profile?.role)
 
-  const navItems: NavItem[] = [
-    { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard, end: true },
-    { to: '/projects', label: t('nav.projects'), icon: ClipboardList },
-    { to: '/escalations', label: t('nav.escalations'), icon: AlertTriangle },
-    ...(canManageAccounts
-      ? [{ to: '/accounts', label: t('nav.accounts'), icon: Users }]
-      : []),
-    ...(isDirector
-      ? [
-          {
-            to: '/factories',
-            label: t('nav.factories'),
-            icon: Building2,
-          },
-        ]
-      : []),
-    { to: '/settings', label: t('nav.settings'), icon: Settings },
-  ]
+  const navItems = getAppNavItems({
+    t,
+    isDirector,
+    canManageAccounts,
+  })
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -257,7 +233,7 @@ export function AppLayout() {
         <AppSidebar navItems={navItems} />
 
         <SidebarInset dir={dir} className="bg-background">
-          <AppTopBar />
+          <AppTopBar navItems={navItems} />
 
           <div
             id="main-content"

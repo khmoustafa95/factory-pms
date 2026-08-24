@@ -4,6 +4,9 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-08-24 — Command palette mounts `DialogContent` only while open — skip exit-animation Presence so overlay cannot stick when CSS animations are paused (hidden tab / reduced motion).
+- 2026-08-24 — Reimplement TaskFlow UX/perf ideas on factory-pms primitives (shadcn, `@/`, ar/en, RLS) instead of copying `@hypatia-ui` / `@the-factory-*` — those packages pull streams, Mongo `_id`, lodash/`any`, Capacitor, and a second design system.
+- 2026-08-24 — Spreadsheet “Excel export” is UTF-8 BOM CSV (`downloadSpreadsheet`) rather than `exceljs`/`xlsx` — Arabic-safe in Excel, no extra Node/browser bundle, dynamic import not required.
 - 2026-08-16 — Dashboard insights/project rows move to `get_dashboard_insights` / `get_dashboard_projects` (`security invoker`) — client-side full-table aggregation silently breaks past PostgREST row caps; SQL aggregates stay RLS-scoped like `get_dashboard_stats`.
 - 2026-08-16 — CI gates PRs with typecheck/lint/test/i18n-parity/build; locale parity is a Vitest leaf-key walk (en↔ar) because `ar as TranslationDictionary` cannot catch missing Arabic keys at compile time.
 - 2026-08-05 — Comment mentions store `@[Name](user:uuid)` tokens + `comment_mentions` rows validated against `list_mentionable_profiles` (SECURITY DEFINER) so PMs can mention without broad profiles RLS; mention notifications reuse the in-app inbox.

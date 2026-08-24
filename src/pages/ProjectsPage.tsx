@@ -1,4 +1,4 @@
-import { Check, Eye, Layers, Lock, Plus, Send, X } from 'lucide-react'
+import { Check, Download, Eye, Layers, Lock, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -53,6 +53,8 @@ import {
 } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { toastMutationError } from '@/lib/mutation-error'
+import { downloadSpreadsheet } from '@/lib/export-spreadsheet'
+import { formatProgress } from '@/lib/progress'
 import {
   canApproveAsDirector,
   canEditProjectDetails,
@@ -121,6 +123,55 @@ export function ProjectsPage() {
   const isManager = isFactoryManager(profile?.role)
   const canManageProposals = isManager && Boolean(profile?.factory_id)
   const notAvailable = t('common.notAvailable')
+
+  const handleExport = () => {
+    if (projects.length === 0) {
+      toast.error(t('list.exportEmpty'))
+      return
+    }
+
+    try {
+      downloadSpreadsheet(
+        `projects-${new Date().toISOString().slice(0, 10)}`,
+        [
+          { header: t('common.code'), value: (row) => row.code },
+          { header: t('common.title'), value: (row) => row.title },
+          {
+            header: t('common.factory'),
+            value: (row) =>
+              row.factories ? formatFactoryLabel(row.factories) : '',
+          },
+          {
+            header: t('common.status'),
+            value: (row) => getProjectStatusLabel(t, row.status),
+          },
+          {
+            header: t('common.progress'),
+            value: (row) => formatProgress(row.progress_percent),
+          },
+          {
+            header: t('common.budget'),
+            value: (row) =>
+              formatLocalizedBudget(
+                row.budget,
+                row.currency,
+                locale,
+                notAvailable,
+              ),
+          },
+          {
+            header: t('common.timeline'),
+            value: (row) =>
+              formatProjectSchedule(row, locale, t, notAvailable),
+          },
+        ],
+        projects,
+      )
+      toast.success(t('list.exported'))
+    } catch {
+      toast.error(t('list.exportFailed'))
+    }
+  }
 
   const openCreate = () => {
     setEditingProject(null)
@@ -520,12 +571,22 @@ export function ProjectsPage() {
                 : t('projects.pmDescription')
           }
           actions={
-            canManageProposals ? (
-              <Button onClick={openCreate}>
-                <Plus className="size-4" />
-                {t('common.newProposal')}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleExport}
+              >
+                <Download className="size-4" />
+                {t('list.exportExcel')}
               </Button>
-            ) : undefined
+              {canManageProposals ? (
+                <Button onClick={openCreate}>
+                  <Plus className="size-4" />
+                  {t('common.newProposal')}
+                </Button>
+              ) : null}
+            </div>
           }
         />
       }

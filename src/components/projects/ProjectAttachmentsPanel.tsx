@@ -1,6 +1,8 @@
-import { Download, FileText, Paperclip, Trash2, Upload } from 'lucide-react'
-import { useRef, useState, type ChangeEvent } from 'react'
+import { Download, Paperclip, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
+import { FileDropzone } from '@/components/files/FileDropzone'
+import { FileTypeIcon } from '@/components/files/FileTypeIcon'
 import { QueryState } from '@/components/QueryState'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +15,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import {
+  ATTACHMENT_ACCEPT,
   createSignedAttachmentUrl,
   isAllowedAttachment,
   useDeleteProjectAttachment,
@@ -50,7 +53,6 @@ export function ProjectAttachmentsPanel({
 }: ProjectAttachmentsPanelProps) {
   const { t, locale } = useTranslation()
   const { user } = useAuth()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const {
     data: attachments = [],
@@ -62,10 +64,7 @@ export function ProjectAttachmentsPanel({
   const uploadAttachments = useUploadProjectAttachments(projectId)
   const deleteAttachment = useDeleteProjectAttachment(projectId)
 
-  const handleFilesSelected = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? [])
-    event.target.value = ''
-
+  const handleFiles = async (files: File[]) => {
     if (files.length === 0 || !user?.id) {
       return
     }
@@ -110,42 +109,29 @@ export function ProjectAttachmentsPanel({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
-        <div className="space-y-1.5">
-          <CardTitle className="flex items-center gap-2">
-            <Paperclip className="size-4" />
-            {t('projects.attachments.title')}
-          </CardTitle>
-          <CardDescription>
-            {t('projects.attachments.description')}
-          </CardDescription>
-        </div>
-        {canManage ? (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              multiple
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.csv,.xls,.xlsx,.doc,.docx,.txt"
-              onChange={(event) => void handleFilesSelected(event)}
-            />
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={uploadAttachments.isPending}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload className="size-4" />
-              {uploadAttachments.isPending
-                ? t('common.saving')
-                : t('projects.attachments.upload')}
-            </Button>
-          </>
-        ) : null}
+      <CardHeader className="space-y-1.5">
+        <CardTitle className="flex items-center gap-2">
+          <Paperclip className="size-4" />
+          {t('projects.attachments.title')}
+        </CardTitle>
+        <CardDescription>
+          {t('projects.attachments.description')}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {canManage ? (
+          <FileDropzone
+            disabled={uploadAttachments.isPending}
+            accept={ATTACHMENT_ACCEPT}
+            onFiles={(files) => void handleFiles(files)}
+            idleLabel={
+              uploadAttachments.isPending
+                ? t('common.saving')
+                : t('projects.attachments.dropHint')
+            }
+            activeLabel={t('projects.attachments.dropActive')}
+          />
+        ) : null}
         <QueryState
           isLoading={isLoading}
           error={error}
@@ -166,7 +152,12 @@ export function ProjectAttachmentsPanel({
                   className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
                 >
                   <div className="flex min-w-0 items-start gap-2">
-                    <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    <FileTypeIcon
+                      nameOrType={
+                        attachment.mime_type || attachment.file_name
+                      }
+                      className="mt-0.5"
+                    />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">
                         {attachment.file_name}

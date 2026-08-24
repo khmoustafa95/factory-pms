@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
@@ -65,6 +65,36 @@ export function useFactoryProjectManagers(
         .eq('role', 'project_manager')
         .eq('is_active', true)
         .order('full_name', { ascending: true })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+  })
+}
+
+export type CommandProjectHit = {
+  id: string
+  title: string
+  status: ProjectStatus
+}
+
+export function useCommandProjectSearch(search: string, enabled: boolean) {
+  const pattern = buildIlikePattern(search)
+
+  return useQuery({
+    queryKey: queryKeys.commandProjects(search.trim()),
+    enabled: enabled && Boolean(pattern) && isSupabaseConfigured(),
+    queryFn: async (): Promise<CommandProjectHit[]> => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase
+        .from('projects')
+        .select('id, title, status')
+        .or(`title.ilike.${pattern},description.ilike.${pattern}`)
+        .order('updated_at', { ascending: false })
+        .limit(8)
 
       if (error) {
         throw error

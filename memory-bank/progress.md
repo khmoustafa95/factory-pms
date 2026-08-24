@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] TaskFlow ports wave 1–2: debounce, virtual dashboard table, dropzone/file icons, command palette, CSV Excel export, lazy date picker
 - [x] Scorecard Phase 1: GitHub CI + locale key parity + dashboard insight/project RPCs + attention/explore dashboard split
 - [x] In-app notifications (DB + Realtime + bell inbox; no external push)
 - [x] Comment @mentions (autocomplete + mention notifications)
@@ -57,7 +58,7 @@
 - [ ] Optional `supabase:seed:demo` rich workflow seed
 - [ ] Client error reporting (Sentry) behind env
 - [ ] Further split `ProjectDetailPage` / `ProjectsPage`; paged `get_dashboard_projects`
-- [ ] Orientation-lite / custom project fields (optional TaskFlow ports)
+- [ ] Orientation-lite / custom project fields / Excel **import** wizard (optional TaskFlow ports; export is done)
 
 ## Blockers / issues
 
@@ -65,6 +66,19 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-24 (TaskFlow-inspired UX/perf ports)
+
+- Debounced search via `useDebouncedValue` (dashboard explore + existing list queries); search-clear is immediate
+- Dashboard project table virtualized with `@tanstack/react-virtual`
+- Attachment UX: drag-and-drop zone + lucide file-type icons (proposal picker + project attachments)
+- Command palette (`Ctrl+K`) for navigation + project title search
+- Excel-compatible CSV export (UTF-8 BOM) on dashboard explore and projects list
+- Lazy calendar date picker (react-day-picker code-split) on project/phase/task date fields
+- Did **not** clone `@hypatia-ui` / factory-utils packages; skipped Excel import wizard, custom fields, Mina Scheduler
+- Browser: director palette → Projects (unmounts on select); FM New proposal: calendar select `15 Aug 2026`, dropzone lists `budget.xlsx`; Export Excel visible (download not clicked)
+- Follow-up fixes: command palette content only mounts while open; Dialog `onFocusOutside` respects `dismissOnOutsideClick`; removed pathname `setState`-in-effect
+- Validation: `npm run verify` + `npm test` (44) passed
 
 ### 2026-08-17 (dashboard RPCs applied locally)
 

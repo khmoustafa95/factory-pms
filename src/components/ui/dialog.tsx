@@ -53,6 +53,7 @@ function DialogContent({
   showCloseButton = true,
   dismissOnOutsideClick = false,
   onPointerDownOutside,
+  onFocusOutside,
   onInteractOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
@@ -75,6 +76,12 @@ function DialogContent({
             event.preventDefault()
           }
           onPointerDownOutside?.(event)
+        }}
+        onFocusOutside={(event) => {
+          if (!dismissOnOutsideClick) {
+            event.preventDefault()
+          }
+          onFocusOutside?.(event)
         }}
         onInteractOutside={(event) => {
           if (!dismissOnOutsideClick) {

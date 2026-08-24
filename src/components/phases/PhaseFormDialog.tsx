@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
+import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -247,24 +248,24 @@ export function PhaseFormDialog({
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="phase-start">{t('wbs.startDate')}</Label>
-                <Input
+                <DatePickerField
                   id="phase-start"
-                  type="date"
+                  control={form.control}
+                  name="start_date"
                   min={schedule.start ?? undefined}
                   max={schedule.end ?? undefined}
-                  {...form.register('start_date')}
                 />
                 <FormFieldError error={form.formState.errors.start_date} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phase-end">{t('wbs.endDate')}</Label>
-                <Input
+                <DatePickerField
                   id="phase-end"
-                  type="date"
+                  control={form.control}
+                  name="end_date"
                   min={schedule.start ?? undefined}
                   max={schedule.end ?? undefined}
-                  {...form.register('end_date')}
                 />
                 <FormFieldError error={form.formState.errors.end_date} />
               </div>
@@ -277,10 +278,11 @@ export function PhaseFormDialog({
                   <Label htmlFor="phase-actual-end">
                     {t('wbs.actualEndDate')}
                   </Label>
-                  <Input
+                  <DatePickerField
                     id="phase-actual-end"
-                    type="date"
-                    {...form.register('actual_end_date')}
+                    control={form.control}
+                    name="actual_end_date"
+                    allowClear
                   />
                   <FormFieldError
                     error={form.formState.errors.actual_end_date}

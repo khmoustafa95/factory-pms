@@ -14,11 +14,8 @@ import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
-import {
-  useDashboardInsights,
-  useDashboardProjects,
-  useDashboardStats,
-} from '@/hooks/useDashboard'
+import { useDashboardInsights, useDashboardProjects, useDashboardStats } from '@/hooks/useDashboard'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import {
@@ -60,6 +57,7 @@ export function DashboardPage() {
   } = useDashboardProjects()
 
   const [projectSearch, setProjectSearch] = useState('')
+  const debouncedProjectSearch = useDebouncedValue(projectSearch, 300)
   const [statusFilter, setStatusFilter] = useState<'all' | ProjectStatus>('all')
   const [factoryFilter, setFactoryFilter] = useState('all')
   const [progressFilter, setProgressFilter] = useState<ProgressFilter>('all')
@@ -173,7 +171,7 @@ export function DashboardPage() {
   }
 
   const filteredProjects = useMemo(() => {
-    const normalizedSearch = projectSearch.trim().toLowerCase()
+    const normalizedSearch = debouncedProjectSearch.trim().toLowerCase()
 
     return dashboardProjects.filter((project) => {
       if (statusFilter !== 'all' && project.status !== statusFilter) {
@@ -255,7 +253,7 @@ export function DashboardPage() {
     overdueFilter,
     phaseIssueFilter,
     progressFilter,
-    projectSearch,
+    debouncedProjectSearch,
     statusFilter,
     taskActivityFilter,
   ])

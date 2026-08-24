@@ -4,6 +4,9 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-08-24 — Portaled DatePicker inside Dialog closes the parent unless `onFocusOutside` is prevented when `dismissOnOutsideClick` is false; command palette should unmount `DialogContent` while closed so a paused exit animation cannot leave a blocking overlay.
+- 2026-08-24 — `useDebouncedValue` cannot `setState` synchronously in an effect (`react-hooks/set-state-in-effect`); flush empty search by returning the live value and delaying only non-empty updates.
+- 2026-08-24 — TanStack Virtual’s `useVirtualizer()` trips `react-hooks/incompatible-library` under the React Compiler ESLint plugin — disable on that call site rather than wrapping in extra memo.
 - 2026-08-17 — `supabase db push --local` fails if schema_migrations has versions not in `supabase/migrations/` (leftover from discarded WIP). Repair those versions as `reverted` locally; do not pull them into the repo unless the files still exist.
 - 2026-08-03 — Hosted Supabase seed cannot call bare `crypt`/`gen_salt`; enable `pgcrypto` in schema `extensions` and qualify as `extensions.crypt` / `extensions.gen_salt` (local Docker often has them on search_path).
 - 2026-08-02 — Completing the last task can set `phases.actual_end_date` to `current_date`; if that precedes `phases.start_date`, constraint `phases_actual_end_after_start` rejects the task update. Clamp resolved actual end to `start_date` (prefer max task `actual_end_date`).

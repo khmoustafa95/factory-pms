@@ -7,7 +7,9 @@ export type ProjectAttachment =
   Database['public']['Tables']['project_attachments']['Row']
 
 const PROJECT_ATTACHMENTS_BUCKET = 'project-attachments'
-const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+export const ATTACHMENT_ACCEPT =
+  '.pdf,.png,.jpg,.jpeg,.webp,.csv,.xls,.xlsx,.doc,.docx,.txt'
 
 const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',

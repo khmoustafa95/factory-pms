@@ -14,7 +14,10 @@ src/
 - Path alias: `@/` → `src/` (root `tsconfig.json` + `tsconfig.app.json` + Vite)
 - Routing: React Router in `App.tsx`
 - App providers in `main.tsx`: `QueryClientProvider` → `ThemeProvider` → `BrowserRouter` + `Toaster`
-- App is still an early shell; most PRD features are not implemented yet
+- Command palette (`Ctrl+K`) in `AppLayout` searches nav + project titles (RLS-scoped)
+- Dashboard explore table is virtualized (`@tanstack/react-virtual`); list search is debounced (`useDebouncedValue`)
+- Date fields use a lazy `DatePicker` (react-day-picker code-split); attachments use dropzone + file-type icons
+- Spreadsheet export is UTF-8 BOM CSV (`downloadSpreadsheet`) opened by Excel — not a TaskFlow package clone
 
 ## Supabase access
 

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { DEFAULT_PAGE_SIZE } from '@/lib/list-query'
 
 export function useListQueryState<T extends Record<string, string>>(
@@ -6,24 +7,19 @@ export function useListQueryState<T extends Record<string, string>>(
 ) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
-  const [search, setSearchState] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebouncedValue(search, 300)
   const [filters, setFilters] = useState(initialFilters)
+  const skipPageReset = useRef(true)
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setDebouncedSearch(search)
-      setPage(1)
-    }, 300)
-
-    return () => {
-      window.clearTimeout(timer)
+    if (skipPageReset.current) {
+      skipPageReset.current = false
+      return
     }
-  }, [search])
 
-  const setSearch = (value: string) => {
-    setSearchState(value)
-  }
+    setPage(1)
+  }, [debouncedSearch])
 
   const setFilter = <K extends keyof T>(key: K, value: T[K]) => {
     setPage(1)
@@ -36,8 +32,8 @@ export function useListQueryState<T extends Record<string, string>>(
   }
 
   const clearAll = () => {
-    setSearchState('')
-    setDebouncedSearch('')
+    skipPageReset.current = true
+    setSearch('')
     setFilters(initialFilters)
     setPage(1)
   }

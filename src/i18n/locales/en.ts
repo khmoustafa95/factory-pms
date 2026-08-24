@@ -86,6 +86,11 @@ export const en = {
     activeOnly: 'Active only',
     inactiveOnly: 'Inactive only',
     clearFilters: 'Clear filters',
+    clearSearch: 'Clear search',
+    exportExcel: 'Export Excel',
+    exported: 'Spreadsheet downloaded',
+    exportFailed: 'Unable to export spreadsheet',
+    exportEmpty: 'Nothing to export for the current filters.',
     showing: '{{from}}–{{to}} of {{total}}',
     page: 'Page {{page}} of {{totalPages}}',
     rowsPerPage: 'Rows per page',
@@ -100,6 +105,18 @@ export const en = {
     factories: 'Factories',
     accounts: 'Accounts',
     settings: 'Settings',
+  },
+  commandPalette: {
+    title: 'Command palette',
+    placeholder: 'Search pages or projects…',
+    empty: 'No matching pages or projects.',
+    navigation: 'Navigation',
+    projects: 'Projects',
+    hint: 'Ctrl K',
+  },
+  datePicker: {
+    placeholder: 'Pick a date',
+    clear: 'Clear date',
   },
   notifications: {
     title: 'Notifications',
@@ -437,6 +454,8 @@ export const en = {
       loadFailed: 'Failed to load attachments',
       invalidFile:
         'File type or size is not allowed (PDF, Office, CSV, images, or text — max 10 MB)',
+      dropHint: 'Drop files here or click to browse',
+      dropActive: 'Drop files to attach them',
     },
   },
   projectDetail: {
@@ -822,5 +841,6 @@ export const en = {
     moveTaskTo: 'Move task to {{status}}',
     notifications: 'Notifications',
     notificationsUnread: 'Notifications, {{count}} unread',
+    openCommandPalette: 'Open command palette',
   },
 } as const

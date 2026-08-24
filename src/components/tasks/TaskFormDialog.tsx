@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
+import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -230,12 +231,13 @@ export function TaskFormDialog({
 
             <div className="space-y-2">
               <Label htmlFor="task-due-date">{t('wbs.taskDueDate')}</Label>
-              <Input
+              <DatePickerField
                 id="task-due-date"
-                type="date"
+                control={form.control}
+                name="due_date"
                 min={phaseStartDate ?? undefined}
                 max={phaseEndDate ?? undefined}
-                {...form.register('due_date')}
+                allowClear
               />
               <FormFieldError error={form.formState.errors.due_date} />
               <p className="text-xs text-muted-foreground">
@@ -383,10 +385,11 @@ export function TaskFormDialog({
                         <Label htmlFor="task-actual-end">
                           {t('wbs.actualEndDate')}
                         </Label>
-                        <Input
+                        <DatePickerField
                           id="task-actual-end"
-                          type="date"
-                          {...form.register('actual_end_date')}
+                          control={form.control}
+                          name="actual_end_date"
+                          allowClear
                         />
                         <FormFieldError
                           error={form.formState.errors.actual_end_date}

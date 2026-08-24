@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
+import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { todayDateOnly } from '@/lib/date-only'
 import { formatLocalizedDate } from '@/lib/i18n-format'
 import {
   createTaskCompletionSchema,
@@ -37,7 +39,7 @@ interface TaskCompleteDialogProps {
 }
 
 function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10)
+  return todayDateOnly()
 }
 
 export function TaskCompleteDialog({
@@ -142,10 +144,10 @@ export function TaskCompleteDialog({
               <Label htmlFor="complete-actual-end">
                 {t('wbs.actualEndDate')}
               </Label>
-              <Input
+              <DatePickerField
                 id="complete-actual-end"
-                type="date"
-                {...form.register('actual_end_date')}
+                control={form.control}
+                name="actual_end_date"
               />
               <FormFieldError error={form.formState.errors.actual_end_date} />
             </div>

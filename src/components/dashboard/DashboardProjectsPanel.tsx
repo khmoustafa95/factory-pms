@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
+import { Download } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   PROJECT_STATUS_FILTERS,
   type AttentionDrill,
@@ -22,13 +24,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
-  Table,
-  TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { VirtualizedTable } from '@/components/VirtualizedTable'
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { DashboardProjectDetail } from '@/hooks/useDashboard'
 import {
@@ -38,6 +38,7 @@ import {
 } from '@/lib/i18n-format'
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { formatProgress } from '@/lib/progress'
+import { downloadSpreadsheet } from '@/lib/export-spreadsheet'
 import type { ProjectStatus } from '@/types/database'
 
 type FilterOption = { value: string; label: string }
@@ -103,6 +104,102 @@ export function DashboardProjectsPanel({
 }: DashboardProjectsPanelProps) {
   const { t, locale } = useTranslation()
   const notAvailable = t('common.notAvailable')
+  const columnCount = isDirector ? 12 : 11
+
+  const handleExport = () => {
+    if (filteredProjects.length === 0) {
+      toast.error(t('list.exportEmpty'))
+      return
+    }
+
+    try {
+      downloadSpreadsheet(
+        `projects-${new Date().toISOString().slice(0, 10)}`,
+        [
+          { header: t('common.title'), value: (row) => row.title },
+          ...(isDirector
+            ? [
+                {
+                  header: t('common.factory'),
+                  value: (row: DashboardProjectDetail) =>
+                    row.factory ? formatFactoryLabel(row.factory) : '',
+                },
+              ]
+            : []),
+          {
+            header: t('common.status'),
+            value: (row: DashboardProjectDetail) =>
+              getProjectStatusLabel(t, row.status),
+          },
+          {
+            header: t('common.progress'),
+            value: (row: DashboardProjectDetail) =>
+              formatProgress(row.progressPercent),
+          },
+          {
+            header: t('common.budget'),
+            value: (row: DashboardProjectDetail) =>
+              formatLocalizedBudget(
+                row.budget,
+                row.currency,
+                locale,
+                notAvailable,
+              ),
+          },
+          {
+            header: t('common.timeline'),
+            value: (row: DashboardProjectDetail) =>
+              formatProjectSchedule(
+                {
+                  proposed_start_date: row.proposedStartDate,
+                  proposed_end_date: row.proposedEndDate,
+                  proposed_duration_value: row.proposedDurationValue,
+                  proposed_duration_unit: row.proposedDurationUnit,
+                  actual_start_date: row.actualStartDate,
+                  actual_end_date: row.actualEndDate,
+                },
+                locale,
+                t,
+                notAvailable,
+              ),
+          },
+          {
+            header: t('dashboard.tasksDone'),
+            value: (row: DashboardProjectDetail) => row.doneTaskCount,
+          },
+          {
+            header: t('dashboard.tasksInProgress'),
+            value: (row: DashboardProjectDetail) => row.inProgressTaskCount,
+          },
+          {
+            header: t('dashboard.overdueTasks'),
+            value: (row: DashboardProjectDetail) => row.overdueTaskCount,
+          },
+          {
+            header: t('dashboard.blockedTasks'),
+            value: (row: DashboardProjectDetail) => row.blockedTaskCount,
+          },
+          {
+            header: t('dashboard.phaseIssues'),
+            value: (row: DashboardProjectDetail) =>
+              row.hasPhaseIssue
+                ? row.overduePhaseCount > 0
+                  ? String(row.overduePhaseCount)
+                  : t('dashboard.phaseIssueFlag')
+                : '',
+          },
+          {
+            header: t('dashboard.tasksTotal'),
+            value: (row: DashboardProjectDetail) => row.totalTaskCount,
+          },
+        ],
+        filteredProjects,
+      )
+      toast.success(t('list.exported'))
+    } catch {
+      toast.error(t('list.exportFailed'))
+    }
+  }
 
   return (
     <div ref={sectionRef} className="space-y-3 border-t border-border/60 pt-6">
@@ -122,11 +219,22 @@ export function DashboardProjectsPanel({
         isRetrying={isFetching}
       >
         <Card>
-          <CardHeader>
-            <CardTitle>{t('dashboard.projectDetailsTitle')}</CardTitle>
-            <CardDescription>
-              {t('dashboard.projectDetailsDescription')}
-            </CardDescription>
+          <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+            <div className="space-y-1.5">
+              <CardTitle>{t('dashboard.projectDetailsTitle')}</CardTitle>
+              <CardDescription>
+                {t('dashboard.projectDetailsDescription')}
+              </CardDescription>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={handleExport}
+            >
+              <Download className="size-4" />
+              {t('list.exportExcel')}
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {hasActiveFilters ? (
@@ -305,137 +413,137 @@ export function DashboardProjectsPanel({
               ]}
             />
 
-            <div className="rounded-xl border border-border/60">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('common.title')}</TableHead>
-                    {isDirector ? (
-                      <TableHead>{t('common.factory')}</TableHead>
-                    ) : null}
-                    <TableHead>{t('common.status')}</TableHead>
-                    <TableHead>{t('common.progress')}</TableHead>
-                    <TableHead>{t('common.budget')}</TableHead>
-                    <TableHead>{t('common.timeline')}</TableHead>
-                    <TableHead>{t('dashboard.tasksDone')}</TableHead>
-                    <TableHead>{t('dashboard.tasksInProgress')}</TableHead>
-                    <TableHead>{t('dashboard.overdueTasks')}</TableHead>
-                    <TableHead>{t('dashboard.blockedTasks')}</TableHead>
-                    <TableHead>{t('dashboard.phaseIssues')}</TableHead>
-                    <TableHead>{t('dashboard.tasksTotal')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProjects.length ? (
-                    filteredProjects.map((project) => (
-                      <TableRow key={project.id}>
-                        <TableCell className="font-medium">
-                          <Link
-                            className="hover:underline"
-                            to={`/projects/${project.id}`}
-                          >
-                            {project.title}
-                          </Link>
-                        </TableCell>
-                        {isDirector ? (
-                          <TableCell>
-                            {project.factory
-                              ? formatFactoryLabel(project.factory)
-                              : notAvailable}
-                          </TableCell>
-                        ) : null}
-                        <TableCell>
-                          <ProjectStatusBadge status={project.status} />
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {formatProgress(project.progressPercent)}
-                        </TableCell>
-                        <TableCell>
-                          {formatLocalizedBudget(
-                            project.budget,
-                            project.currency,
-                            locale,
-                            notAvailable,
-                          )}
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                          {formatProjectSchedule(
-                            {
-                              proposed_start_date: project.proposedStartDate,
-                              proposed_end_date: project.proposedEndDate,
-                              proposed_duration_value:
-                                project.proposedDurationValue,
-                              proposed_duration_unit:
-                                project.proposedDurationUnit,
-                              actual_start_date: project.actualStartDate,
-                              actual_end_date: project.actualEndDate,
-                            },
-                            locale,
-                            t,
-                            notAvailable,
-                          )}
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {project.doneTaskCount}
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {project.inProgressTaskCount}
-                        </TableCell>
-                        <TableCell>
-                          {project.overdueTaskCount > 0 ? (
-                            <Badge
-                              variant="destructive"
-                              className="tabular-nums"
-                            >
-                              {project.overdueTaskCount}
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">0</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {project.blockedTaskCount > 0 ? (
-                            <Badge
-                              variant="destructive"
-                              className="tabular-nums"
-                            >
-                              {project.blockedTaskCount}
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">0</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {project.hasPhaseIssue ? (
-                            <Badge variant="secondary" className="tabular-nums">
-                              {project.overduePhaseCount > 0
-                                ? project.overduePhaseCount
-                                : t('dashboard.phaseIssueFlag')}
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary">—</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {project.totalTaskCount}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={isDirector ? 12 : 11}
-                        className="py-8 text-center text-muted-foreground"
+            <VirtualizedTable
+              rowCount={filteredProjects.length}
+              colSpan={columnCount}
+              header={
+                <TableRow>
+                  <TableHead>{t('common.title')}</TableHead>
+                  {isDirector ? (
+                    <TableHead>{t('common.factory')}</TableHead>
+                  ) : null}
+                  <TableHead>{t('common.status')}</TableHead>
+                  <TableHead>{t('common.progress')}</TableHead>
+                  <TableHead>{t('common.budget')}</TableHead>
+                  <TableHead>{t('common.timeline')}</TableHead>
+                  <TableHead>{t('dashboard.tasksDone')}</TableHead>
+                  <TableHead>{t('dashboard.tasksInProgress')}</TableHead>
+                  <TableHead>{t('dashboard.overdueTasks')}</TableHead>
+                  <TableHead>{t('dashboard.blockedTasks')}</TableHead>
+                  <TableHead>{t('dashboard.phaseIssues')}</TableHead>
+                  <TableHead>{t('dashboard.tasksTotal')}</TableHead>
+                </TableRow>
+              }
+              empty={
+                <TableRow>
+                  <TableCell
+                    colSpan={columnCount}
+                    className="py-8 text-center text-muted-foreground"
+                  >
+                    {hasActiveFilters
+                      ? t('list.noResults')
+                      : t('dashboard.noProjectDetails')}
+                  </TableCell>
+                </TableRow>
+              }
+              renderRow={(index) => {
+                const project = filteredProjects[index]
+                return (
+                  <>
+                    <TableCell className="font-medium">
+                      <Link
+                        className="hover:underline"
+                        to={`/projects/${project.id}`}
                       >
-                        {hasActiveFilters
-                          ? t('list.noResults')
-                          : t('dashboard.noProjectDetails')}
+                        {project.title}
+                      </Link>
+                    </TableCell>
+                    {isDirector ? (
+                      <TableCell>
+                        {project.factory
+                          ? formatFactoryLabel(project.factory)
+                          : notAvailable}
                       </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ) : null}
+                    <TableCell>
+                      <ProjectStatusBadge status={project.status} />
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {formatProgress(project.progressPercent)}
+                    </TableCell>
+                    <TableCell>
+                      {formatLocalizedBudget(
+                        project.budget,
+                        project.currency,
+                        locale,
+                        notAvailable,
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                      {formatProjectSchedule(
+                        {
+                          proposed_start_date: project.proposedStartDate,
+                          proposed_end_date: project.proposedEndDate,
+                          proposed_duration_value:
+                            project.proposedDurationValue,
+                          proposed_duration_unit:
+                            project.proposedDurationUnit,
+                          actual_start_date: project.actualStartDate,
+                          actual_end_date: project.actualEndDate,
+                        },
+                        locale,
+                        t,
+                        notAvailable,
+                      )}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {project.doneTaskCount}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {project.inProgressTaskCount}
+                    </TableCell>
+                    <TableCell>
+                      {project.overdueTaskCount > 0 ? (
+                        <Badge
+                          variant="destructive"
+                          className="tabular-nums"
+                        >
+                          {project.overdueTaskCount}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">0</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {project.blockedTaskCount > 0 ? (
+                        <Badge
+                          variant="destructive"
+                          className="tabular-nums"
+                        >
+                          {project.blockedTaskCount}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">0</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {project.hasPhaseIssue ? (
+                        <Badge variant="secondary" className="tabular-nums">
+                          {project.overduePhaseCount > 0
+                            ? project.overduePhaseCount
+                            : t('dashboard.phaseIssueFlag')}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">—</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {project.totalTaskCount}
+                    </TableCell>
+                  </>
+                )
+              }}
+            />
           </CardContent>
         </Card>
       </QueryState>

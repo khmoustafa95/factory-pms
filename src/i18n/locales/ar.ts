@@ -86,6 +86,11 @@ export const ar = {
     activeOnly: 'النشط فقط',
     inactiveOnly: 'غير النشط فقط',
     clearFilters: 'مسح الفلاتر',
+    clearSearch: 'مسح البحث',
+    exportExcel: 'تصدير Excel',
+    exported: 'تم تنزيل الجدول',
+    exportFailed: 'تعذر تصدير الجدول',
+    exportEmpty: 'لا توجد بيانات للتصدير وفق الفلاتر الحالية.',
     showing: '{{from}}–{{to}} من {{total}}',
     page: 'صفحة {{page}} من {{totalPages}}',
     rowsPerPage: 'صفوف لكل صفحة',
@@ -100,6 +105,18 @@ export const ar = {
     factories: 'المصانع',
     accounts: 'الحسابات',
     settings: 'الإعدادات',
+  },
+  commandPalette: {
+    title: 'لوحة الأوامر',
+    placeholder: 'ابحث في الصفحات أو المشاريع…',
+    empty: 'لا توجد صفحات أو مشاريع مطابقة.',
+    navigation: 'التنقل',
+    projects: 'المشاريع',
+    hint: 'Ctrl K',
+  },
+  datePicker: {
+    placeholder: 'اختر تاريخاً',
+    clear: 'مسح التاريخ',
   },
   notifications: {
     title: 'الإشعارات',
@@ -424,6 +441,8 @@ export const ar = {
       loadFailed: 'فشل تحميل المرفقات',
       invalidFile:
         'نوع الملف أو حجمه غير مسموح (PDF أو Office أو CSV أو صور أو نص — بحد أقصى 10 ميغابايت)',
+      dropHint: 'أسقط الملفات هنا أو انقر للاختيار',
+      dropActive: 'أفلت الملفات لإرفاقها',
     },
   },
   projectDetail: {
@@ -801,5 +820,6 @@ export const ar = {
     moveTaskTo: 'نقل المهمة إلى {{status}}',
     notifications: 'الإشعارات',
     notificationsUnread: 'الإشعارات، {{count}} غير مقروء',
+    openCommandPalette: 'فتح لوحة الأوامر',
   },
 } as const

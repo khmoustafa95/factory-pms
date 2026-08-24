@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { GeneratedPasswordDialog } from '@/components/accounts/GeneratedPasswordDialog'
+import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
 import { Button } from '@/components/ui/button'
@@ -352,10 +353,11 @@ export function ProjectFormDialog({
                   <Label htmlFor="project-start">
                     {t('projects.proposedStartDate')}
                   </Label>
-                  <Input
+                  <DatePickerField
                     id="project-start"
-                    type="date"
-                    {...form.register('proposed_start_date')}
+                    control={form.control}
+                    name="proposed_start_date"
+                    allowClear
                   />
                   <FormFieldError
                     error={form.formState.errors.proposed_start_date}
@@ -366,10 +368,11 @@ export function ProjectFormDialog({
                   <Label htmlFor="project-end">
                     {t('projects.proposedEndDate')}
                   </Label>
-                  <Input
+                  <DatePickerField
                     id="project-end"
-                    type="date"
-                    {...form.register('proposed_end_date')}
+                    control={form.control}
+                    name="proposed_end_date"
+                    allowClear
                   />
                   <FormFieldError
                     error={form.formState.errors.proposed_end_date}
