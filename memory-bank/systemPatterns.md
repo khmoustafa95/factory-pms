@@ -31,6 +31,7 @@ src/
 
 - `cn()` in `src/lib/utils.ts` (clsx + tailwind-merge)
 - Add components with `npx shadcn add <name>`
+- **Dialogs** (`src/components/ui/dialog.tsx`): flex column, `max-h-[90vh]`, no outside-click dismiss by default (`dismissOnOutsideClick`); use `DialogHeader` / `DialogBody` / `DialogFooter`; close button positioned with `end-*` for RTL. Form dialogs: `<form className="flex min-h-0 flex-1 flex-col">` wrapping body + footer.
 
 ## Domain model (implemented)
 
