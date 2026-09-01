@@ -46,6 +46,7 @@ export type TaskListItem = Task & {
 export type EscalationProject = {
   id: string
   title: string
+  code: string
   factory_id: string
   factories: FactorySummary | null
 }
@@ -88,6 +89,7 @@ export const ESCALATION_SELECT = `
   projects (
     id,
     title,
+    code,
     factory_id,
     factories (name, code)
   ),

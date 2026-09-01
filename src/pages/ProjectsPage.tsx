@@ -47,6 +47,7 @@ import { useFactories } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
 import { formatProjectSchedule } from '@/lib/project-schedule'
+import { buildProjectPath } from '@/lib/project-routes'
 import {
   formatLocalizedBudget,
   formatFactoryLabel,
@@ -498,7 +499,7 @@ export function ProjectsPage() {
     return (
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={`/projects/${project.id}`}>
+          <Link to={buildProjectPath(project)}>
             {canViewWbs(project.status) ? (
               <Layers className="size-4" />
             ) : (
@@ -688,7 +689,7 @@ export function ProjectsPage() {
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-2">
             <p className="font-medium">
-              <Link className="hover:underline" to={`/projects/${project.id}`}>
+              <Link className="hover:underline" to={buildProjectPath(project)}>
                 {project.title}
               </Link>
             </p>
@@ -793,7 +794,7 @@ export function ProjectsPage() {
                   <p className="font-medium">
                     <Link
                       className="hover:underline"
-                      to={`/projects/${project.id}`}
+                      to={buildProjectPath(project)}
                     >
                       {project.title}
                     </Link>

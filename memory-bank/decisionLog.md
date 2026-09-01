@@ -6,7 +6,7 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 - 2026-09-01 — Kanban status moves use `@dnd-kit/core` droppable columns (not `@dnd-kit/sortable`). Task `sort_order` stays WBS/phase order; dragging only changes `status` through the existing mutation + blocked/done dialogs.
 - 2026-09-01 — Financial operations layer: `project_funding_entries`, `project_procurement_items`, `project_staff`, `project_expense_lines` (overhead only — WBS costs stay on phases/tasks); `get_project_financial_snapshot` + list/dashboard rollups; single **Finance & operations** tab (not four tabs, not ERP).
-- 2026-09-01 — UX URL state for tabs/filters uses `useSearchParams` with replace navigation (not React state alone) so dashboard/project detail views are shareable/bookmarkable; invalid tab/filter values fall back to defaults in hook parsers.
+- 2026-09-01 — Canonical project URLs use `/projects/{factory_code}/{project_code}`; UUID kept for internal FKs and legacy links (SPA redirects to canonical path on load). Notification SQL uses `project_detail_path()` for new task/mention events.
 - 2026-09-01 — Destructive actions without dedicated forms use shared `ConfirmDialog` + `useConfirmAction` instead of one-off `window.confirm` — keeps ar/en copy and loading state consistent.
 - 2026-08-24 — Spreadsheet “Excel export” is UTF-8 BOM CSV (`downloadSpreadsheet`) rather than `exceljs`/`xlsx` — Arabic-safe in Excel, no extra Node/browser bundle, dynamic import not required.
 - 2026-08-16 — Dashboard insights/project rows move to `get_dashboard_insights` / `get_dashboard_projects` (`security invoker`) — client-side full-table aggregation silently breaks past PostgREST row caps; SQL aggregates stay RLS-scoped like `get_dashboard_stats`.

@@ -23,6 +23,7 @@ import { useListQueryState } from '@/hooks/useListQueryState'
 import { formatFactoryLabel, formatLocalizedDateTime } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { toastMutationError } from '@/lib/mutation-error'
+import { buildProjectPath } from '@/lib/project-routes'
 import { isCompanyDirector } from '@/lib/roles'
 import {
   formatEscalationBody,
@@ -125,7 +126,7 @@ export function EscalationsPage() {
             {task.projects ? (
               <Link
                 className="font-medium hover:underline"
-                to={`/projects/${task.projects.id}`}
+                to={buildProjectPath(task.projects)}
               >
                 {task.projects.title}
               </Link>
@@ -197,7 +198,7 @@ export function EscalationsPage() {
                 {task.projects ? (
                   <Link
                     className="font-medium hover:underline"
-                    to={`/projects/${task.projects.id}`}
+                    to={buildProjectPath(task.projects)}
                   >
                     {task.projects.title}
                   </Link>

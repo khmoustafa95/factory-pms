@@ -21,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCommandProjectSearch } from '@/hooks/useProjects'
+import { buildProjectPath } from '@/lib/project-routes'
 import { isFactoryManager } from '@/lib/roles'
 import type { AppNavItem } from '@/lib/nav'
 
@@ -156,7 +157,7 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
                       <CommandItem
                         key={project.id}
                         value={`${project.title} ${project.status}`}
-                        onSelect={() => goTo(`/projects/${project.id}`)}
+                        onSelect={() => goTo(buildProjectPath(project))}
                       >
                         <span className="min-w-0 flex-1 truncate">
                           {project.title}

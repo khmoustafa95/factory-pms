@@ -994,6 +994,7 @@ export type Database = {
           blocked_task_count: number
           budget: number
           budget_used_pct: number | null
+          code: string
           currency: string
           done_task_count: number
           factory_code: string

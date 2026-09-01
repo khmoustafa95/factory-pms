@@ -42,6 +42,7 @@ import {
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { formatProgress } from '@/lib/progress'
 import { downloadSpreadsheet } from '@/lib/export-spreadsheet'
+import { buildProjectPath } from '@/lib/project-routes'
 import type { ProjectStatus } from '@/types/database'
 
 type FilterOption = { value: string; label: string }
@@ -533,7 +534,12 @@ export function DashboardProjectsPanel({
                     <TableCell className="font-medium">
                       <Link
                         className="hover:underline"
-                        to={`/projects/${project.id}`}
+                        to={buildProjectPath({
+                          code: project.code,
+                          factories: project.factory
+                            ? { code: project.factory.code }
+                            : null,
+                        })}
                       >
                         {project.title}
                       </Link>

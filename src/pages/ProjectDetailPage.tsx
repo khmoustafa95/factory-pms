@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Check, Lock, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CommentThread } from '@/components/comments/CommentThread'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -80,6 +80,11 @@ import {
 } from '@/lib/project-finance'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
+  buildProjectPath,
+  isCanonicalProjectPath,
+  parseProjectRouteParams,
+} from '@/lib/project-routes'
+import {
   canApproveAsDirector,
   canDiscussProposal,
   canEditProjectDetails,
@@ -110,7 +115,21 @@ import type { TaskFormValues } from '@/lib/validations/task'
 import type { Phase } from '@/types/database'
 
 export function ProjectDetailPage() {
-  const { projectId } = useParams<{ projectId: string }>()
+  const { factoryCode, projectCode, projectRef } = useParams<{
+    factoryCode?: string
+    projectCode?: string
+    projectRef?: string
+  }>()
+  const location = useLocation()
+  const routeRef = useMemo(
+    () =>
+      parseProjectRouteParams({
+        factoryCode,
+        projectCode,
+        projectRef,
+      }),
+    [factoryCode, projectCode, projectRef],
+  )
   const { profile, user } = useAuth()
   const { t, locale, dir } = useTranslation()
   const BackIcon = dir === 'rtl' ? ArrowRight : ArrowLeft
@@ -120,7 +139,8 @@ export function ProjectDetailPage() {
     error: projectError,
     refetch: refetchProject,
     isFetching: isProjectFetching,
-  } = useProject(projectId)
+  } = useProject(routeRef)
+  const projectId = project?.id
 
   const isProposalMode = project
     ? isProposalReviewStatus(project.status)
@@ -461,6 +481,18 @@ export function ProjectDetailPage() {
         editingTask?.id,
       )
     : undefined
+
+  const canonicalRedirect =
+    project &&
+    !isCanonicalProjectPath(location.pathname) &&
+    project.factories?.code
+      ? `${buildProjectPath(project)}${location.search}`
+      : null
+
+  if (canonicalRedirect) {
+    return <Navigate to={canonicalRedirect} replace />
+  }
+
   return (
     <section className="space-y-6">
       <QueryState

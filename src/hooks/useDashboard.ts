@@ -50,6 +50,7 @@ export type DashboardInsights = {
 
 export type DashboardProjectDetail = {
   id: string
+  code: string
   title: string
   status: ProjectStatus
   progressPercent: number
@@ -301,6 +302,7 @@ export function useDashboardProjects() {
 
       return (data ?? []).map((row) => ({
         id: row.id,
+        code: row.code,
         title: row.title,
         status: row.status,
         progressPercent: Number(row.progress_percent),

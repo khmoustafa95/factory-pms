@@ -14,6 +14,7 @@ import { useDashboardFilters } from '@/hooks/useDashboardFilters'
 import { useDashboardInsights, useDashboardProjects, useDashboardStats } from '@/hooks/useDashboard'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
+import { buildProjectPath } from '@/lib/project-routes'
 import {
   isCompanyDirector,
   isFactoryManager,
@@ -257,6 +258,7 @@ export function DashboardPage() {
 
       return (
         project.title.toLowerCase().includes(normalizedSearch) ||
+        project.code.toLowerCase().includes(normalizedSearch) ||
         factoryLabel.includes(normalizedSearch)
       )
     })
@@ -273,6 +275,25 @@ export function DashboardPage() {
     statusFilter,
     taskActivityFilter,
   ])
+
+  const projectPathById = useMemo(
+    () =>
+      new Map(
+        dashboardProjects.map((project) => [
+          project.id,
+          buildProjectPath({
+            code: project.code,
+            factories: project.factory
+              ? { code: project.factory.code }
+              : null,
+          }),
+        ]),
+      ),
+    [dashboardProjects],
+  )
+
+  const resolveBlockedProjectPath = (projectId: string) =>
+    projectPathById.get(projectId) ?? null
 
   return (
     <section className="space-y-6">
@@ -313,6 +334,7 @@ export function DashboardPage() {
             onProjectStatusDrill={applyProjectStatusDrill}
             onTaskStatusDrill={applyTaskStatusDrill}
             onProgressDrill={applyProgressDrill}
+            resolveBlockedProjectPath={resolveBlockedProjectPath}
           />
         ) : null}
       </QueryState>

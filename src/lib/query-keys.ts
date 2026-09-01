@@ -17,6 +17,8 @@ export const queryKeys = {
   projectsPage: (params: ProjectsPageParams) =>
     ['projects', 'page', params] as const,
   project: (projectId: string | undefined) => ['project', projectId] as const,
+  projectRoute: (routeKey: string | undefined) =>
+    ['project-route', routeKey] as const,
   projectAttachments: (projectId: string | undefined) =>
     ['project-attachments', projectId] as const,
   projectFunding: (projectId: string | undefined) =>

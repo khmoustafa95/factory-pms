@@ -2,11 +2,12 @@
 
 ## Current focus
 
-**UX optimizations rollout** — complete. Shared primitives, guarded destructive actions, URL-persisted tabs/filters, mobile finance cards, dashboard/notifications/command-palette polish, form unsaved guards.
+**Human-readable project URLs** — canonical routes use `/projects/:factoryCode/:projectCode`; legacy UUID links redirect automatically.
 
 ## Recent changes
 
-- [2026-09-01] UX rollout: `ConfirmDialog`, `EmptyState`, `FetchingBar`, `ScrollableTabsList`, `ActiveFilterChips`, `PageHeaderActions`, `ProjectApproveDialog`; `useUrlState` / `useDashboardFilters` / `useProjectDetailTab`; confirm before deletes + complete execution; URL tabs (project/settings/dashboard) + notification deep-link tab mapping; finance mobile `FinanceEntryCard`; dashboard chart keyboard legends; notification unread filter + date groups; command palette actions; `useUnsavedFormWarning` on login + comment composer
+- [2026-09-01] Project URLs: `buildProjectPath` + dual routes (`/projects/FAC/PRJ-001` canonical, `/projects/:uuid` legacy redirect); migration `20260901140000_project_code_routes.sql` adds `project_detail_path`, dashboard RPC `code`, notification links for task/mention events
+- [2026-09-01] UX rollout: shared confirm/empty/fetching primitives; URL-synced tabs/filters; guarded deletes; finance mobile cards; dashboard/notifications/command palette polish
 - [2026-09-01] Unsaved-changes guard: `DiscardChangesDialog` + `useFormDialogClose` on all 13 `useFormDialog` form dialogs; `PhaseFormDialog`/`TaskFormDialog` basics + collapsible tracking (`sm:max-w-xl`); `TaskCompleteDialog` optional impact props + `StatusMessage`
 - [2026-09-01] Form perf cleanup: `useValidationSchema` accepts explicit deps (fixes inline-factory rebuild every render); removed redundant `key={locale}` form remounts; `TaskCompleteDialog` uses `useFormDialog` + shared schema hook
 - [2026-09-01] Financial operations: migration `20260901120000_project_financial_operations.sql` (4 tables + RLS + `get_project_financial_snapshot` + extended dashboard/list RPCs); `ProjectFinancePanel` with CRUD dialogs; proposal summary + finance tab on `ProjectDetailPage`; dashboard underfunded/overdue-procurement KPIs; projects list budget-used/funding-status columns; i18n `projectFinance` ar/en

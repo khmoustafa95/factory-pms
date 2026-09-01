@@ -67,7 +67,11 @@ export default function App() {
             >
               <Route path="projects" element={<ProjectsPage />} />
               <Route
-                path="projects/:projectId"
+                path="projects/:factoryCode/:projectCode"
+                element={<ProjectDetailPage />}
+              />
+              <Route
+                path="projects/:projectRef"
                 element={<ProjectDetailPage />}
               />
               <Route path="escalations" element={<EscalationsPage />} />

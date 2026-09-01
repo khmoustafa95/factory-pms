@@ -19,15 +19,12 @@ export function ScrollableTabsList({
       className={cn(
         'relative -mx-1 px-1',
         dir === 'rtl'
-          ? '[mask-image:linear-gradient(to_left,black_90%,transparent)]'
-          : '[mask-image:linear-gradient(to_right,black_90%,transparent)]',
+          ? 'mask-[linear-gradient(to_left,black_90%,transparent)]'
+          : 'mask-[linear-gradient(to_right,black_90%,transparent)]',
       )}
     >
       <TabsList
-        className={cn(
-          'w-full justify-start overflow-x-auto',
-          className,
-        )}
+        className={cn('w-full justify-start overflow-x-auto', className)}
       >
         {children}
       </TabsList>

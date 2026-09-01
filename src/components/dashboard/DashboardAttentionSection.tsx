@@ -48,6 +48,7 @@ type DashboardAttentionSectionProps = {
   onProjectStatusDrill: (status: string) => void
   onTaskStatusDrill: (status: string) => void
   onProgressDrill: (range: ProgressFilter) => void
+  resolveBlockedProjectPath: (projectId: string) => string | null
 }
 
 export function DashboardAttentionSection({
@@ -65,6 +66,7 @@ export function DashboardAttentionSection({
   onProjectStatusDrill,
   onTaskStatusDrill,
   onProgressDrill,
+  resolveBlockedProjectPath,
 }: DashboardAttentionSectionProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -292,7 +294,10 @@ export function DashboardAttentionSection({
               data={insights.topBlockedProjects}
               emptyLabel={t('dashboard.noBlockedProjects')}
               onBarClick={(projectId) => {
-                void navigate(`/projects/${projectId}`)
+                const path = resolveBlockedProjectPath(projectId)
+                if (path) {
+                  void navigate(path)
+                }
               }}
             />
           </CardContent>

@@ -113,6 +113,8 @@ export type CommandProjectHit = {
   id: string
   title: string
   status: ProjectStatus
+  code: string
+  factories: { code: string } | null
 }
 
 export function useCommandProjectSearch(search: string, enabled: boolean) {
@@ -125,8 +127,8 @@ export function useCommandProjectSearch(search: string, enabled: boolean) {
       const supabase = getSupabase()
       const { data, error } = await supabase
         .from('projects')
-        .select('id, title, status')
-        .or(`title.ilike.${pattern},description.ilike.${pattern}`)
+        .select('id, title, status, code, factories (code)')
+        .or(`title.ilike.${pattern},description.ilike.${pattern},code.ilike.${pattern}`)
         .order('updated_at', { ascending: false })
         .limit(8)
 
