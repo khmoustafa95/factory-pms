@@ -37,6 +37,11 @@ export const queryKeys = {
     ['command-projects', search] as const,
   appSettings: ['app-settings'] as const,
   currencies: ['currencies'] as const,
+  projectFieldDefinitions: ['project-field-definitions'] as const,
+  projectFieldValues: (projectId: string | undefined) =>
+    ['project-field-values', projectId] as const,
+  calendarDeadlines: (from: string, to: string) =>
+    ['calendar-deadlines', from, to] as const,
   factoryProjectManagers: (factoryId: string | null | undefined) =>
     ['factory-project-managers', factoryId] as const,
   notifications: (userId: string | undefined) =>

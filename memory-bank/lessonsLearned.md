@@ -4,6 +4,10 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-08-24 — `validate_phase_dates` uses `coalesce(actual_end_date, proposed_end_date)` as the project window. Seeding a completed/in-progress project with `actual_end_date` earlier than the last phase `end_date` fails with “Phase dates must fall within the project schedule”.
+- 2026-08-24 — React Compiler `react-hooks/refs` forbids assigning `ref.current` during render (even to sync form values for submit). Keep the ref in `useLayoutEffect`, or update it inside the state setter / event handler.
+- 2026-08-24 — Import that creates `draft` projects must run as factory_manager: directors cannot insert drafts via RLS. Skip duplicate codes rather than upsert — import is add-only.
+- 2026-08-24 — A month-only calendar query misses “next 7 days” when the window spills into the next month; extend `to` through `today+7` when the visible month contains today.
 - 2026-08-24 — Portaled DatePicker inside Dialog closes the parent unless `onFocusOutside` is prevented when `dismissOnOutsideClick` is false; command palette should unmount `DialogContent` while closed so a paused exit animation cannot leave a blocking overlay.
 - 2026-08-24 — `useDebouncedValue` cannot `setState` synchronously in an effect (`react-hooks/set-state-in-effect`); flush empty search by returning the live value and delaying only non-empty updates.
 - 2026-08-24 — TanStack Virtual’s `useVirtualizer()` trips `react-hooks/incompatible-library` under the React Compiler ESLint plugin — disable on that call site rather than wrapping in extra memo.

@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   Building2,
+  CalendarDays,
   ClipboardList,
   LayoutDashboard,
   Settings,
@@ -29,6 +30,7 @@ export function getAppNavItems({
   return [
     { to: '/', label: t('nav.dashboard'), icon: LayoutDashboard, end: true },
     { to: '/projects', label: t('nav.projects'), icon: ClipboardList },
+    { to: '/deadlines', label: t('nav.deadlines'), icon: CalendarDays },
     { to: '/escalations', label: t('nav.escalations'), icon: AlertTriangle },
     ...(canManageAccounts
       ? [{ to: '/accounts', label: t('nav.accounts'), icon: Users }]

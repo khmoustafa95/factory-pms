@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { DashboardAttentionSection } from '@/components/dashboard/DashboardAttentionSection'
 import { DashboardProjectsPanel } from '@/components/dashboard/DashboardProjectsPanel'
 import {
@@ -27,6 +28,7 @@ import type { ProjectStatus } from '@/types/database'
 
 export function DashboardPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { profile } = useAuth()
   const roleLabel = profile ? getRoleLabel(t, profile.role) : t('common.user')
   const isDirector = isCompanyDirector(profile?.role)
@@ -120,7 +122,8 @@ export function DashboardPage() {
     } else if (drill === 'in_progress') {
       setStatusFilter('in_progress')
     } else if (drill === 'upcoming') {
-      setTaskActivityFilter('in_progress')
+      void navigate('/deadlines?range=7d')
+      return
     } else if (drill === 'phase_issues') {
       setPhaseIssueFilter('phase_issues')
     }

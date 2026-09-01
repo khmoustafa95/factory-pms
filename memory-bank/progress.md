@@ -2,6 +2,9 @@
 
 ## Done
 
+- [x] Rich demo seed: male Syrian names + factories + projects/phases/tasks (all statuses)
+- [x] Custom project fields (company-wide definitions + per-project values; director CRUD; required on submit)
+- [x] Deadlines calendar (`/deadlines` + `get_calendar_deadlines`; not a Gantt replacement)
 - [x] TaskFlow ports wave 1–2: debounce, virtual dashboard table, dropzone/file icons, command palette, CSV Excel export, lazy date picker
 - [x] Scorecard Phase 1: GitHub CI + locale key parity + dashboard insight/project RPCs + attention/explore dashboard split
 - [x] In-app notifications (DB + Realtime + bell inbox; no external push)
@@ -55,10 +58,9 @@
 - [ ] E2E tests (Playwright) + optional CI job with Supabase
 - [ ] RLS policy snapshot / pgTAP role tests
 - [ ] `app_settings` feature flags for WIP modules
-- [ ] Optional `supabase:seed:demo` rich workflow seed
+- [x] Optional `supabase:seed:demo` rich workflow seed (folded into `supabase/seed.sql`)
 - [ ] Client error reporting (Sentry) behind env
 - [ ] Further split `ProjectDetailPage` / `ProjectsPage`; paged `get_dashboard_projects`
-- [ ] Orientation-lite / custom project fields / Excel **import** wizard (optional TaskFlow ports; export is done)
 
 ## Blockers / issues
 
@@ -66,6 +68,21 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-08-24 (demo seed: Syrian names + workflow data)
+
+- `supabase/seed.sql` now seeds 10 projects (draft/proposed/approved/in_progress/completed/rejected/paused), 12 phases, 17 tasks, custom fields, comments
+- Account names are male Syrian; `pm.sara@demo.local` → `pm.mahmoud@demo.local` (محمود الزعبي)
+- Phase dates must sit inside `coalesce(actual_end_date, proposed_end_date)` — a completed project’s actual end cannot be earlier than the last phase end
+
+### 2026-08-24 (import wizard, custom fields, deadlines calendar)
+
+- Migration `20260824160000_custom_fields_and_deadlines.sql` applied locally: `project_field_definitions` / `project_field_values` + `get_calendar_deadlines`
+- Settings → Custom fields (director): text/number/date/boolean/select; values on proposal form + project overview
+- Projects list Import: CSV wizard (template + auto-map + preview); creates drafts; skips existing factory codes; optional custom-field columns
+- `/deadlines` month calendar (task due / phase end / project end); dashboard 7-day KPI links `?range=7d`
+- Did not add exceljs/xlsx or Mina Scheduler; import is UTF-8 CSV like export
+- Validation: `npm run verify` + `npm test` (54) passed; no browser verification (user request)
 
 ### 2026-08-24 (TaskFlow-inspired UX/perf ports)
 

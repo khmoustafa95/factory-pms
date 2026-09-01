@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
 import { ProjectAttachmentsPanel } from '@/components/projects/ProjectAttachmentsPanel'
+import { ProjectCustomFieldsCard } from '@/components/projects/ProjectCustomFieldsCard'
 import {
   ProjectFormDialog,
   type ProjectFormSubmitPayload,
@@ -53,6 +54,7 @@ import {
   useStartProjectExecution,
   useUpdateProject,
 } from '@/hooks/useProjects'
+import { useUpsertProjectFieldValues } from '@/hooks/useProjectCustomFields'
 import { useProjectRealtime } from '@/hooks/useRealtime'
 import {
   useCreateTask,
@@ -147,6 +149,7 @@ export function ProjectDetailPage() {
   const updateTask = useUpdateTask(projectId)
   const deleteTask = useDeleteTask(projectId)
   const updateProject = useUpdateProject()
+  const upsertFieldValues = useUpsertProjectFieldValues()
   const approveProject = useApproveProject()
   const rejectProject = useRejectProject()
   const startProjectExecution = useStartProjectExecution()
@@ -215,6 +218,7 @@ export function ProjectDetailPage() {
 
   const handleSaveProjectDetails = async ({
     values,
+    customFieldValues,
   }: ProjectFormSubmitPayload) => {
     if (!project) {
       return
@@ -222,6 +226,12 @@ export function ProjectDetailPage() {
 
     try {
       await updateProject.mutateAsync({ id: project.id, values })
+      if (Object.keys(customFieldValues).length > 0) {
+        await upsertFieldValues.mutateAsync({
+          projectId: project.id,
+          values: customFieldValues,
+        })
+      }
       toast.success(t('projects.updated'))
     } catch (submitError) {
       toastMutationError(submitError, t('projects.updateFailed'))
@@ -747,8 +757,9 @@ export function ProjectDetailPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="mt-4">
+            <TabsContent value="overview" className="mt-4 space-y-4">
               <ProjectProgressOverview phases={phases} tasks={tasks} />
+              <ProjectCustomFieldsCard projectId={projectId} />
             </TabsContent>
 
             <TabsContent value="wbs" className="mt-4">

@@ -31,6 +31,15 @@ export type EntityType = 'project' | 'phase' | 'task'
 export type FieldHealthStatus =
   'on_track' | 'delayed' | 'over_budget' | 'delayed_and_over_budget'
 
+export type ProjectFieldType =
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'boolean'
+  | 'select'
+
+export type CalendarDeadlineKind = 'task' | 'phase' | 'project'
+
 export type NotificationType =
   | 'project_proposed'
   | 'project_approved'
@@ -449,6 +458,84 @@ export interface Database {
         }
         Relationships: []
       }
+      project_field_definitions: {
+        Row: {
+          id: string
+          key: string
+          label_en: string
+          label_ar: string
+          field_type: ProjectFieldType
+          options: string[]
+          is_required: boolean
+          is_active: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          label_en: string
+          label_ar: string
+          field_type: ProjectFieldType
+          options?: string[]
+          is_required?: boolean
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          label_en?: string
+          label_ar?: string
+          field_type?: ProjectFieldType
+          options?: string[]
+          is_required?: boolean
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      project_field_values: {
+        Row: {
+          project_id: string
+          field_id: string
+          value: string | null
+          updated_at: string
+        }
+        Insert: {
+          project_id: string
+          field_id: string
+          value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          project_id?: string
+          field_id?: string
+          value?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'project_field_values_project_id_fkey'
+            columns: ['project_id']
+            isOneToOne: false
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'project_field_values_field_id_fkey'
+            columns: ['field_id']
+            isOneToOne: false
+            referencedRelation: 'project_field_definitions'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       project_attachments: {
         Row: {
           id: string
@@ -657,6 +744,19 @@ export interface Database {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      get_calendar_deadlines: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          kind: CalendarDeadlineKind
+          id: string
+          title: string
+          due_on: string
+          project_id: string
+          project_title: string
+          project_code: string
+          status: string
+        }[]
+      }
       get_dashboard_stats: {
         Args: Record<string, never>
         Returns: {
@@ -794,6 +894,16 @@ export type CurrencyInsert =
   Database['public']['Tables']['currencies']['Insert']
 export type CurrencyUpdate =
   Database['public']['Tables']['currencies']['Update']
+export type ProjectFieldDefinition =
+  Database['public']['Tables']['project_field_definitions']['Row']
+export type ProjectFieldDefinitionInsert =
+  Database['public']['Tables']['project_field_definitions']['Insert']
+export type ProjectFieldDefinitionUpdate =
+  Database['public']['Tables']['project_field_definitions']['Update']
+export type ProjectFieldValue =
+  Database['public']['Tables']['project_field_values']['Row']
+export type CalendarDeadline =
+  Database['public']['Functions']['get_calendar_deadlines']['Returns'][number]
 
 export type {
   CommentListItem,

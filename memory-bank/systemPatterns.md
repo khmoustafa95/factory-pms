@@ -17,7 +17,9 @@ src/
 - Command palette (`Ctrl+K`) in `AppLayout` searches nav + project titles (RLS-scoped)
 - Dashboard explore table is virtualized (`@tanstack/react-virtual`); list search is debounced (`useDebouncedValue`)
 - Date fields use a lazy `DatePicker` (react-day-picker code-split); attachments use dropzone + file-type icons
-- Spreadsheet export is UTF-8 BOM CSV (`downloadSpreadsheet`) opened by Excel — not a TaskFlow package clone
+- Spreadsheet export/import is UTF-8 BOM CSV (`downloadSpreadsheet` / `parseCsv`) opened by Excel — not a TaskFlow package clone
+- Custom project fields: `project_field_definitions` (director CRUD) + `project_field_values` (per project); required on proposal submit
+- Deadlines calendar: `get_calendar_deadlines(p_from, p_to)` union of task/phase/project dates (`security invoker`); route `/deadlines`
 
 ## Supabase access
 

@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { GeneratedPasswordDialog } from '@/components/accounts/GeneratedPasswordDialog'
 import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
+import { ProjectCustomFieldsFields } from '@/components/projects/ProjectCustomFieldsFields'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -31,6 +32,11 @@ import { useCreateAccount } from '@/hooks/useAccounts'
 import { useFormDialog } from '@/hooks/useFormDialog'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
+import {
+  useProjectFieldDefinitions,
+  useProjectFieldValues,
+} from '@/hooks/useProjectCustomFields'
+import { missingRequiredFields } from '@/lib/project-custom-fields'
 import { getPhaseDurationDays } from '@/lib/duration'
 import {
   formatNullableSelectValue,
@@ -50,6 +56,7 @@ import { toast } from 'sonner'
 export interface ProjectFormSubmitPayload {
   values: ProjectFormValues
   files: File[]
+  customFieldValues: Record<string, string>
 }
 
 interface ProjectFormDialogProps {
@@ -91,6 +98,13 @@ export function ProjectFormDialog({
   const { data: currencies = [] } = useActiveCurrencies()
   const { data: projectManagers = [], refetch: refetchManagers } =
     useFactoryProjectManagers(factoryId)
+  const { data: fieldDefinitions = [], isLoading: fieldDefinitionsLoading } =
+    useProjectFieldDefinitions(true)
+  const { data: storedFieldValues = [], isLoading: fieldValuesLoading } =
+    useProjectFieldValues(project?.id)
+  const customFieldsRef = useRef<Record<string, string>>({})
+  const fieldsReady =
+    !fieldDefinitionsLoading && (!project || !fieldValuesLoading)
   const createAccount = useCreateAccount()
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [addPmOpen, setAddPmOpen] = useState(false)
@@ -196,6 +210,7 @@ export function ProjectFormDialog({
           assigned_pm_id: values.assigned_pm_id ?? null,
         },
         files: pendingFiles,
+        customFieldValues: customFieldsRef.current,
       })
       closeDialog()
     } catch {
@@ -215,6 +230,14 @@ export function ProjectFormDialog({
       return
     }
 
+    if (
+      missingRequiredFields(fieldDefinitions, customFieldsRef.current).length >
+      0
+    ) {
+      toast.error(t('projects.customFieldsRequired'))
+      return
+    }
+
     try {
       await onSubmitProposal({
         values: {
@@ -228,6 +251,7 @@ export function ProjectFormDialog({
           assigned_pm_id: parsed.data.assigned_pm_id,
         },
         files: pendingFiles,
+        customFieldValues: customFieldsRef.current,
       })
       closeDialog()
     } catch {
@@ -431,6 +455,16 @@ export function ProjectFormDialog({
                   </p>
                 ) : null}
               </div>
+
+              {fieldsReady ? (
+                <ProjectCustomFieldsFields
+                  key={project?.id ?? 'new'}
+                  definitions={fieldDefinitions}
+                  storedValues={storedFieldValues}
+                  valuesRef={customFieldsRef}
+                  disabled={isSubmitting}
+                />
+              ) : null}
 
               {allowSubmitProposal ? (
                 <ProposalFilePicker

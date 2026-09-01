@@ -5,6 +5,9 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 ## Entries
 
 - 2026-08-24 — Command palette mounts `DialogContent` only while open — skip exit-animation Presence so overlay cannot stick when CSS animations are paused (hidden tab / reduced motion).
+- 2026-08-24 — Project “Excel import” is UTF-8 CSV (same as export), not `exceljs`/`xlsx` — Arabic-safe in Excel, no extra bundle; wizard is add-only drafts for factory managers (directors cannot INSERT drafts under RLS); duplicate factory codes skipped; max 100 rows.
+- 2026-08-24 — Custom project fields are company-wide definitions (like currencies), not per-factory; required fields enforced on proposal submit, not draft save; values stored as text keyed by `(project_id, field_id)`.
+- 2026-08-24 — Deadlines calendar is `get_calendar_deadlines` (task due / phase end / coalesce(actual, proposed) project end), not a Gantt and not Mina Scheduler — `ProjectTimeline` stays the schedule view; drafts hidden except the factory’s FM.
 - 2026-08-24 — Reimplement TaskFlow UX/perf ideas on factory-pms primitives (shadcn, `@/`, ar/en, RLS) instead of copying `@hypatia-ui` / `@the-factory-*` — those packages pull streams, Mongo `_id`, lodash/`any`, Capacitor, and a second design system.
 - 2026-08-24 — Spreadsheet “Excel export” is UTF-8 BOM CSV (`downloadSpreadsheet`) rather than `exceljs`/`xlsx` — Arabic-safe in Excel, no extra Node/browser bundle, dynamic import not required.
 - 2026-08-16 — Dashboard insights/project rows move to `get_dashboard_insights` / `get_dashboard_projects` (`security invoker`) — client-side full-table aggregation silently breaks past PostgREST row caps; SQL aggregates stay RLS-scoped like `get_dashboard_stats`.

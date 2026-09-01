@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**TaskFlow ports (wave 1 + high-value wave 2) complete** — debounce, virtualized dashboard table, dropzone + file-type icons, command palette, Excel-compatible CSV export, lazy date picker. Excel import wizard, custom fields, and Mina Scheduler calendar were left out on purpose.
+**Demo seed now includes workflow data** (male Syrian names, 10 projects across statuses). Password still `demo123456`. Next: staging/live migration apply, or Scorecard Phase 2.
 
 ## Recent changes
 
+- [2026-08-24] Expanded `supabase/seed.sql`: male Syrian display names; 10 projects (all statuses) with phases/tasks/comments/custom fields; `pm.sara` replaced by `pm.mahmoud@demo.local`. Applied to local DB.
 - [2026-08-24] Browser follow-up: palette unmounts on close (no stuck overlay); dialogs keep `onFocusOutside` from dismissing when `dismissOnOutsideClick` is false so DatePicker works inside New proposal; FM login verified calendar (15 Aug 2026) + dropzone/`budget.xlsx`
 - [2026-08-24] Ported TaskFlow ideas into factory-pms patterns (not a package clone): `useDebouncedValue`; virtualized dashboard explore table; `FileDropzone`/`FileTypeIcon`; `Ctrl+K` command palette; CSV spreadsheet export on dashboard + projects; lazy `DatePicker` on project/phase/task forms
 - [2026-08-17] Applied `20260816120000_dashboard_insight_rpcs.sql` locally (`get_dashboard_insights` / `get_dashboard_projects` confirmed in pg_proc). Local history had leftover `20260805160000` / `20260805170000` (discarded WIP, not in repo) — marked reverted so push could proceed.
@@ -18,9 +19,9 @@
 
 ## Next steps (concrete)
 
-1. Optional next TaskFlow-inspired work: Excel import wizard, custom project fields, deadlines calendar (not a Gantt replacement)
+1. Apply `20260824160000_custom_fields_and_deadlines.sql` (and earlier backlog migrations) to live/staging Supabase + verify RLS
 2. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, feature flags, demo seed profile, Sentry, further god-page splits, paged dashboard projects
-3. Apply migrations to live/staging Supabase + verify RLS
+3. Optional import follow-up: update existing rows / Excel `.xlsx` (current wizard is add-only UTF-8 CSV)
 
 ## Open questions
 

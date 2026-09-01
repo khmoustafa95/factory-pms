@@ -25,6 +25,11 @@ const EscalationsPage = lazy(() =>
     default: module.EscalationsPage,
   })),
 )
+const DeadlinesCalendarPage = lazy(() =>
+  import('@/pages/DeadlinesCalendarPage').then((module) => ({
+    default: module.DeadlinesCalendarPage,
+  })),
+)
 const FactoriesPage = lazy(() =>
   import('@/pages/FactoriesPage').then((module) => ({
     default: module.FactoriesPage,
@@ -70,6 +75,7 @@ export default function App() {
                 path="projects/:projectId"
                 element={<ProjectDetailPage />}
               />
+              <Route path="deadlines" element={<DeadlinesCalendarPage />} />
               <Route path="escalations" element={<EscalationsPage />} />
             </Route>
             <Route

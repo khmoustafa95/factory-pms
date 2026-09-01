@@ -1,5 +1,6 @@
 import { AccountSettingsTab } from '@/components/settings/AccountSettingsTab'
 import { CurrencySettingsTab } from '@/components/settings/CurrencySettingsTab'
+import { CustomFieldsSettingsTab } from '@/components/settings/CustomFieldsSettingsTab'
 import { GeneralSettingsForm } from '@/components/settings/GeneralSettingsForm'
 import { PageHeader } from '@/components/PageHeader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -29,6 +30,9 @@ export function SettingsPage() {
               <TabsTrigger value="currencies">
                 {t('settings.currenciesTab')}
               </TabsTrigger>
+              <TabsTrigger value="fields">
+                {t('settings.customFieldsTab')}
+              </TabsTrigger>
             </>
           ) : null}
         </TabsList>
@@ -42,6 +46,9 @@ export function SettingsPage() {
             </TabsContent>
             <TabsContent value="currencies" className="mt-6">
               <CurrencySettingsTab />
+            </TabsContent>
+            <TabsContent value="fields" className="mt-6">
+              <CustomFieldsSettingsTab />
             </TabsContent>
           </>
         ) : null}

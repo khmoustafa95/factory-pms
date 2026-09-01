@@ -1,10 +1,11 @@
-import { Check, Download, Eye, Layers, Lock, Plus, Send, X } from 'lucide-react'
+import { Check, Download, Eye, Layers, Lock, Plus, Send, Upload, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
+import { ProjectImportWizard } from '@/components/projects/ProjectImportWizard'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
@@ -28,6 +29,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { uploadProjectAttachments } from '@/hooks/useProjectAttachments'
+import { useUpsertProjectFieldValues } from '@/hooks/useProjectCustomFields'
 import { queryKeys } from '@/lib/query-keys'
 import {
   useApproveProject,
@@ -109,7 +111,9 @@ export function ProjectsPage() {
   const pauseProjectExecution = usePauseProjectExecution()
   const resumeProjectExecution = useResumeProjectExecution()
   const completeProjectExecution = useCompleteProjectExecution()
+  const upsertFieldValues = useUpsertProjectFieldValues()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -216,7 +220,21 @@ export function ProjectsPage() {
     })
   }
 
-  const saveProject = async ({ values, files }: ProjectFormSubmitPayload) => {
+  const persistCustomFields = async (
+    projectId: string,
+    values: Record<string, string>,
+  ) => {
+    if (Object.keys(values).length === 0) {
+      return
+    }
+    await upsertFieldValues.mutateAsync({ projectId, values })
+  }
+
+  const saveProject = async ({
+    values,
+    files,
+    customFieldValues,
+  }: ProjectFormSubmitPayload) => {
     const factoryId = ensureFactoryContext()
     const userId = user?.id
 
@@ -227,6 +245,7 @@ export function ProjectsPage() {
     try {
       if (editingProject) {
         await updateProject.mutateAsync({ id: editingProject.id, values })
+        await persistCustomFields(editingProject.id, customFieldValues)
         await uploadFilesForProject(editingProject.id, files)
         toast.success(
           canSubmitProject(editingProject.status)
@@ -240,6 +259,7 @@ export function ProjectsPage() {
           values,
           status: 'draft',
         })
+        await persistCustomFields(created.id, customFieldValues)
         await uploadFilesForProject(created.id, files)
         toast.success(t('projects.draftCreated'))
       }
@@ -257,6 +277,7 @@ export function ProjectsPage() {
   const submitProposal = async ({
     values,
     files,
+    customFieldValues,
   }: ProjectFormSubmitPayload) => {
     const factoryId = ensureFactoryContext()
     const userId = user?.id
@@ -272,6 +293,7 @@ export function ProjectsPage() {
     try {
       if (editingProject) {
         await updateProject.mutateAsync({ id: editingProject.id, values })
+        await persistCustomFields(editingProject.id, customFieldValues)
         await uploadFilesForProject(editingProject.id, files)
         await submitProject.mutateAsync({ id: editingProject.id, userId })
         toast.success(t('projects.proposalSubmitted'))
@@ -282,6 +304,7 @@ export function ProjectsPage() {
           values,
           status: 'proposed',
         })
+        await persistCustomFields(created.id, customFieldValues)
         await uploadFilesForProject(created.id, files)
         toast.success(t('projects.proposalSubmitted'))
       }
@@ -572,6 +595,16 @@ export function ProjectsPage() {
           }
           actions={
             <div className="flex flex-wrap items-center gap-2">
+              {canManageProposals ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setImportOpen(true)}
+                >
+                  <Upload className="size-4" />
+                  {t('list.importExcel')}
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="outline"
@@ -695,6 +728,15 @@ export function ProjectsPage() {
               onSaveDraft={saveProject}
               onSubmitProposal={submitProposal}
               isSubmitting={isSaving}
+            />
+          ) : null}
+
+          {canManageProposals && profile?.factory_id && user?.id ? (
+            <ProjectImportWizard
+              open={importOpen}
+              onOpenChange={setImportOpen}
+              factoryId={profile.factory_id}
+              userId={user.id}
             />
           ) : null}
 
