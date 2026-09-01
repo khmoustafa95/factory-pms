@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { QueryState } from '@/components/QueryState'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
 import {
   useCurrencies,
   useCreateCurrency,
@@ -46,6 +48,8 @@ type CurrencyFormValues = z.infer<typeof currencySchema>
 
 export function CurrencySettingsTab() {
   const { t, locale } = useTranslation()
+  const { confirm, close, handleConfirm, state: confirmState } =
+    useConfirmAction()
   const {
     data: currencies = [],
     isLoading,
@@ -164,6 +168,21 @@ export function CurrencySettingsTab() {
 
   return (
     <>
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        cancelLabel={confirmState.cancelLabel}
+        variant={confirmState.variant}
+        isLoading={confirmState.isLoading}
+        onOpenChange={(open) => {
+          if (!open) {
+            close()
+          }
+        }}
+        onConfirm={handleConfirm}
+      />
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -247,7 +266,17 @@ export function CurrencySettingsTab() {
                           size="icon"
                           className="size-8 text-destructive"
                           disabled={isMutating}
-                          onClick={() => void handleDelete(currency)}
+                          onClick={() =>
+                            confirm({
+                              title: t('confirm.deleteCurrencyTitle'),
+                              description: t(
+                                'confirm.deleteCurrencyDescription',
+                              ),
+                              confirmLabel: t('common.delete'),
+                              variant: 'destructive',
+                              onConfirm: () => handleDelete(currency),
+                            })
+                          }
                         >
                           <Trash2 className="size-4" />
                         </Button>

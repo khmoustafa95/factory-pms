@@ -1,4 +1,5 @@
 import { Download, Paperclip, Trash2 } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { FileDropzone } from '@/components/files/FileDropzone'
@@ -14,6 +15,7 @@ import {
 } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
 import {
   ATTACHMENT_ACCEPT,
   createSignedAttachmentUrl,
@@ -52,6 +54,8 @@ export function ProjectAttachmentsPanel({
   canManage,
 }: ProjectAttachmentsPanelProps) {
   const { t, locale } = useTranslation()
+  const { confirm, close, handleConfirm, state: confirmState } =
+    useConfirmAction()
   const { user } = useAuth()
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const {
@@ -108,6 +112,22 @@ export function ProjectAttachmentsPanel({
   }
 
   return (
+    <>
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        cancelLabel={confirmState.cancelLabel}
+        variant={confirmState.variant}
+        isLoading={confirmState.isLoading}
+        onOpenChange={(open) => {
+          if (!open) {
+            close()
+          }
+        }}
+        onConfirm={handleConfirm}
+      />
     <Card>
       <CardHeader className="space-y-1.5">
         <CardTitle className="flex items-center gap-2">
@@ -191,7 +211,15 @@ export function ProjectAttachmentsPanel({
                         size="sm"
                         variant="ghost"
                         disabled={deleteAttachment.isPending}
-                        onClick={() => void handleDelete(attachment)}
+                        onClick={() =>
+                          confirm({
+                            title: t('confirm.deleteAttachmentTitle'),
+                            description: t('confirm.deleteAttachmentDescription'),
+                            confirmLabel: t('common.delete'),
+                            variant: 'destructive',
+                            onConfirm: () => handleDelete(attachment),
+                          })
+                        }
                       >
                         <Trash2 className="size-4 text-destructive" />
                         <span className="sr-only">
@@ -207,5 +235,6 @@ export function ProjectAttachmentsPanel({
         </QueryState>
       </CardContent>
     </Card>
+    </>
   )
 }

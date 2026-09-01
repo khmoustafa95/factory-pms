@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createEscalationFormSchema,
@@ -43,7 +45,7 @@ export function EscalationFormDialog({
   const { t } = useTranslation()
   const escalationFormSchema = useValidationSchema(createEscalationFormSchema)
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const { form, createSubmitHandler, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(escalationFormSchema),
     defaultValues: ESCALATION_FORM_DEFAULTS,
@@ -51,10 +53,13 @@ export function EscalationFormDialog({
     resetDependencies: [initialMessage],
   })
 
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('escalations.escalateTitle')}</DialogTitle>
@@ -75,7 +80,7 @@ export function EscalationFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
@@ -85,6 +90,12 @@ export function EscalationFormDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

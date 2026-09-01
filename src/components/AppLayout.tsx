@@ -4,9 +4,11 @@ import {
   PanelRight,
 } from 'lucide-react'
 import { NavLink, Outlet, useMatch } from 'react-router-dom'
+import { useIsFetching } from '@tanstack/react-query'
 import { PageTransition } from '@/components/motion'
 import { AppBrand } from '@/components/AppBrand'
 import { CommandPalette } from '@/components/CommandPalette'
+import { FetchingBar } from '@/components/FetchingBar'
 import { LocaleToggle } from '@/components/LocaleToggle'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -211,6 +213,7 @@ function AppTopBar({ navItems }: { navItems: AppNavItem[] }) {
 export function AppLayout() {
   const { profile } = useAuth()
   const { t, dir } = useTranslation()
+  const isFetching = useIsFetching() > 0
   const isDirector = isCompanyDirector(profile?.role)
   const canManageAccounts = isDirector || isFactoryManager(profile?.role)
 
@@ -222,6 +225,7 @@ export function AppLayout() {
 
   return (
     <TooltipProvider delayDuration={0}>
+      <FetchingBar active={isFetching} />
       <SidebarProvider defaultOpen>
         <a
           href="#main-content"

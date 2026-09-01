@@ -13,6 +13,7 @@ import {
   type CommentListItem,
 } from '@/hooks/useComments'
 import { useCommentsRealtime } from '@/hooks/useRealtime'
+import { useUnsavedFormWarning } from '@/hooks/useUnsavedFormWarning'
 import { formatLocalizedDateTime, getRoleLabel } from '@/lib/i18n-format'
 import {
   formatMentionToken,
@@ -124,6 +125,8 @@ function MentionComposer({
     resolver: zodResolver(commentFormSchema),
     defaultValues: { body: '' },
   })
+
+  useUnsavedFormWarning(form.formState.isDirty)
 
   const { ref: registerRef, ...bodyRegister } = form.register('body')
 

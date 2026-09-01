@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useWatch } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -17,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { todayDateOnly } from '@/lib/date-only'
 import { formatLocalizedDate } from '@/lib/i18n-format'
@@ -35,6 +38,9 @@ interface TaskCompleteDialogProps {
   initialActualCost?: number | null
   initialScheduleReason?: string | null
   initialFinancialReason?: string | null
+  taskWeightPercent?: number
+  phaseName?: string
+  openTaskCount?: number
   onSubmit: (values: TaskCompletionValues) => Promise<void>
   isSubmitting: boolean
 }
@@ -56,6 +62,9 @@ export function TaskCompleteDialog({
   initialActualCost,
   initialScheduleReason,
   initialFinancialReason,
+  taskWeightPercent,
+  phaseName,
+  openTaskCount,
   onSubmit,
   isSubmitting,
 }: TaskCompleteDialogProps) {
@@ -70,7 +79,7 @@ export function TaskCompleteDialog({
     [dueDate, expectedCost],
   )
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const { form, createSubmitHandler, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(schema),
     defaultValues: COMPLETE_FORM_DEFAULTS,
@@ -92,6 +101,9 @@ export function TaskCompleteDialog({
     ],
   })
 
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
+
   const actualEndDate = useWatch({
     control: form.control,
     name: 'actual_end_date',
@@ -103,10 +115,14 @@ export function TaskCompleteDialog({
   )
   const financialOverrun = Number(actualCost) > Number(expectedCost) + 0.009
 
+  const showImpact =
+    taskWeightPercent != null && phaseName != null && openTaskCount != null
+
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('wbs.markDone')}</DialogTitle>
@@ -128,6 +144,16 @@ export function TaskCompleteDialog({
           onSubmit={handleSubmit}
         >
           <DialogBody className="space-y-4">
+            {showImpact ? (
+              <StatusMessage variant="info">
+                {t('wbs.taskCompleteImpact', {
+                  weight: taskWeightPercent,
+                  phase: phaseName,
+                  openTasks: openTaskCount,
+                })}
+              </StatusMessage>
+            ) : null}
+
             <div className="space-y-2">
               <Label htmlFor="complete-actual-end">
                 {t('wbs.actualEndDate')}
@@ -191,7 +217,7 @@ export function TaskCompleteDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
@@ -201,6 +227,12 @@ export function TaskCompleteDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

@@ -1,8 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronDown } from 'lucide-react'
 import { useWatch } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   Dialog,
   DialogBody,
@@ -17,6 +24,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import type { ProjectScheduleBounds } from '@/lib/duration'
 import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
@@ -87,7 +95,7 @@ export function PhaseFormDialog({
     [actualCostTotal, maxBudget, schedule, scheduleDeviationDays],
   )
 
-  const { form } = useFormDialog({
+  const { form, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(phaseFormSchema),
     defaultValues: PHASE_FORM_DEFAULTS,
@@ -114,6 +122,9 @@ export function PhaseFormDialog({
       scheduleDeviationDays,
     ],
   })
+
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
 
   const watchedActualEndDate = useWatch({
     control: form.control,
@@ -156,8 +167,9 @@ export function PhaseFormDialog({
         : t('wbs.noProjectSchedule')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {phase ? t('wbs.editPhase') : t('wbs.newPhase')}
@@ -171,6 +183,9 @@ export function PhaseFormDialog({
 
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium">{t('wbs.basicsSection')}</h4>
+
             <div className="space-y-2">
               <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
               <Input id="phase-name" {...form.register('name')} />
@@ -223,18 +238,6 @@ export function PhaseFormDialog({
               </div>
             </div>
 
-            {phase ? (
-              <div className="space-y-2">
-                <Label>{t('wbs.phaseStatus')}</Label>
-                <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
-                  {getPhaseStatusLabel(t, phase.status)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t('wbs.phaseStatusHint')}
-                </p>
-              </div>
-            ) : null}
-
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
                 {t('wbs.phaseScheduleHint', { range: scheduleHint })}
@@ -266,10 +269,25 @@ export function PhaseFormDialog({
                 <FormFieldError error={form.formState.errors.end_date} />
               </div>
             </div>
+            </div>
 
-            {/* Field tracking: only when editing an existing phase */}
             {phase ? (
-              <>
+              <Collapsible defaultOpen={Boolean(phase)}>
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 text-sm font-medium [&[data-state=open]>svg]:rotate-180">
+                  {t('wbs.trackingSection')}
+                  <ChevronDown className="size-4 shrink-0 transition-transform" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <Label>{t('wbs.phaseStatus')}</Label>
+                  <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
+                    {getPhaseStatusLabel(t, phase.status)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t('wbs.phaseStatusHint')}
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="phase-actual-end">
                     {t('wbs.actualEndDate')}
@@ -362,7 +380,8 @@ export function PhaseFormDialog({
                     {...form.register('solution_in_progress')}
                   />
                 </div>
-              </>
+                </CollapsibleContent>
+              </Collapsible>
             ) : null}
           </DialogBody>
 
@@ -370,7 +389,7 @@ export function PhaseFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
@@ -385,5 +404,11 @@ export function PhaseFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

@@ -1,23 +1,17 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { DashboardAttentionSection } from '@/components/dashboard/DashboardAttentionSection'
 import { DashboardProjectsPanel } from '@/components/dashboard/DashboardProjectsPanel'
 import {
   PROJECT_STATUS_FILTERS,
   type AttentionDrill,
-  type BlockedFilter,
-  type OverdueFilter,
-  type OverdueProcurementFilter,
-  type PhaseIssueFilter,
   type ProgressFilter,
-  type TaskActivityFilter,
-  type UnderfundedFilter,
 } from '@/components/dashboard/dashboard-types'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useDashboardFilters } from '@/hooks/useDashboardFilters'
 import { useDashboardInsights, useDashboardProjects, useDashboardStats } from '@/hooks/useDashboard'
-import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import {
@@ -58,22 +52,33 @@ export function DashboardPage() {
     isFetching: isProjectsFetching,
   } = useDashboardProjects()
 
-  const [projectSearch, setProjectSearch] = useState('')
-  const debouncedProjectSearch = useDebouncedValue(projectSearch, 300)
-  const [statusFilter, setStatusFilter] = useState<'all' | ProjectStatus>('all')
-  const [factoryFilter, setFactoryFilter] = useState('all')
-  const [progressFilter, setProgressFilter] = useState<ProgressFilter>('all')
-  const [blockedFilter, setBlockedFilter] = useState<BlockedFilter>('all')
-  const [taskActivityFilter, setTaskActivityFilter] =
-    useState<TaskActivityFilter>('all')
-  const [overdueFilter, setOverdueFilter] = useState<OverdueFilter>('all')
-  const [phaseIssueFilter, setPhaseIssueFilter] =
-    useState<PhaseIssueFilter>('all')
-  const [underfundedFilter, setUnderfundedFilter] =
-    useState<UnderfundedFilter>('all')
-  const [overdueProcurementFilter, setOverdueProcurementFilter] =
-    useState<OverdueProcurementFilter>('all')
-  const [attentionDrill, setAttentionDrill] = useState<AttentionDrill>(null)
+  const {
+    projectSearch,
+    setProjectSearch,
+    debouncedProjectSearch,
+    statusFilter,
+    setStatusFilter,
+    factoryFilter,
+    setFactoryFilter,
+    progressFilter,
+    setProgressFilter,
+    blockedFilter,
+    setBlockedFilter,
+    taskActivityFilter,
+    setTaskActivityFilter,
+    overdueFilter,
+    setOverdueFilter,
+    phaseIssueFilter,
+    setPhaseIssueFilter,
+    underfundedFilter,
+    setUnderfundedFilter,
+    overdueProcurementFilter,
+    setOverdueProcurementFilter,
+    attentionDrill,
+    setAttentionDrill,
+    resetListFilters,
+    hasActiveProjectFilters,
+  } = useDashboardFilters()
 
   const factoryFilterOptions = useMemo(() => {
     const uniqueFactories = new Map<
@@ -97,20 +102,6 @@ export function DashboardPage() {
       behavior: 'smooth',
       block: 'start',
     })
-  }
-
-  const resetListFilters = () => {
-    setProjectSearch('')
-    setStatusFilter('all')
-    setFactoryFilter('all')
-    setProgressFilter('all')
-    setBlockedFilter('all')
-    setTaskActivityFilter('all')
-    setOverdueFilter('all')
-    setPhaseIssueFilter('all')
-    setUnderfundedFilter('all')
-    setOverdueProcurementFilter('all')
-    setAttentionDrill(null)
   }
 
   const applyAttentionDrill = (drill: AttentionDrill) => {
@@ -283,18 +274,6 @@ export function DashboardPage() {
     taskActivityFilter,
   ])
 
-  const hasActiveProjectFilters =
-    projectSearch.trim().length > 0 ||
-    statusFilter !== 'all' ||
-    factoryFilter !== 'all' ||
-    progressFilter !== 'all' ||
-    blockedFilter !== 'all' ||
-    taskActivityFilter !== 'all' ||
-    overdueFilter !== 'all' ||
-    phaseIssueFilter !== 'all' ||
-    underfundedFilter !== 'all' ||
-    overdueProcurementFilter !== 'all'
-
   return (
     <section className="space-y-6">
       <PageHeader
@@ -365,6 +344,10 @@ export function DashboardPage() {
         factoryFilter={factoryFilter}
         setFactoryFilter={setFactoryFilter}
         factoryFilterOptions={factoryFilterOptions}
+        underfundedFilter={underfundedFilter}
+        setUnderfundedFilter={setUnderfundedFilter}
+        overdueProcurementFilter={overdueProcurementFilter}
+        setOverdueProcurementFilter={setOverdueProcurementFilter}
         setAttentionDrill={setAttentionDrill}
       />
     </section>

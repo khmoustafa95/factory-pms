@@ -73,6 +73,37 @@ export const ar = {
     system: 'النظام',
     english: 'English',
     arabic: 'العربية',
+    confirm: 'تأكيد',
+    discardChanges: 'تجاهل التغييرات',
+    discardChangesDescription:
+      'لديك تغييرات غير محفوظة. هل تريد تجاهلها وإغلاق النموذج؟',
+    keepEditing: 'متابعة التحرير',
+    moreActions: 'المزيد من الإجراءات',
+  },
+  confirm: {
+    deleteTitle: 'حذف هذا العنصر؟',
+    deleteDescription: 'لا يمكن التراجع عن هذا الإجراء.',
+    approveTitle: 'الموافقة على المقترح؟',
+    approveDescription:
+      'سينتقل المشروع إلى حالة «معتمد» ويمكن بدء التنفيذ عند جاهزية هيكل العمل.',
+    completeExecutionTitle: 'إكمال تنفيذ المشروع؟',
+    completeExecutionDescription:
+      'سيتم وضع علامة على المشروع كمكتمل. ستبقى المهام المفتوحة في النظام.',
+    completeExecutionWarning:
+      'تحذير: لا يزال لدى هذا المشروع {{blocked}} مهمة محجوبة و{{overdue}} مهمة متأخرة.',
+    deletePhaseTitle: 'حذف المرحلة؟',
+    deletePhaseDescription:
+      'سيتم حذف جميع المهام في هذه المرحلة. سيتم إعادة توزيع الوزن المتبقي.',
+    deleteTaskTitle: 'حذف المهمة؟',
+    deleteTaskDescription: 'ستُزال هذه المهمة نهائياً.',
+    deleteAttachmentTitle: 'حذف المرفق؟',
+    deleteAttachmentDescription: 'سيُزال هذا الملف من المشروع.',
+    deleteCurrencyTitle: 'حذف العملة؟',
+    deleteCurrencyDescription:
+      'يجب تحديث المشاريع التي تستخدم هذه العملة يدوياً.',
+  },
+  emptyState: {
+    defaultTitle: 'لا يوجد شيء هنا بعد',
   },
   list: {
     search: 'بحث',
@@ -114,6 +145,11 @@ export const ar = {
     navigation: 'التنقل',
     projects: 'المشاريع',
     hint: 'Ctrl K',
+    actions: 'إجراءات',
+    goDashboard: 'الذهاب إلى لوحة التحكم',
+    goSettings: 'الذهاب إلى الإعدادات',
+    goProjects: 'الذهاب إلى المشاريع',
+    newProposal: 'مقترح جديد',
   },
   datePicker: {
     placeholder: 'اختر تاريخاً',
@@ -125,6 +161,10 @@ export const ar = {
     markAllRead: 'تعليمليم الكل كمقروء',
     allCaughtUp: 'لا توجد إشعارات جديدة.',
     unreadCount: '{{count}} غير مقروء',
+    unreadOnly: 'غير المقروء فقط',
+    today: 'اليوم',
+    yesterday: 'أمس',
+    older: 'سابقاً',
     types: {
       project_proposed: {
         title: 'مقترح جديد',
@@ -303,6 +343,12 @@ export const ar = {
     filterProgressRange: 'نطاق التقدم',
     filterBlockedState: 'حالة التعثر',
     filterBlockedOnly: 'المشاريع المتعثرة فقط',
+    filterChips: {
+      search: 'بحث: {{query}}',
+      factory: 'المصنع: {{name}}',
+      underfunded: 'نقص تمويل',
+      overdueProcurement: 'مشتريات متأخرة',
+    },
     filterNotBlockedOnly: 'المشاريع غير المتعثرة فقط',
     filterOverdueState: 'المهام المتأخرة',
     filterOverdueOnly: 'لديها مهام متأخرة',
@@ -350,6 +396,14 @@ export const ar = {
     proposalSubmitted: 'تم إرسال المقترح لمراجعة المدير العام',
     submitFailed: 'تعذر إرسال المقترح',
     proposalApproved: 'تم اعتماد المقترح',
+    approveDialog: {
+      title: 'اعتماد المقترح',
+      description: 'راجع الملخص أدناه قبل الاعتماد.',
+      assignedPm: 'مدير المشروع المعيّن',
+      attachmentCount: 'المرفقات',
+      fundingTotal: 'التمويل المقترح',
+      confirm: 'اعتماد المقترح',
+    },
     approveFailed: 'تعذر اعتماد المقترح',
     proposalRejected: 'تم رفض المقترح',
     rejectFailed: 'تعذر رفض المقترح',
@@ -628,6 +682,11 @@ export const ar = {
       'يجب أن يصل مجموع أوزان مهام هذه المرحلة إلى 100% بالضبط.',
     taskWeightRemaining: 'متبقي {{remaining}}% من وزن المهام',
     noPhases: 'لا توجد مراحل بعد. أضف المرحلة الأولى لبناء هيكل العمل.',
+    validityBanner: {
+      weights: 'أوزان المراحل {{total}}% — يجب أن تساوي 100%.',
+      budget:
+        'ميزانيات المراحل {{total}} — يجب أن تطابق ميزانية المشروع {{projectBudget}}.',
+    },
     weight: 'الوزن',
     dueDate: 'تاريخ الاستحقاق',
     assignee: 'المسؤول',
@@ -686,6 +745,10 @@ export const ar = {
     kanbanDropHere: 'أفلت هنا',
     taskStatusUpdated: 'تم تحديث حالة المهمة',
     updateTaskStatusFailed: 'تعذر تحديث حالة المهمة',
+    taskCompleteImpact:
+      'تساهم هذه المهمة بنسبة {{weight}}% في مرحلة «{{phase}}». تبقى {{openTasks}} مهمة مفتوحة أخرى في هذه المرحلة.',
+    trackingSection: 'المتابعة والإكمال',
+    basicsSection: 'أساسيات',
   },
   progress: {
     title: 'نظرة عامة على التقدم',

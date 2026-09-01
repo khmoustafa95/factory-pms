@@ -46,5 +46,5 @@ export function useFormDialog<T extends FieldValues>({
     })
   }
 
-  return { form, createSubmitHandler }
+  return { form, createSubmitHandler, isDirty: form.formState.isDirty }
 }

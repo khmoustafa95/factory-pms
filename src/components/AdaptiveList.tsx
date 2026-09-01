@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
+import { EmptyState } from '@/components/EmptyState'
 import { ResponsiveTable } from '@/components/ResponsiveTable'
-import { cn } from '@/lib/utils'
 
 interface AdaptiveListProps<T> {
   items: T[]
   emptyMessage: string
+  emptyAction?: ReactNode
   getKey: (item: T) => string
   renderMobileCard: (item: T) => ReactNode
   children: ReactNode
@@ -14,6 +15,7 @@ interface AdaptiveListProps<T> {
 export function AdaptiveList<T>({
   items,
   emptyMessage,
+  emptyAction,
   getKey,
   renderMobileCard,
   children,
@@ -21,14 +23,7 @@ export function AdaptiveList<T>({
 }: AdaptiveListProps<T>) {
   if (items.length === 0) {
     return (
-      <p
-        className={cn(
-          'motion-fade-in app-panel py-10 text-center text-sm text-muted-foreground',
-          className,
-        )}
-      >
-        {emptyMessage}
-      </p>
+      <EmptyState description={emptyMessage} action={emptyAction} className={className} />
     )
   }
 

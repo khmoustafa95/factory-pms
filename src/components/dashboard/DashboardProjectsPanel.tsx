@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import type { Dispatch, RefObject, SetStateAction } from 'react'
+import { useMemo, type Dispatch, type RefObject, type SetStateAction } from 'react'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -7,10 +7,13 @@ import {
   type AttentionDrill,
   type BlockedFilter,
   type OverdueFilter,
+  type OverdueProcurementFilter,
   type PhaseIssueFilter,
   type ProgressFilter,
   type TaskActivityFilter,
+  type UnderfundedFilter,
 } from '@/components/dashboard/dashboard-types'
+import { ActiveFilterChips } from '@/components/ActiveFilterChips'
 import { ListToolbar } from '@/components/ListToolbar'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { QueryState } from '@/components/QueryState'
@@ -70,6 +73,10 @@ type DashboardProjectsPanelProps = {
   factoryFilter: string
   setFactoryFilter: Dispatch<SetStateAction<string>>
   factoryFilterOptions: FilterOption[]
+  underfundedFilter: UnderfundedFilter
+  setUnderfundedFilter: Dispatch<SetStateAction<UnderfundedFilter>>
+  overdueProcurementFilter: OverdueProcurementFilter
+  setOverdueProcurementFilter: Dispatch<SetStateAction<OverdueProcurementFilter>>
   setAttentionDrill: Dispatch<SetStateAction<AttentionDrill>>
 }
 
@@ -100,11 +107,118 @@ export function DashboardProjectsPanel({
   factoryFilter,
   setFactoryFilter,
   factoryFilterOptions,
+  underfundedFilter,
+  setUnderfundedFilter,
+  overdueProcurementFilter,
+  setOverdueProcurementFilter,
   setAttentionDrill,
 }: DashboardProjectsPanelProps) {
   const { t, locale } = useTranslation()
   const notAvailable = t('common.notAvailable')
   const columnCount = isDirector ? 12 : 11
+
+  const factoryLabel =
+    factoryFilterOptions.find((option) => option.value === factoryFilter)
+      ?.label ?? factoryFilter
+
+  const filterChips = useMemo(() => {
+    const chips = []
+    const trimmedSearch = projectSearch.trim()
+    if (trimmedSearch) {
+      chips.push({
+        id: 'search',
+        label: t('dashboard.filterChips.search', { query: trimmedSearch }),
+        onRemove: () => setProjectSearch(''),
+      })
+    }
+    if (statusFilter !== 'all') {
+      chips.push({
+        id: 'status',
+        label: getProjectStatusLabel(t, statusFilter),
+        onRemove: () => setStatusFilter('all'),
+      })
+    }
+    if (factoryFilter !== 'all') {
+      chips.push({
+        id: 'factory',
+        label: t('dashboard.filterChips.factory', { name: factoryLabel }),
+        onRemove: () => setFactoryFilter('all'),
+      })
+    }
+    if (blockedFilter === 'blocked') {
+      chips.push({
+        id: 'blocked',
+        label: t('dashboard.filterBlockedOnly'),
+        onRemove: () => setBlockedFilter('all'),
+      })
+    }
+    if (overdueFilter === 'overdue') {
+      chips.push({
+        id: 'overdue',
+        label: t('dashboard.filterOverdueOnly'),
+        onRemove: () => setOverdueFilter('all'),
+      })
+    }
+    if (phaseIssueFilter === 'phase_issues') {
+      chips.push({
+        id: 'phaseIssues',
+        label: t('dashboard.filterPhaseIssuesOnly'),
+        onRemove: () => setPhaseIssueFilter('all'),
+      })
+    }
+    if (progressFilter !== 'all') {
+      chips.push({
+        id: 'progress',
+        label: `${progressFilter}%`,
+        onRemove: () => setProgressFilter('all'),
+      })
+    }
+    if (taskActivityFilter !== 'all') {
+      chips.push({
+        id: 'taskActivity',
+        label: t(`taskStatus.${taskActivityFilter}`),
+        onRemove: () => setTaskActivityFilter('all'),
+      })
+    }
+    if (underfundedFilter === 'underfunded') {
+      chips.push({
+        id: 'underfunded',
+        label: t('dashboard.filterChips.underfunded'),
+        onRemove: () => setUnderfundedFilter('all'),
+      })
+    }
+    if (overdueProcurementFilter === 'overdue_procurement') {
+      chips.push({
+        id: 'overdueProcurement',
+        label: t('dashboard.filterChips.overdueProcurement'),
+        onRemove: () => setOverdueProcurementFilter('all'),
+      })
+    }
+    return chips
+  }, [
+    blockedFilter,
+    factoryFilter,
+    factoryLabel,
+    overdueFilter,
+    overdueProcurementFilter,
+    phaseIssueFilter,
+    progressFilter,
+    projectSearch,
+    setBlockedFilter,
+    setFactoryFilter,
+    setOverdueFilter,
+    setOverdueProcurementFilter,
+    setPhaseIssueFilter,
+    setProgressFilter,
+    setProjectSearch,
+    setStatusFilter,
+    setTaskActivityFilter,
+    setUnderfundedFilter,
+    statusFilter,
+    t,
+    taskActivityFilter,
+    underfundedFilter,
+  ])
 
   const handleExport = () => {
     if (filteredProjects.length === 0) {
@@ -237,44 +351,10 @@ export function DashboardProjectsPanel({
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {hasActiveFilters ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm">
-                <span className="text-muted-foreground">
-                  {t('dashboard.activeDrill')}
-                </span>
-                {statusFilter !== 'all' ? (
-                  <Badge variant="secondary">
-                    {getProjectStatusLabel(t, statusFilter)}
-                  </Badge>
-                ) : null}
-                {blockedFilter === 'blocked' ? (
-                  <Badge variant="destructive">
-                    {t('dashboard.filterBlockedOnly')}
-                  </Badge>
-                ) : null}
-                {overdueFilter === 'overdue' ? (
-                  <Badge variant="destructive">
-                    {t('dashboard.filterOverdueOnly')}
-                  </Badge>
-                ) : null}
-                {phaseIssueFilter === 'phase_issues' ? (
-                  <Badge variant="secondary">
-                    {t('dashboard.filterPhaseIssuesOnly')}
-                  </Badge>
-                ) : null}
-                {progressFilter !== 'all' ? (
-                  <Badge variant="secondary">{progressFilter}%</Badge>
-                ) : null}
-                {taskActivityFilter !== 'all' ? (
-                  <Badge variant="secondary">
-                    {t(`taskStatus.${taskActivityFilter}`)}
-                  </Badge>
-                ) : null}
-                <Button size="sm" variant="ghost" onClick={onClearFilters}>
-                  {t('list.clearFilters')}
-                </Button>
-              </div>
-            ) : null}
+            <ActiveFilterChips
+              chips={filterChips}
+              onClearAll={hasActiveFilters ? onClearFilters : undefined}
+            />
 
             <ListToolbar
               search={projectSearch}

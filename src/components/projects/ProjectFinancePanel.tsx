@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { EmptyState, EmptyStateButton } from '@/components/EmptyState'
 import { ExpenseLineFormDialog } from '@/components/expense-lines/ExpenseLineFormDialog'
 import { FinancialSnapshotCard } from '@/components/finance/FinancialSnapshotCard'
 import { FundingFormDialog } from '@/components/funding/FundingFormDialog'
@@ -25,6 +27,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
 import { useEditDialog } from '@/hooks/useEditDialog'
 import {
   useCreateProjectExpenseLine,
@@ -83,11 +86,23 @@ export function ProjectFinancePanel({
   enabled = true,
 }: ProjectFinancePanelProps) {
   const { t, locale } = useTranslation()
+  const { confirm, close, handleConfirm, state: confirmState } =
+    useConfirmAction()
   const notAvailable = t('common.notAvailable')
   const formatAmount = (value: number | null | undefined) =>
     formatLocalizedBudget(value ?? null, currency, locale, notAvailable)
   const formatDate = (value: string | null | undefined) =>
     value ? formatLocalizedDate(value, locale) : notAvailable
+
+  const confirmDelete = (action: () => void | Promise<void>) => {
+    confirm({
+      title: t('confirm.deleteTitle'),
+      description: t('confirm.deleteDescription'),
+      confirmLabel: t('common.delete'),
+      variant: 'destructive',
+      onConfirm: action,
+    })
+  }
 
   const fundingDialog = useEditDialog<ProjectFundingEntry>()
   const procurementDialog = useEditDialog<ProjectProcurementItem>()
@@ -209,6 +224,21 @@ export function ProjectFinancePanel({
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        cancelLabel={confirmState.cancelLabel}
+        variant={confirmState.variant}
+        isLoading={confirmState.isLoading}
+        onOpenChange={(open) => {
+          if (!open) {
+            close()
+          }
+        }}
+        onConfirm={handleConfirm}
+      />
       <QueryState
         isLoading={isLoading}
         error={snapshotError}
@@ -230,6 +260,7 @@ export function ProjectFinancePanel({
         emptyMessage={t('projectFinance.funding.empty')}
         isEmpty={funding.length === 0}
       >
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -261,17 +292,19 @@ export function ProjectFinancePanel({
                   <TableCell>
                     <RowActions
                       onEdit={() => fundingDialog.openEdit(entry)}
-                      onDelete={async () => {
-                        try {
-                          await deleteFunding.mutateAsync(entry.id)
-                          toast.success(t('projectFinance.funding.deleted'))
-                        } catch (error) {
-                          toastMutationError(
-                            error,
-                            t('projectFinance.funding.deleteFailed'),
-                          )
-                        }
-                      }}
+                      onDelete={() =>
+                        confirmDelete(async () => {
+                          try {
+                            await deleteFunding.mutateAsync(entry.id)
+                            toast.success(t('projectFinance.funding.deleted'))
+                          } catch (error) {
+                            toastMutationError(
+                              error,
+                              t('projectFinance.funding.deleteFailed'),
+                            )
+                          }
+                        })
+                      }
                       editLabel={t('common.edit')}
                       deleteLabel={t('common.delete')}
                     />
@@ -281,6 +314,67 @@ export function ProjectFinancePanel({
             ))}
           </TableBody>
         </Table>
+        </div>
+        <div className="space-y-3 md:hidden">
+          {funding.map((entry) => (
+            <FinanceEntryCard
+              key={entry.id}
+              rows={[
+                {
+                  label: t('projectFinance.funding.sourceType'),
+                  value:
+                    entry.source_type === 'other' && entry.source_name
+                      ? entry.source_name
+                      : t(
+                          `projectFinance.funding.sourceTypes.${entry.source_type}`,
+                        ),
+                },
+                {
+                  label: t('projectFinance.funding.amount'),
+                  value: formatAmount(entry.amount),
+                },
+                {
+                  label: t('projectFinance.funding.expectedDate'),
+                  value: formatDate(entry.expected_date),
+                },
+                {
+                  label: t('projectFinance.funding.receivedDate'),
+                  value: formatDate(entry.received_date),
+                },
+                {
+                  label: t('common.status'),
+                  value: (
+                    <Badge variant="outline">
+                      {t(`projectFinance.funding.statuses.${entry.status}`)}
+                    </Badge>
+                  ),
+                },
+              ]}
+              actions={
+                canManage ? (
+                  <RowActions
+                    onEdit={() => fundingDialog.openEdit(entry)}
+                    onDelete={() =>
+                      confirmDelete(async () => {
+                        try {
+                          await deleteFunding.mutateAsync(entry.id)
+                          toast.success(t('projectFinance.funding.deleted'))
+                        } catch (error) {
+                          toastMutationError(
+                            error,
+                            t('projectFinance.funding.deleteFailed'),
+                          )
+                        }
+                      })
+                    }
+                    editLabel={t('common.edit')}
+                    deleteLabel={t('common.delete')}
+                  />
+                ) : undefined
+              }
+            />
+          ))}
+        </div>
       </FinanceSection>
 
       <FinanceSection
@@ -300,6 +394,7 @@ export function ProjectFinancePanel({
           ) : null
         }
       >
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -323,17 +418,19 @@ export function ProjectFinancePanel({
                   <TableCell>
                     <RowActions
                       onEdit={() => expenseDialog.openEdit(line)}
-                      onDelete={async () => {
-                        try {
-                          await deleteExpense.mutateAsync(line.id)
-                          toast.success(t('projectFinance.expensePlan.deleted'))
-                        } catch (error) {
-                          toastMutationError(
-                            error,
-                            t('projectFinance.expensePlan.deleteFailed'),
-                          )
-                        }
-                      }}
+                      onDelete={() =>
+                        confirmDelete(async () => {
+                          try {
+                            await deleteExpense.mutateAsync(line.id)
+                            toast.success(t('projectFinance.expensePlan.deleted'))
+                          } catch (error) {
+                            toastMutationError(
+                              error,
+                              t('projectFinance.expensePlan.deleteFailed'),
+                            )
+                          }
+                        })
+                      }
                       editLabel={t('common.edit')}
                       deleteLabel={t('common.delete')}
                     />
@@ -343,6 +440,56 @@ export function ProjectFinancePanel({
             ))}
           </TableBody>
         </Table>
+        </div>
+        <div className="space-y-3 md:hidden">
+          {expenseLines.map((line) => (
+            <FinanceEntryCard
+              key={line.id}
+              rows={[
+                {
+                  label: t('projectFinance.expensePlan.category'),
+                  value: t(
+                    `projectFinance.expensePlan.categories.${line.category}`,
+                  ),
+                },
+                {
+                  label: t('common.description'),
+                  value: line.description,
+                },
+                {
+                  label: t('projectFinance.expensePlan.plannedAmount'),
+                  value: formatAmount(line.planned_amount),
+                },
+                {
+                  label: t('projectFinance.expensePlan.actualAmount'),
+                  value: formatAmount(line.actual_amount),
+                },
+              ]}
+              actions={
+                canManage ? (
+                  <RowActions
+                    onEdit={() => expenseDialog.openEdit(line)}
+                    onDelete={() =>
+                      confirmDelete(async () => {
+                        try {
+                          await deleteExpense.mutateAsync(line.id)
+                          toast.success(t('projectFinance.expensePlan.deleted'))
+                        } catch (error) {
+                          toastMutationError(
+                            error,
+                            t('projectFinance.expensePlan.deleteFailed'),
+                          )
+                        }
+                      })
+                    }
+                    editLabel={t('common.edit')}
+                    deleteLabel={t('common.delete')}
+                  />
+                ) : undefined
+              }
+            />
+          ))}
+        </div>
       </FinanceSection>
 
       <FinanceSection
@@ -360,6 +507,7 @@ export function ProjectFinancePanel({
           </p>
         }
       >
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -389,17 +537,19 @@ export function ProjectFinancePanel({
                   <TableCell>
                     <RowActions
                       onEdit={() => procurementDialog.openEdit(item)}
-                      onDelete={async () => {
-                        try {
-                          await deleteProcurement.mutateAsync(item.id)
-                          toast.success(t('projectFinance.procurement.deleted'))
-                        } catch (error) {
-                          toastMutationError(
-                            error,
-                            t('projectFinance.procurement.deleteFailed'),
-                          )
-                        }
-                      }}
+                      onDelete={() =>
+                        confirmDelete(async () => {
+                          try {
+                            await deleteProcurement.mutateAsync(item.id)
+                            toast.success(t('projectFinance.procurement.deleted'))
+                          } catch (error) {
+                            toastMutationError(
+                              error,
+                              t('projectFinance.procurement.deleteFailed'),
+                            )
+                          }
+                        })
+                      }
                       editLabel={t('common.edit')}
                       deleteLabel={t('common.delete')}
                     />
@@ -409,6 +559,62 @@ export function ProjectFinancePanel({
             ))}
           </TableBody>
         </Table>
+        </div>
+        <div className="space-y-3 md:hidden">
+          {procurement.map((item) => (
+            <FinanceEntryCard
+              key={item.id}
+              rows={[
+                {
+                  label: t('common.description'),
+                  value: item.description,
+                },
+                {
+                  label: t('projectFinance.procurement.quantity'),
+                  value: `${item.quantity} ${item.unit}`,
+                },
+                {
+                  label: t('projectFinance.procurement.estimatedCost'),
+                  value: formatAmount(item.estimated_cost),
+                },
+                {
+                  label: t('projectFinance.procurement.neededBy'),
+                  value: formatDate(item.needed_by_date),
+                },
+                {
+                  label: t('common.status'),
+                  value: (
+                    <Badge variant="outline">
+                      {t(`projectFinance.procurement.statuses.${item.status}`)}
+                    </Badge>
+                  ),
+                },
+              ]}
+              actions={
+                canManage ? (
+                  <RowActions
+                    onEdit={() => procurementDialog.openEdit(item)}
+                    onDelete={() =>
+                      confirmDelete(async () => {
+                        try {
+                          await deleteProcurement.mutateAsync(item.id)
+                          toast.success(t('projectFinance.procurement.deleted'))
+                        } catch (error) {
+                          toastMutationError(
+                            error,
+                            t('projectFinance.procurement.deleteFailed'),
+                          )
+                        }
+                      })
+                    }
+                    editLabel={t('common.edit')}
+                    deleteLabel={t('common.delete')}
+                  />
+                ) : undefined
+              }
+            />
+          ))}
+        </div>
       </FinanceSection>
 
       <FinanceSection
@@ -426,6 +632,7 @@ export function ProjectFinancePanel({
           </p>
         }
       >
+        <div className="hidden md:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -456,17 +663,19 @@ export function ProjectFinancePanel({
                   <TableCell>
                     <RowActions
                       onEdit={() => staffDialog.openEdit(member)}
-                      onDelete={async () => {
-                        try {
-                          await deleteStaff.mutateAsync(member.id)
-                          toast.success(t('projectFinance.staff.deleted'))
-                        } catch (error) {
-                          toastMutationError(
-                            error,
-                            t('projectFinance.staff.deleteFailed'),
-                          )
-                        }
-                      }}
+                      onDelete={() =>
+                        confirmDelete(async () => {
+                          try {
+                            await deleteStaff.mutateAsync(member.id)
+                            toast.success(t('projectFinance.staff.deleted'))
+                          } catch (error) {
+                            toastMutationError(
+                              error,
+                              t('projectFinance.staff.deleteFailed'),
+                            )
+                          }
+                        })
+                      }
                       editLabel={t('common.edit')}
                       deleteLabel={t('common.delete')}
                     />
@@ -476,6 +685,63 @@ export function ProjectFinancePanel({
             ))}
           </TableBody>
         </Table>
+        </div>
+        <div className="space-y-3 md:hidden">
+          {staff.map((member) => (
+            <FinanceEntryCard
+              key={member.id}
+              rows={[
+                {
+                  label: t('common.name'),
+                  value: member.full_name,
+                },
+                {
+                  label: t('projectFinance.staff.roleTitle'),
+                  value: (
+                    <span>
+                      {member.role_title}
+                      {member.is_contractor ? (
+                        <Badge variant="secondary" className="ms-2">
+                          {t('projectFinance.staff.contractorBadge')}
+                        </Badge>
+                      ) : null}
+                    </span>
+                  ),
+                },
+                {
+                  label: t('projectFinance.staff.headcount'),
+                  value: member.headcount,
+                },
+                {
+                  label: t('projectFinance.staff.qualifications'),
+                  value: member.qualifications ?? notAvailable,
+                },
+              ]}
+              actions={
+                canManage ? (
+                  <RowActions
+                    onEdit={() => staffDialog.openEdit(member)}
+                    onDelete={() =>
+                      confirmDelete(async () => {
+                        try {
+                          await deleteStaff.mutateAsync(member.id)
+                          toast.success(t('projectFinance.staff.deleted'))
+                        } catch (error) {
+                          toastMutationError(
+                            error,
+                            t('projectFinance.staff.deleteFailed'),
+                          )
+                        }
+                      })
+                    }
+                    editLabel={t('common.edit')}
+                    deleteLabel={t('common.delete')}
+                  />
+                ) : undefined
+              }
+            />
+          ))}
+        </div>
       </FinanceSection>
 
       <FundingFormDialog
@@ -551,12 +817,39 @@ function FinanceSection({
       </CardHeader>
       <CardContent>
         {isEmpty ? (
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          <EmptyState
+            description={emptyMessage}
+            action={
+              canManage ? (
+                <EmptyStateButton label={t('common.add')} onClick={onAdd} />
+              ) : undefined
+            }
+          />
         ) : (
           children
         )}
       </CardContent>
     </Card>
+  )
+}
+
+function FinanceEntryCard({
+  rows,
+  actions,
+}: {
+  rows: Array<{ label: string; value: ReactNode }>
+  actions?: ReactNode
+}) {
+  return (
+    <div className="space-y-2 rounded-lg border border-border p-3 text-sm">
+      {rows.map((row) => (
+        <div key={row.label} className="flex items-start justify-between gap-3">
+          <span className="text-muted-foreground">{row.label}</span>
+          <span className="text-end font-medium">{row.value}</span>
+        </div>
+      ))}
+      {actions ? <div className="flex justify-end pt-1">{actions}</div> : null}
+    </div>
   )
 }
 
@@ -567,7 +860,7 @@ function RowActions({
   deleteLabel,
 }: {
   onEdit: () => void
-  onDelete: () => Promise<void>
+  onDelete: () => void
   editLabel: string
   deleteLabel: string
 }) {

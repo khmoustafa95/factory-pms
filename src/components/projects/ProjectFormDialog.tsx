@@ -4,6 +4,7 @@ import { useWatch } from 'react-hook-form'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { GeneratedPasswordDialog } from '@/components/accounts/GeneratedPasswordDialog'
 import { DatePickerField } from '@/components/DatePicker'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { ProposalFilePicker } from '@/components/projects/ProposalFilePicker'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useCreateAccount } from '@/hooks/useAccounts'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
@@ -103,7 +105,7 @@ export function ProjectFormDialog({
   const draftSchema = useValidationSchema(createDraftProjectSchema)
   const submitSchema = useValidationSchema(createSubmitProjectSchema)
 
-  const { form } = useFormDialog({
+  const { form, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(draftSchema),
     defaultValues: PROJECT_FORM_DEFAULTS,
@@ -120,12 +122,15 @@ export function ProjectFormDialog({
     resetDependencies: [project],
   })
 
-  const handleOpenChange = (nextOpen: boolean) => {
+  const applyOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setPendingFiles([])
     }
     onOpenChange(nextOpen)
   }
+
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, applyOpenChange)
 
   const selectedCurrency = useWatch({
     control: form.control,
@@ -446,7 +451,7 @@ export function ProjectFormDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleOpenChange(false)}
               >
                 {t('common.cancel')}
               </Button>
@@ -483,6 +488,12 @@ export function ProjectFormDialog({
           </form>
         </DialogContent>
       </Dialog>
+
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
 
       <AccountFormDialog
         open={addPmOpen}

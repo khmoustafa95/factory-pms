@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +23,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   formatNullableSelectValue,
@@ -71,7 +73,7 @@ export function ExpenseLineFormDialog({
   const { t } = useTranslation()
   const schema = useValidationSchema(createExpenseLineFormSchema)
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const { form, createSubmitHandler, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(schema),
     defaultValues: EXPENSE_LINE_FORM_DEFAULTS,
@@ -86,12 +88,15 @@ export function ExpenseLineFormDialog({
     resetDependencies: [line?.id],
   })
 
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
   const selectedCategory = form.watch('category')
   const selectedPhaseId = form.watch('phase_id')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -208,7 +213,7 @@ export function ExpenseLineFormDialog({
           </DialogBody>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -217,6 +222,12 @@ export function ExpenseLineFormDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

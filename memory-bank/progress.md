@@ -2,6 +2,8 @@
 
 ## Done
 
+- [x] UX optimizations rollout: shared confirm/empty/fetching primitives; URL-synced project/settings/dashboard state; guarded deletes + approve/complete dialogs; `PageHeaderActions`; WBS validity banner; finance mobile cards; dashboard chart keyboard legends; notification inbox filters; command palette actions; `FetchingBar` in layout
+- [x] Unsaved-changes guard on all `useFormDialog` dialogs (`DiscardChangesDialog` + `useFormDialogClose`); phase/task collapsible tracking sections; `TaskCompleteDialog` impact message
 - [x] Kanban drag-and-drop between status columns (`@dnd-kit/core`); Select dropdown kept; blocked/done dialogs unchanged
 - [x] Financial & operations layer: funding entries, procurement items, operational staff, overhead expense lines, financial snapshot RPC, Finance tab, dashboard KPIs (underfunded/overdue procurement), projects list budget-used/funding columns
 - [x] TaskFlow ports wave 1–2: debounce, virtual dashboard table, dropzone/file icons, command palette, CSV Excel export, lazy date picker
@@ -68,6 +70,22 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-01 (UX optimizations rollout)
+
+- Shared primitives: `ConfirmDialog`, `EmptyState`, `FetchingBar`, `ScrollableTabsList`, `ActiveFilterChips`, `DiscardChangesDialog`, `PageHeaderActions`, `ProjectApproveDialog`
+- Hooks: `useUrlState`, `useConfirmAction`, `useGuardedDialogClose`, `useFormDialogClose`, `useDashboardFilters`, `useProjectDetailTab`, `useUnsavedFormWarning`
+- Safety: confirm before finance/WBS/attachment/currency deletes; complete-execution + approve summary dialogs on project detail
+- Navigation: URL-persisted project detail tabs, settings tabs, dashboard filters; notification `link_path` appends `?tab=` client-side
+- Mobile/empty: `FinanceEntryCard` layout on finance panel; `EmptyState` in lists; `ActiveFilterChips` on dashboard with per-chip dismiss
+- Polish: chart keyboard legend buttons (`aria-pressed`); notification unread-only + Today/Yesterday groups; command palette Actions group; `FetchingBar` on background refetch
+- `npm run verify` + `npm run build` pass
+
+### 2026-09-01 (form dialog unsaved-changes guard)
+
+- `DiscardChangesDialog` + `useFormDialogClose` on all 13 `useFormDialog` consumers
+- `PhaseFormDialog` / `TaskFormDialog`: basics header + collapsible tracking section (`defaultOpen` in edit mode), `sm:max-w-xl`
+- `TaskCompleteDialog`: optional `taskWeightPercent`, `phaseName`, `openTaskCount` + `StatusMessage` (`wbs.taskCompleteImpact`)
 
 ### 2026-09-01 (Kanban drag-and-drop)
 

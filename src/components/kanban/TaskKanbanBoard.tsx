@@ -332,6 +332,22 @@ export function TaskKanbanBoard({
         initialActualCost={completingTask?.actual_cost}
         initialScheduleReason={completingTask?.schedule_deviation_reason}
         initialFinancialReason={completingTask?.financial_deviation_reason}
+        taskWeightPercent={Number(completingTask?.weight_percent ?? 0)}
+        phaseName={
+          completingTask
+            ? (phaseNameById.get(completingTask.phase_id) ?? t('common.phase'))
+            : undefined
+        }
+        openTaskCount={
+          completingTask
+            ? tasks.filter(
+                (task) =>
+                  task.phase_id === completingTask.phase_id &&
+                  task.status !== 'done' &&
+                  task.id !== completingTask.id,
+              ).length
+            : undefined
+        }
         onSubmit={submitComplete}
         isSubmitting={updateStatus.isPending}
       />

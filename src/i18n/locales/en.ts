@@ -73,6 +73,37 @@ export const en = {
     system: 'System',
     english: 'English',
     arabic: 'العربية',
+    confirm: 'Confirm',
+    discardChanges: 'Discard changes',
+    discardChangesDescription:
+      'You have unsaved changes. Discard them and close this form?',
+    keepEditing: 'Keep editing',
+    moreActions: 'More actions',
+  },
+  confirm: {
+    deleteTitle: 'Delete this item?',
+    deleteDescription: 'This action cannot be undone.',
+    approveTitle: 'Approve proposal?',
+    approveDescription:
+      'The project will move to approved status and can start execution once the WBS is ready.',
+    completeExecutionTitle: 'Complete project execution?',
+    completeExecutionDescription:
+      'Mark this project as completed. Open tasks will remain in the system.',
+    completeExecutionWarning:
+      'Warning: this project still has {{blocked}} blocked and {{overdue}} overdue tasks.',
+    deletePhaseTitle: 'Delete phase?',
+    deletePhaseDescription:
+      'All tasks in this phase will be deleted. Remaining weight will be rebalanced.',
+    deleteTaskTitle: 'Delete task?',
+    deleteTaskDescription: 'This task will be permanently removed.',
+    deleteAttachmentTitle: 'Delete attachment?',
+    deleteAttachmentDescription: 'This file will be removed from the project.',
+    deleteCurrencyTitle: 'Delete currency?',
+    deleteCurrencyDescription:
+      'Projects using this currency will need to be updated manually.',
+  },
+  emptyState: {
+    defaultTitle: 'Nothing here yet',
   },
   list: {
     search: 'Search',
@@ -114,6 +145,11 @@ export const en = {
     navigation: 'Navigation',
     projects: 'Projects',
     hint: 'Ctrl K',
+    actions: 'Actions',
+    goDashboard: 'Go to dashboard',
+    goSettings: 'Go to settings',
+    goProjects: 'Go to projects',
+    newProposal: 'New proposal',
   },
   datePicker: {
     placeholder: 'Pick a date',
@@ -125,6 +161,10 @@ export const en = {
     markAllRead: 'Mark all read',
     allCaughtUp: 'You are up to date.',
     unreadCount: '{{count}} unread',
+    unreadOnly: 'Unread only',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    older: 'Earlier',
     types: {
       project_proposed: {
         title: 'New proposal submitted',
@@ -306,6 +346,12 @@ export const en = {
     filterProgressRange: 'Progress range',
     filterBlockedState: 'Blocked state',
     filterBlockedOnly: 'Blocked only',
+    filterChips: {
+      search: 'Search: {{query}}',
+      factory: 'Factory: {{name}}',
+      underfunded: 'Underfunded',
+      overdueProcurement: 'Overdue procurement',
+    },
     filterNotBlockedOnly: 'Not blocked only',
     filterOverdueState: 'Overdue tasks',
     filterOverdueOnly: 'Has overdue tasks',
@@ -353,6 +399,14 @@ export const en = {
     proposalSubmitted: 'Proposal submitted for company director review',
     submitFailed: 'Unable to submit proposal',
     proposalApproved: 'Proposal approved',
+    approveDialog: {
+      title: 'Approve proposal',
+      description: 'Review the summary below before approving.',
+      assignedPm: 'Assigned PM',
+      attachmentCount: 'Attachments',
+      fundingTotal: 'Proposed funding',
+      confirm: 'Approve proposal',
+    },
     approveFailed: 'Unable to approve proposal',
     proposalRejected: 'Proposal rejected',
     rejectFailed: 'Unable to reject proposal',
@@ -641,6 +695,10 @@ export const en = {
     taskWeightInvalid: 'Task weights in this phase must total exactly 100%.',
     taskWeightRemaining: '{{remaining}}% task weight remaining',
     noPhases: 'No phases yet. Add the first phase to build the WBS.',
+    validityBanner: {
+      weights: 'Phase weights total {{total}}% — must equal 100%.',
+      budget: 'Phase budgets total {{total}} — must match project budget {{projectBudget}}.',
+    },
     weight: 'Weight',
     dueDate: 'Due date',
     assignee: 'Assignee',
@@ -700,6 +758,10 @@ export const en = {
     kanbanDropHere: 'Drop here',
     taskStatusUpdated: 'Task status updated',
     updateTaskStatusFailed: 'Unable to update task status',
+    taskCompleteImpact:
+      'This task contributes {{weight}}% to phase «{{phase}}». {{openTasks}} other open task(s) remain in this phase.',
+    trackingSection: 'Tracking & completion',
+    basicsSection: 'Basics',
   },
   progress: {
     title: 'Progress overview',

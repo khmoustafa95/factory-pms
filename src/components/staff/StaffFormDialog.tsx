@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { DatePickerField } from '@/components/DatePicker'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -24,6 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   formatNullableSelectValue,
@@ -68,7 +70,7 @@ export function StaffFormDialog({
   const { t } = useTranslation()
   const schema = useValidationSchema(createStaffFormSchema)
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const { form, createSubmitHandler, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(schema),
     defaultValues: STAFF_FORM_DEFAULTS,
@@ -86,12 +88,15 @@ export function StaffFormDialog({
     resetDependencies: [member?.id],
   })
 
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
   const selectedPhaseId = form.watch('phase_id')
   const isContractor = form.watch('is_contractor')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -213,7 +218,7 @@ export function StaffFormDialog({
           </DialogBody>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
@@ -222,6 +227,12 @@ export function StaffFormDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

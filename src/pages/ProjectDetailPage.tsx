@@ -3,11 +3,15 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CommentThread } from '@/components/comments/CommentThread'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { PageHeaderActions } from '@/components/PageHeaderActions'
+import { ScrollableTabsList } from '@/components/ScrollableTabsList'
 import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
 import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
 import { PageHeader } from '@/components/PageHeader'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
+import { ProjectApproveDialog } from '@/components/projects/ProjectApproveDialog'
 import { ProjectAttachmentsPanel } from '@/components/projects/ProjectAttachmentsPanel'
 import { ProjectFinancePanel } from '@/components/projects/ProjectFinancePanel'
 import {
@@ -29,15 +33,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
+import { useProjectDetailTab } from '@/hooks/useProjectDetailTab'
+import { useProjectAttachments } from '@/hooks/useProjectAttachments'
 import { useProject } from '@/hooks/useProject'
 import {
   useCreatePhase,
@@ -67,6 +68,7 @@ import {
   type TaskListItem,
 } from '@/hooks/useTasks'
 import { formatLocalizedBudget } from '@/lib/i18n-format'
+import { todayDateOnly } from '@/lib/date-only'
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { getProjectScheduleBounds } from '@/lib/duration'
 import { calculatePhaseMetrics } from '@/lib/phase-metrics'
@@ -84,7 +86,7 @@ import {
   canManageProjectAttachments,
   isProposalReviewStatus,
 } from '@/lib/project-status'
-import { isFactoryManager, isProjectManager } from '@/lib/roles'
+import { isFactoryManager } from '@/lib/roles'
 import type {
   ProjectPauseValues,
   ProjectRejectValues,
@@ -192,6 +194,13 @@ export function ProjectDetailPage() {
   const [projectDialogOpen, setProjectDialogOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false)
+  const { confirm, close, handleConfirm, state: confirmState } =
+    useConfirmAction()
+  const [activeTab, setActiveTab] = useProjectDetailTab(showFinance)
+  const { data: proposalAttachments = [] } = useProjectAttachments(
+    isProposalMode ? projectId : undefined,
+  )
 
   const tasksByPhase = useMemo(() => {
     const grouped = new Map<string, TaskListItem[]>()
@@ -205,6 +214,18 @@ export function ProjectDetailPage() {
     }
     return grouped
   }, [phases, tasks])
+
+  const blockedTaskCount = tasks.filter((task) => task.status === 'blocked').length
+  const overdueTaskCount = tasks.filter((task) => {
+    if (task.status === 'done' || !task.due_date?.trim()) {
+      return false
+    }
+    return task.due_date < todayDateOnly()
+  }).length
+  const proposalFundingTotal = proposalFunding.reduce(
+    (sum, entry) => sum + Number(entry.amount),
+    0,
+  )
 
   const totalWeight = sumPhaseWeights(phases)
   const weightsValid = isPhaseWeightSumValid(phases)
@@ -345,31 +366,6 @@ export function ProjectDetailPage() {
     }
   }
 
-  const getExecutionPermissionHint = (): string => {
-    if (!profile || !project) {
-      return t('projects.executionHintNoAccess')
-    }
-
-    if (isProjectManager(profile.role)) {
-      if (!project.assigned_pm_id) {
-        return t('projects.executionHintPmNotAssigned')
-      }
-      if (project.assigned_pm_id !== profile.id) {
-        return t('projects.executionHintPmOtherAssignee')
-      }
-    }
-
-    if (
-      isFactoryManager(profile.role) &&
-      profile.factory_id &&
-      project.factory_id !== profile.factory_id
-    ) {
-      return t('projects.executionHintFactoryScope')
-    }
-
-    return t('projects.executionHintNoAccess')
-  }
-
   const openCreatePhase = () => {
     setEditingPhase(null)
     setPhaseDialogOpen(true)
@@ -504,137 +500,115 @@ export function ProjectDetailPage() {
               </span>
             }
             actions={
-              <div className="flex flex-wrap gap-2">
-                {canReviewAsDirector ? (
-                  <>
-                    <Button
-                      type="button"
-                      size="sm"
-                      disabled={isReviewing}
-                      onClick={() => void handleApprove()}
-                    >
-                      <Check className="size-4" />
-                      {t('common.approve')}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      disabled={isReviewing}
-                      onClick={() => setRejectDialogOpen(true)}
-                    >
-                      <X className="size-4" />
-                      {t('common.reject')}
-                    </Button>
-                  </>
-                ) : null}
-                {canEditDetails ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setProjectDialogOpen(true)}
-                  >
-                    {t('common.edit')}
-                  </Button>
-                ) : null}
-                {canStart && project.status === 'approved' ? (
-                  executionReadiness?.ready ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => void handleStartExecution()}
-                      disabled={isStartingExecution}
-                    >
-                      {t('common.startExecution')}
-                    </Button>
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              disabled
-                            >
-                              <Lock className="size-4" />
-                              {t('common.startExecution')}
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent sideOffset={6}>
-                          <ul className="list-disc space-y-1 ps-4">
-                            {(executionReadiness?.reasons ?? []).map(
-                              (reason) => (
-                                <li key={reason}>
-                                  {t(`projects.executionNotReady.${reason}`)}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )
-                ) : null}
-                {canManage && project.status === 'in_progress' ? (
-                  <>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => setPauseDialogOpen(true)}
-                      disabled={isPausingExecution}
-                    >
-                      {t('common.pauseExecution')}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => void handleCompleteExecution()}
-                      disabled={isCompletingExecution}
-                    >
-                      {t('common.completeExecution')}
-                    </Button>
-                  </>
-                ) : null}
-                {canManage && project.status === 'paused' ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => void handleResumeExecution()}
-                    disabled={isResumingExecution}
-                  >
-                    {t('common.resumeExecution')}
-                  </Button>
-                ) : null}
-                {!canManage &&
-                !canStart &&
-                (project.status === 'approved' ||
-                  project.status === 'in_progress' ||
-                  project.status === 'paused') ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          disabled
-                        >
-                          <Lock className="size-4" />
-                          {t('projects.executionActionsLocked')}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent sideOffset={6}>
-                        {getExecutionPermissionHint()}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ) : null}
-              </div>
+              <PageHeaderActions
+                primary={
+                  canReviewAsDirector
+                    ? {
+                        id: 'approve',
+                        label: (
+                          <>
+                            <Check className="size-4" />
+                            {t('common.approve')}
+                          </>
+                        ),
+                        disabled: isReviewing,
+                        onClick: () => setApproveDialogOpen(true),
+                      }
+                    : canStart && project.status === 'approved'
+                      ? executionReadiness?.ready
+                        ? {
+                            id: 'start',
+                            label: t('common.startExecution'),
+                            disabled: isStartingExecution,
+                            onClick: () => void handleStartExecution(),
+                          }
+                        : null
+                      : canManage && project.status === 'in_progress'
+                        ? {
+                            id: 'complete',
+                            label: t('common.completeExecution'),
+                            disabled: isCompletingExecution,
+                            onClick: () =>
+                              confirm({
+                                title: t('confirm.completeExecutionTitle'),
+                                description:
+                                  blockedTaskCount > 0 || overdueTaskCount > 0
+                                    ? `${t('confirm.completeExecutionDescription')} ${t('confirm.completeExecutionWarning', { blocked: blockedTaskCount, overdue: overdueTaskCount })}`
+                                    : t('confirm.completeExecutionDescription'),
+                                confirmLabel: t('common.completeExecution'),
+                                onConfirm: () => handleCompleteExecution(),
+                              }),
+                          }
+                        : canManage && project.status === 'paused'
+                          ? {
+                              id: 'resume',
+                              label: t('common.resumeExecution'),
+                              disabled: isResumingExecution,
+                              onClick: () => void handleResumeExecution(),
+                            }
+                          : null
+                }
+                secondary={[
+                  {
+                    id: 'reject',
+                    label: (
+                      <>
+                        <X className="size-4" />
+                        {t('common.reject')}
+                      </>
+                    ),
+                    destructive: true,
+                    disabled: isReviewing,
+                    hidden: !canReviewAsDirector,
+                    onClick: () => setRejectDialogOpen(true),
+                  },
+                  {
+                    id: 'edit',
+                    label: t('common.edit'),
+                    hidden: !canEditDetails,
+                    onClick: () => setProjectDialogOpen(true),
+                  },
+                  {
+                    id: 'start-locked',
+                    label: (
+                      <>
+                        <Lock className="size-4" />
+                        {t('common.startExecution')}
+                      </>
+                    ),
+                    disabled: true,
+                    hidden: !(
+                      canStart &&
+                      project.status === 'approved' &&
+                      !executionReadiness?.ready
+                    ),
+                  },
+                  {
+                    id: 'pause',
+                    label: t('common.pauseExecution'),
+                    disabled: isPausingExecution,
+                    hidden: !(canManage && project.status === 'in_progress'),
+                    onClick: () => setPauseDialogOpen(true),
+                  },
+                  {
+                    id: 'locked-hint',
+                    label: (
+                      <>
+                        <Lock className="size-4" />
+                        {t('projects.executionActionsLocked')}
+                      </>
+                    ),
+                    disabled: true,
+                    hidden: !(
+                      !canManage &&
+                      !canStart &&
+                      (project.status === 'approved' ||
+                        project.status === 'in_progress' ||
+                        project.status === 'paused')
+                    ),
+                  },
+                ]}
+              />
             }
             description={
               <span className="flex flex-col gap-2">
@@ -795,8 +769,8 @@ export function ProjectDetailPage() {
           onRetry={refetchWbs}
           isRetrying={isWbsFetching}
         >
-          <Tabs defaultValue="overview" dir={dir}>
-            <TabsList className="w-full justify-start overflow-x-auto">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} dir={dir}>
+            <ScrollableTabsList>
               <TabsTrigger value="overview">
                 {t('projectDetail.tabs.overview')}
               </TabsTrigger>
@@ -820,7 +794,7 @@ export function ProjectDetailPage() {
               <TabsTrigger value="attachments">
                 {t('projects.attachments.title')}
               </TabsTrigger>
-            </TabsList>
+            </ScrollableTabsList>
 
             <TabsContent value="overview" className="mt-4">
               <ProjectProgressOverview
@@ -905,6 +879,37 @@ export function ProjectDetailPage() {
           isSubmitting={updateProject.isPending}
         />
       ) : null}
+
+      {canReviewAsDirector && project ? (
+        <ProjectApproveDialog
+          open={approveDialogOpen}
+          onOpenChange={setApproveDialogOpen}
+          project={project}
+          pmName={
+            project.assigned_pm?.full_name ?? t('common.unassigned')
+          }
+          attachmentCount={proposalAttachments.length}
+          fundingTotal={proposalFundingTotal}
+          onConfirm={handleApprove}
+          isSubmitting={approveProject.isPending}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        cancelLabel={confirmState.cancelLabel}
+        variant={confirmState.variant}
+        isLoading={confirmState.isLoading}
+        onOpenChange={(open) => {
+          if (!open) {
+            close()
+          }
+        }}
+        onConfirm={handleConfirm}
+      />
 
       {canReviewAsDirector ? (
         <ProjectRejectDialog

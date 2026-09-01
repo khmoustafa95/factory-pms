@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from 'radix-ui'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/contexts/LocaleContext'
 import { XIcon } from 'lucide-react'
 
 function Dialog({
@@ -61,6 +62,8 @@ function DialogContent({
   /** When false (default), clicking the overlay does not close the dialog. */
   dismissOnOutsideClick?: boolean
 }) {
+  const { t } = useTranslation()
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -99,7 +102,7 @@ function DialogContent({
               size="icon-sm"
             >
               <XIcon />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('common.close')}</span>
             </Button>
           </DialogPrimitive.Close>
         )}

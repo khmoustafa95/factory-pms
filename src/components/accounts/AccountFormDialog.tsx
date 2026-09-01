@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormCheckboxField } from '@/components/FormCheckboxField'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactories } from '@/hooks/useFactories'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import {
@@ -72,7 +74,7 @@ export function AccountFormDialog({
     [isCreate],
   )
 
-  const { form, createSubmitHandler } = useFormDialog<AccountDialogFormValues>({
+  const { form, createSubmitHandler, isDirty } = useFormDialog<AccountDialogFormValues>({
     open,
     resolver: zodResolver(schema),
     defaultValues: {
@@ -91,6 +93,9 @@ export function AccountFormDialog({
     }),
     resetDependencies: [account, lockFactoryId, defaultRole, isCreate],
   })
+
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
 
   const selectedRole = useWatch({ control: form.control, name: 'role' })
   const selectedFactoryId = useWatch({
@@ -128,7 +133,8 @@ export function AccountFormDialog({
   )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -221,7 +227,7 @@ export function AccountFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
@@ -235,6 +241,12 @@ export function AccountFormDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

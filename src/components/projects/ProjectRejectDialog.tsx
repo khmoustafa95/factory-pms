@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createProjectRejectSchema,
@@ -42,17 +44,20 @@ export function ProjectRejectDialog({
   const { t } = useTranslation()
   const projectRejectSchema = useValidationSchema(createProjectRejectSchema)
 
-  const { form, createSubmitHandler } = useFormDialog({
+  const { form, createSubmitHandler, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(projectRejectSchema),
     defaultValues: REJECT_FORM_DEFAULTS,
     getValues: () => ({ rejection_reason: '' }),
   })
 
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
   const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('projects.rejectProposal')}</DialogTitle>
@@ -82,7 +87,7 @@ export function ProjectRejectDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
@@ -94,6 +99,12 @@ export function ProjectRejectDialog({
           </DialogFooter>
         </form>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

@@ -2,11 +2,12 @@
 
 ## Current focus
 
-**Kanban drag-and-drop** — task cards can be dragged between status columns; dropdown remains for keyboard/fallback. Blocked/done still open their required dialogs.
+**UX optimizations rollout** — complete. Shared primitives, guarded destructive actions, URL-persisted tabs/filters, mobile finance cards, dashboard/notifications/command-palette polish, form unsaved guards.
 
 ## Recent changes
 
-- [2026-09-01] Kanban drag-and-drop via `@dnd-kit/core`: droppable status columns, pointer + keyboard sensors, existing `useUpdateTaskStatus` path (blocked reason / complete dialogs). Select dropdown kept. No intra-column reorder (task `sort_order` is WBS order).
+- [2026-09-01] UX rollout: `ConfirmDialog`, `EmptyState`, `FetchingBar`, `ScrollableTabsList`, `ActiveFilterChips`, `PageHeaderActions`, `ProjectApproveDialog`; `useUrlState` / `useDashboardFilters` / `useProjectDetailTab`; confirm before deletes + complete execution; URL tabs (project/settings/dashboard) + notification deep-link tab mapping; finance mobile `FinanceEntryCard`; dashboard chart keyboard legends; notification unread filter + date groups; command palette actions; `useUnsavedFormWarning` on login + comment composer
+- [2026-09-01] Unsaved-changes guard: `DiscardChangesDialog` + `useFormDialogClose` on all 13 `useFormDialog` form dialogs; `PhaseFormDialog`/`TaskFormDialog` basics + collapsible tracking (`sm:max-w-xl`); `TaskCompleteDialog` optional impact props + `StatusMessage`
 - [2026-09-01] Form perf cleanup: `useValidationSchema` accepts explicit deps (fixes inline-factory rebuild every render); removed redundant `key={locale}` form remounts; `TaskCompleteDialog` uses `useFormDialog` + shared schema hook
 - [2026-09-01] Financial operations: migration `20260901120000_project_financial_operations.sql` (4 tables + RLS + `get_project_financial_snapshot` + extended dashboard/list RPCs); `ProjectFinancePanel` with CRUD dialogs; proposal summary + finance tab on `ProjectDetailPage`; dashboard underfunded/overdue-procurement KPIs; projects list budget-used/funding-status columns; i18n `projectFinance` ar/en
 - [2026-08-24] Browser follow-up: palette unmounts on close (no stuck overlay); dialogs keep `onFocusOutside` from dismissing when `dismissOnOutsideClick` is false so DatePicker works inside New proposal; FM login verified calendar (15 Aug 2026) + dropzone/`budget.xlsx`
@@ -24,6 +25,7 @@
 1. Apply `20260901120000_project_financial_operations.sql` to staging/live Supabase + smoke-test finance CRUD per role
 2. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
 3. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
+4. Manual QA: mobile finance cards, dashboard filter chips URL sync, notification deep links, discard-changes on form dialogs
 
 ## Open questions
 

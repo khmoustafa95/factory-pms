@@ -2,14 +2,20 @@ import { AccountSettingsTab } from '@/components/settings/AccountSettingsTab'
 import { CurrencySettingsTab } from '@/components/settings/CurrencySettingsTab'
 import { GeneralSettingsForm } from '@/components/settings/GeneralSettingsForm'
 import { PageHeader } from '@/components/PageHeader'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ScrollableTabsList } from '@/components/ScrollableTabsList'
+import { Tabs, TabsContent, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useSettingsTab } from '@/hooks/useProjectDetailTab'
 
 export function SettingsPage() {
   const { t, dir } = useTranslation()
   const { profile } = useAuth()
   const isDirector = profile?.role === 'company_director'
+  const allowedTabs = isDirector
+    ? (['account', 'general', 'currencies'] as const)
+    : (['account'] as const)
+  const [activeTab, setActiveTab] = useSettingsTab([...allowedTabs])
 
   return (
     <section className="space-y-6">
@@ -18,8 +24,14 @@ export function SettingsPage() {
         description={t('settings.description')}
       />
 
-      <Tabs defaultValue="account" dir={dir}>
-        <TabsList className="justify-start">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) =>
+          setActiveTab(value as (typeof allowedTabs)[number])
+        }
+        dir={dir}
+      >
+        <ScrollableTabsList>
           <TabsTrigger value="account">{t('settings.accountTab')}</TabsTrigger>
           {isDirector ? (
             <>
@@ -31,7 +43,7 @@ export function SettingsPage() {
               </TabsTrigger>
             </>
           ) : null}
-        </TabsList>
+        </ScrollableTabsList>
         <TabsContent value="account" className="mt-6">
           <AccountSettingsTab />
         </TabsContent>

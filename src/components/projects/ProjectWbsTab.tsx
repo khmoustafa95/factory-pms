@@ -1,4 +1,6 @@
 import { Layers, Plus, Trash2 } from 'lucide-react'
+import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { EmptyState, EmptyStateButton } from '@/components/EmptyState'
 import { ResponsiveTable } from '@/components/ResponsiveTable'
 import { StatusMessage } from '@/components/StatusMessage'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
@@ -20,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useConfirmAction } from '@/hooks/useConfirmAction'
 import type { TaskListItem } from '@/hooks/useTasks'
 import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
 import { calculatePhaseMetrics } from '@/lib/phase-metrics'
@@ -66,8 +69,25 @@ export function ProjectWbsTab({
   onDeleteTask,
 }: ProjectWbsTabProps) {
   const { t, locale } = useTranslation()
+  const { confirm, close, handleConfirm, state: confirmState } = useConfirmAction()
 
   return (
+    <>
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        description={confirmState.description}
+        confirmLabel={confirmState.confirmLabel}
+        cancelLabel={confirmState.cancelLabel}
+        variant={confirmState.variant}
+        isLoading={confirmState.isLoading}
+        onOpenChange={(open) => {
+          if (!open) {
+            close()
+          }
+        }}
+        onConfirm={handleConfirm}
+      />
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="space-y-1">
@@ -126,9 +146,18 @@ export function ProjectWbsTab({
         )}
 
         {phases.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            {t('wbs.noPhases')}
-          </p>
+          <EmptyState
+            icon={Layers}
+            description={t('wbs.noPhases')}
+            action={
+              canManagePhases ? (
+                <EmptyStateButton
+                  label={t('common.addPhase')}
+                  onClick={onCreatePhase}
+                />
+              ) : undefined
+            }
+          />
         ) : (
           <div className="space-y-4">
             {phases.map((phase) => {
@@ -138,7 +167,7 @@ export function ProjectWbsTab({
               const taskWeightsValid = isTaskWeightSumValid(phaseTasks)
 
               return (
-                <Card key={phase.id}>
+                <Card key={phase.id} id={`phase-${phase.id}`}>
                   <CardHeader className="flex flex-row items-start justify-between gap-4 pb-3">
                     <div className="space-y-1">
                       <CardTitle className="text-base">
@@ -167,7 +196,17 @@ export function ProjectWbsTab({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => void onDeletePhase(phase)}
+                              onClick={() =>
+                                confirm({
+                                  title: t('confirm.deletePhaseTitle'),
+                                  description: t(
+                                    'confirm.deletePhaseDescription',
+                                  ),
+                                  confirmLabel: t('common.delete'),
+                                  variant: 'destructive',
+                                  onConfirm: () => onDeletePhase(phase),
+                                })
+                              }
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -350,7 +389,17 @@ export function ProjectWbsTab({
                                       <Button
                                         size="sm"
                                         variant="outline"
-                                        onClick={() => void onDeleteTask(task)}
+                                        onClick={() =>
+                                          confirm({
+                                            title: t('confirm.deleteTaskTitle'),
+                                            description: t(
+                                              'confirm.deleteTaskDescription',
+                                            ),
+                                            confirmLabel: t('common.delete'),
+                                            variant: 'destructive',
+                                            onConfirm: () => onDeleteTask(task),
+                                          })
+                                        }
                                       >
                                         <Trash2 className="size-4" />
                                       </Button>
@@ -371,6 +420,7 @@ export function ProjectWbsTab({
         )}
       </CardContent>
     </Card>
+    </>
   )
 }
 

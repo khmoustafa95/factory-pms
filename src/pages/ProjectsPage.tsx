@@ -1,6 +1,6 @@
 import { Check, Download, Eye, Layers, Lock, Plus, Send, X } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
@@ -120,10 +120,28 @@ export function ProjectsPage() {
   const [pausingProject, setPausingProject] = useState<ProjectListItem | null>(
     null,
   )
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
   const canManageProposals = isManager && Boolean(profile?.factory_id)
+  const shouldOpenCreateFromUrl =
+    searchParams.get('action') === 'new' && canManageProposals
+  const isCreateDialogOpen = dialogOpen || shouldOpenCreateFromUrl
+
+  const handleCreateDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open)
+    if (!open && shouldOpenCreateFromUrl) {
+      setSearchParams(
+        (current) => {
+          const params = new URLSearchParams(current)
+          params.delete('action')
+          return params
+        },
+        { replace: true },
+      )
+    }
+  }
   const notAvailable = t('common.notAvailable')
 
   const formatBudgetUsed = (project: ProjectListItem) =>
@@ -720,8 +738,8 @@ export function ProjectsPage() {
         <>
           {canManageProposals ? (
             <ProjectFormDialog
-              open={dialogOpen}
-              onOpenChange={setDialogOpen}
+              open={isCreateDialogOpen}
+              onOpenChange={handleCreateDialogOpenChange}
               project={editingProject}
               factoryId={profile?.factory_id}
               allowSubmitProposal={

@@ -6,6 +6,7 @@ import type {
 import { useDraggable } from '@dnd-kit/core'
 import { GripVertical } from 'lucide-react'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import {
@@ -78,7 +79,9 @@ function KanbanTaskCardView({
           ) : null}
           <div className="min-w-0 flex-1 space-y-1">
             <p className="font-medium">{task.title}</p>
-            <p className="text-xs text-muted-foreground">{phaseName}</p>
+            <Badge variant="outline" className="max-w-full truncate">
+              {phaseName}
+            </Badge>
           </div>
         </div>
         {task.status === 'blocked' && task.blocked_reason ? (

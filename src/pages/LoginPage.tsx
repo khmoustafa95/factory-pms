@@ -24,6 +24,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
+import { useUnsavedFormWarning } from '@/hooks/useUnsavedFormWarning'
 import { shouldShowDemoAccounts } from '@/lib/app-env'
 import {
   createLoginFormSchema,
@@ -66,6 +67,8 @@ export function LoginPage() {
       password: '',
     },
   })
+
+  useUnsavedFormWarning(form.formState.isDirty)
 
   if (!isLoading && !isForcedSignOut && session && profile?.is_active) {
     return <Navigate to="/" replace />

@@ -17,9 +17,11 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCommandProjectSearch } from '@/hooks/useProjects'
+import { isFactoryManager } from '@/lib/roles'
 import type { AppNavItem } from '@/lib/nav'
 
 interface CommandPaletteProps {
@@ -28,7 +30,9 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ navItems }: CommandPaletteProps) {
   const { t, dir } = useTranslation()
+  const { profile } = useAuth()
   const navigate = useNavigate()
+  const canCreateProposal = isFactoryManager(profile?.role)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query, 250)
@@ -106,6 +110,34 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
               />
               <CommandList>
                 <CommandEmpty>{t('commandPalette.empty')}</CommandEmpty>
+                <CommandGroup heading={t('commandPalette.actions')}>
+                  <CommandItem
+                    value={t('commandPalette.goDashboard')}
+                    onSelect={() => goTo('/')}
+                  >
+                    <span>{t('commandPalette.goDashboard')}</span>
+                  </CommandItem>
+                  <CommandItem
+                    value={t('commandPalette.goProjects')}
+                    onSelect={() => goTo('/projects')}
+                  >
+                    <span>{t('commandPalette.goProjects')}</span>
+                  </CommandItem>
+                  {canCreateProposal ? (
+                    <CommandItem
+                      value={t('commandPalette.newProposal')}
+                      onSelect={() => goTo('/projects?action=new')}
+                    >
+                      <span>{t('commandPalette.newProposal')}</span>
+                    </CommandItem>
+                  ) : null}
+                  <CommandItem
+                    value={t('commandPalette.goSettings')}
+                    onSelect={() => goTo('/settings')}
+                  >
+                    <span>{t('commandPalette.goSettings')}</span>
+                  </CommandItem>
+                </CommandGroup>
                 <CommandGroup heading={t('commandPalette.navigation')}>
                   {navItems.map((item) => (
                     <CommandItem

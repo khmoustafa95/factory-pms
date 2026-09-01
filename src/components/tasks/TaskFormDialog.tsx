@@ -1,8 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronDown } from 'lucide-react'
 import { useWatch } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
+import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   Dialog,
   DialogBody,
@@ -24,6 +31,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
 import { progressPercentForStatus } from '@/lib/progress'
@@ -100,7 +108,7 @@ export function TaskFormDialog({
     [maxBudget, maxWeight, phaseEndDate, phaseStartDate],
   )
 
-  const { form } = useFormDialog({
+  const { form, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(taskFormSchema),
     defaultValues: TASK_FORM_DEFAULTS,
@@ -126,6 +134,9 @@ export function TaskFormDialog({
     }),
     resetDependencies: [task, maxWeight],
   })
+
+  const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
+    useFormDialogClose(isDirty, onOpenChange)
 
   const selectedStatus = useWatch({ control: form.control, name: 'status' })
   const watchedActualEndDate = useWatch({
@@ -192,8 +203,9 @@ export function TaskFormDialog({
       : t('wbs.noPhaseSchedule')
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {task ? t('wbs.editTask') : t('wbs.newTask')}
@@ -208,6 +220,9 @@ export function TaskFormDialog({
 
         <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium">{t('wbs.basicsSection')}</h4>
+
             <div className="space-y-2">
               <Label htmlFor="task-title">{t('wbs.taskTitle')}</Label>
               <Input id="task-title" {...form.register('title')} />
@@ -277,9 +292,15 @@ export function TaskFormDialog({
                 ) : null}
               </div>
             </div>
+            </div>
 
             {task ? (
-              <>
+              <Collapsible defaultOpen={Boolean(task)}>
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 text-sm font-medium [&[data-state=open]>svg]:rotate-180">
+                  {t('wbs.trackingSection')}
+                  <ChevronDown className="size-4 shrink-0 transition-transform" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 pt-2">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label>{t('wbs.taskStatus')}</Label>
@@ -448,7 +469,8 @@ export function TaskFormDialog({
                     ) : null}
                   </>
                 ) : null}
-              </>
+                </CollapsibleContent>
+              </Collapsible>
             ) : null}
           </DialogBody>
 
@@ -456,7 +478,7 @@ export function TaskFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
             >
               {t('common.cancel')}
             </Button>
@@ -471,5 +493,11 @@ export function TaskFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+      <DiscardChangesDialog
+        open={discardOpen}
+        onConfirm={confirmDiscard}
+        onCancel={cancelDiscard}
+      />
+    </>
   )
 }

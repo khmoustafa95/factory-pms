@@ -112,6 +112,7 @@ export function StatusDonutChart({
             <button
               type="button"
               disabled={!onSliceClick}
+              aria-pressed={activeKey === item.key}
               onClick={() => onSliceClick?.(item.key)}
               className={cn(
                 'flex w-full items-center justify-between gap-3 rounded-md px-1 py-0.5 text-start',
@@ -174,8 +175,9 @@ export function BlockedProjectsBarChart({
   }))
 
   return (
-    <div className="h-56 w-full min-w-0" dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="space-y-3">
+      <div className="h-56 w-full min-w-0" dir="ltr">
+        <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
           layout="vertical"
@@ -228,6 +230,22 @@ export function BlockedProjectsBarChart({
           />
         </BarChart>
       </ResponsiveContainer>
+      </div>
+      {onBarClick ? (
+        <ul className="flex flex-wrap gap-2">
+          {chartData.map((item) => (
+            <li key={item.projectId}>
+              <button
+                type="button"
+                className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted/50"
+                onClick={() => onBarClick(item.projectId)}
+              >
+                {item.shortTitle} ({item.blockedTaskCount})
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   )
 }
