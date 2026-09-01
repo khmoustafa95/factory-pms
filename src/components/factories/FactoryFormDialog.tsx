@@ -45,7 +45,7 @@ export function FactoryFormDialog({
   onSubmit,
   isSubmitting,
 }: FactoryFormDialogProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const factoryFormSchema = useValidationSchema(createFactoryFormSchema)
 
   const { form, createSubmitHandler } = useFormDialog({
@@ -76,11 +76,7 @@ export function FactoryFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="factory-name">{t('common.name')}</Label>

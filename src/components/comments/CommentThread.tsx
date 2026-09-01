@@ -109,7 +109,7 @@ function MentionComposer({
   ) => Promise<void>
   isSubmitting: boolean
 }) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const commentFormSchema = useValidationSchema(createCommentFormSchema)
   const { data: candidates = [] } = useMentionableProfiles(projectId)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -244,7 +244,7 @@ function MentionComposer({
   })
 
   return (
-    <form key={locale} className="relative space-y-2" onSubmit={handleSubmit}>
+    <form className="relative space-y-2" onSubmit={handleSubmit}>
       <Textarea
         rows={3}
         placeholder={t('activity.placeholderWithMention')}

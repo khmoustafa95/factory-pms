@@ -75,6 +75,12 @@
 - i18n: `projectFinance` namespace (ar/en parity); validation keys for finance forms
 - Tests: `project-financial-snapshot.test.ts`; `npm run verify` + `npm run build` passed
 
+### 2026-09-01 (form rebuild cleanup)
+
+- `useValidationSchema` accepts explicit deps — inline schema factories no longer rebuild every render via unstable `factory` dep
+- Removed `key={locale}` from all forms (schema already rebuilds on locale via `t`; remount was redundant and wiped in-progress edits)
+- `TaskCompleteDialog` aligned with `useFormDialog` + `useValidationSchema` (removed duplicate `useEffect` reset)
+
 ### 2026-08-24 (TaskFlow-inspired UX/perf ports)
 
 - Debounced search via `useDebouncedValue` (dashboard explore + existing list queries); search-clear is immediate

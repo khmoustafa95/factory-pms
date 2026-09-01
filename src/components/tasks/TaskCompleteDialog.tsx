@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useMemo } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useWatch } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -17,6 +16,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { todayDateOnly } from '@/lib/date-only'
 import { formatLocalizedDate } from '@/lib/i18n-format'
 import {
@@ -38,8 +39,11 @@ interface TaskCompleteDialogProps {
   isSubmitting: boolean
 }
 
-function todayIsoDate(): string {
-  return todayDateOnly()
+const COMPLETE_FORM_DEFAULTS: TaskCompletionValues = {
+  actual_end_date: todayDateOnly(),
+  actual_cost: 0,
+  schedule_deviation_reason: '',
+  financial_deviation_reason: '',
 }
 
 export function TaskCompleteDialog({
@@ -57,48 +61,36 @@ export function TaskCompleteDialog({
 }: TaskCompleteDialogProps) {
   const { t, locale } = useTranslation()
 
-  const schema = useMemo(
-    () =>
-      createTaskCompletionSchema(t, {
+  const schema = useValidationSchema(
+    (translator) =>
+      createTaskCompletionSchema(translator, {
         dueDate,
         expectedCost,
       }),
-    [dueDate, expectedCost, t],
+    [dueDate, expectedCost],
   )
 
-  const form = useForm<TaskCompletionValues>({
+  const { form, createSubmitHandler } = useFormDialog({
+    open,
     resolver: zodResolver(schema),
-    defaultValues: {
-      actual_end_date: todayIsoDate(),
-      actual_cost: 0,
-      schedule_deviation_reason: '',
-      financial_deviation_reason: '',
-    },
-  })
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    form.reset({
-      actual_end_date: initialActualEndDate?.trim() || todayIsoDate(),
+    defaultValues: COMPLETE_FORM_DEFAULTS,
+    getValues: () => ({
+      actual_end_date: initialActualEndDate?.trim() || todayDateOnly(),
       actual_cost:
         initialActualCost != null && initialActualCost > 0
           ? Number(initialActualCost)
           : Number(expectedCost) || 0,
       schedule_deviation_reason: initialScheduleReason ?? '',
       financial_deviation_reason: initialFinancialReason ?? '',
-    })
-  }, [
-    expectedCost,
-    form,
-    initialActualCost,
-    initialActualEndDate,
-    initialFinancialReason,
-    initialScheduleReason,
-    open,
-  ])
+    }),
+    resetDependencies: [
+      expectedCost,
+      initialActualCost,
+      initialActualEndDate,
+      initialFinancialReason,
+      initialScheduleReason,
+    ],
+  })
 
   const actualEndDate = useWatch({
     control: form.control,
@@ -111,10 +103,7 @@ export function TaskCompleteDialog({
   )
   const financialOverrun = Number(actualCost) > Number(expectedCost) + 0.009
 
-  const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values)
-    onOpenChange(false)
-  })
+  const handleSubmit = createSubmitHandler(onSubmit, () => onOpenChange(false))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -135,7 +124,6 @@ export function TaskCompleteDialog({
         </DialogHeader>
 
         <form
-          key={locale}
           className="flex min-h-0 flex-1 flex-col"
           onSubmit={handleSubmit}
         >

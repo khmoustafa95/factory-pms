@@ -39,7 +39,7 @@ export function ProjectPauseDialog({
   onSubmit,
   isSubmitting,
 }: ProjectPauseDialogProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const projectPauseSchema = useValidationSchema(createProjectPauseSchema)
 
   const { form, createSubmitHandler } = useFormDialog({
@@ -63,11 +63,7 @@ export function ProjectPauseDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="pause-reason">{t('projects.pauseReason')}</Label>

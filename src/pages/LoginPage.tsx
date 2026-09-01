@@ -34,7 +34,7 @@ export function LoginPage() {
   const { signIn, signOut, isConfigured, session, profile, isLoading } =
     useAuth()
   const { branding } = useAppBranding()
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const loginFormSchema = useValidationSchema(createLoginFormSchema)
@@ -120,7 +120,7 @@ export function LoginPage() {
               </StatusMessage>
             ) : null}
 
-            <form key={locale} className="space-y-4" onSubmit={onSubmit}>
+            <form className="space-y-4" onSubmit={onSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="email">{t('common.email')}</Label>
                 <Input

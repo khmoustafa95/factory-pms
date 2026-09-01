@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useWatch } from 'react-hook-form'
 import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
 import { GeneratedPasswordDialog } from '@/components/accounts/GeneratedPasswordDialog'
@@ -29,6 +29,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useCreateAccount } from '@/hooks/useAccounts'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
 import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { getPhaseDurationDays } from '@/lib/duration'
@@ -87,7 +88,7 @@ export function ProjectFormDialog({
   onSubmitProposal,
   isSubmitting,
 }: ProjectFormDialogProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const { data: currencies = [] } = useActiveCurrencies()
   const { data: projectManagers = [], refetch: refetchManagers } =
     useFactoryProjectManagers(factoryId)
@@ -99,8 +100,8 @@ export function ProjectFormDialog({
     password: string
   } | null>(null)
 
-  const draftSchema = useMemo(() => createDraftProjectSchema(t), [t])
-  const submitSchema = useMemo(() => createSubmitProjectSchema(t), [t])
+  const draftSchema = useValidationSchema(createDraftProjectSchema)
+  const submitSchema = useValidationSchema(createSubmitProjectSchema)
 
   const { form } = useFormDialog({
     open,
@@ -277,7 +278,7 @@ export function ProjectFormDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <form key={locale} className="flex min-h-0 flex-1 flex-col">
+          <form className="flex min-h-0 flex-1 flex-col">
             <DialogBody className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="project-code">{t('projects.code')}</Label>

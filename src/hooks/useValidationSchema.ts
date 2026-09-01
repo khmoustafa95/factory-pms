@@ -5,7 +5,10 @@ import type { z } from 'zod'
 
 export function useValidationSchema<TSchema extends z.ZodType>(
   factory: (t: ValidationTranslator) => TSchema,
+  deps: readonly unknown[] = [],
 ): TSchema {
   const { t } = useTranslation()
-  return useMemo(() => factory(t), [factory, t])
+  // Inline schema factories change every render; callers pass stable extra deps.
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo -- factory omitted on purpose
+  return useMemo(() => factory(t), [t, ...deps])
 }

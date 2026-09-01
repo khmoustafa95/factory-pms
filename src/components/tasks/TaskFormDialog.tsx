@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
@@ -25,6 +24,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
 import { progressPercentForStatus } from '@/lib/progress'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
@@ -89,15 +89,15 @@ export function TaskFormDialog({
         : remainingBudget
       : undefined
 
-  const taskFormSchema = useMemo(
-    () =>
-      createTaskFormSchema(t, {
+  const taskFormSchema = useValidationSchema(
+    (translator) =>
+      createTaskFormSchema(translator, {
         phaseStartDate,
         phaseEndDate,
         remainingWeight: maxWeight,
         remainingBudget: maxBudget,
       }),
-    [maxBudget, maxWeight, phaseEndDate, phaseStartDate, t],
+    [maxBudget, maxWeight, phaseEndDate, phaseStartDate],
   )
 
   const { form } = useFormDialog({
@@ -206,11 +206,7 @@ export function TaskFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="task-title">{t('wbs.taskTitle')}</Label>

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useWatch } from 'react-hook-form'
 import { FormCheckboxField } from '@/components/FormCheckboxField'
 import { FormFieldError } from '@/components/FormFieldError'
@@ -25,6 +25,7 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFactories } from '@/hooks/useFactories'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import {
   createAccountDialogSchema,
@@ -60,14 +61,15 @@ export function AccountFormDialog({
   onUpdate,
   isSubmitting,
 }: AccountFormDialogProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const { data: factories = [] } = useFactories()
   const isCreate = account === null
   const defaultRole = allowedRoles[0] ?? 'project_manager'
 
-  const schema = useMemo(
-    () => createAccountDialogSchema(t, isCreate ? 'create' : 'edit'),
-    [isCreate, t],
+  const schema = useValidationSchema(
+    (translator) =>
+      createAccountDialogSchema(translator, isCreate ? 'create' : 'edit'),
+    [isCreate],
   )
 
   const { form, createSubmitHandler } = useFormDialog<AccountDialogFormValues>({
@@ -139,11 +141,7 @@ export function AccountFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             {isCreate ? (
               <div className="space-y-2">

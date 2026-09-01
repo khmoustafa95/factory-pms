@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo } from 'react'
 import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
@@ -24,6 +23,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   createFundingFormSchema,
   type FundingFormValues,
@@ -69,8 +69,8 @@ export function FundingFormDialog({
   onSubmit,
   isSubmitting,
 }: FundingFormDialogProps) {
-  const { t, locale } = useTranslation()
-  const schema = useMemo(() => createFundingFormSchema(t), [t])
+  const { t } = useTranslation()
+  const schema = useValidationSchema(createFundingFormSchema)
 
   const { form, createSubmitHandler } = useFormDialog({
     open,
@@ -106,11 +106,7 @@ export function FundingFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label>{t('projectFinance.funding.sourceType')}</Label>

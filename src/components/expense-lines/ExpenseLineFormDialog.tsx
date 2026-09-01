@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo } from 'react'
 import { FormFieldError } from '@/components/FormFieldError'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,6 +22,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import {
   formatNullableSelectValue,
   NULL_SELECT_VALUE,
@@ -68,8 +68,8 @@ export function ExpenseLineFormDialog({
   onSubmit,
   isSubmitting,
 }: ExpenseLineFormDialogProps) {
-  const { t, locale } = useTranslation()
-  const schema = useMemo(() => createExpenseLineFormSchema(t), [t])
+  const { t } = useTranslation()
+  const schema = useValidationSchema(createExpenseLineFormSchema)
 
   const { form, createSubmitHandler } = useFormDialog({
     open,
@@ -104,11 +104,7 @@ export function ExpenseLineFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label>{t('projectFinance.expensePlan.category')}</Label>

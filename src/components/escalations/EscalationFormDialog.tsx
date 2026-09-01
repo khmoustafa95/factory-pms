@@ -40,7 +40,7 @@ export function EscalationFormDialog({
   onSubmit,
   isSubmitting,
 }: EscalationFormDialogProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
   const escalationFormSchema = useValidationSchema(createEscalationFormSchema)
 
   const { form, createSubmitHandler } = useFormDialog({
@@ -65,11 +65,7 @@ export function EscalationFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <Textarea rows={4} {...form.register('message')} />
             <FormFieldError error={form.formState.errors.message} />

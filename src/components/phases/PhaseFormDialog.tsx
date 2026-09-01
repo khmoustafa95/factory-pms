@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
 import { FormFieldError } from '@/components/FormFieldError'
@@ -18,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useFormDialog } from '@/hooks/useFormDialog'
+import { useValidationSchema } from '@/hooks/useValidationSchema'
 import type { ProjectScheduleBounds } from '@/lib/duration'
 import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
 import {
@@ -76,15 +76,15 @@ export function PhaseFormDialog({
     ? remainingBudget + Number(phase.expected_budget)
     : remainingBudget
 
-  const phaseFormSchema = useMemo(
-    () =>
-      createPhaseFormSchema(t, {
+  const phaseFormSchema = useValidationSchema(
+    (translator) =>
+      createPhaseFormSchema(translator, {
         schedule,
         actualCostTotal,
         scheduleDeviationDays,
         remainingBudget: maxBudget,
       }),
-    [actualCostTotal, maxBudget, schedule, scheduleDeviationDays, t],
+    [actualCostTotal, maxBudget, schedule, scheduleDeviationDays],
   )
 
   const { form } = useFormDialog({
@@ -169,11 +169,7 @@ export function PhaseFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          key={locale}
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
+        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
           <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
