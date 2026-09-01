@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-09-01 — Kanban status moves use `@dnd-kit/core` droppable columns (not `@dnd-kit/sortable`). Task `sort_order` stays WBS/phase order; dragging only changes `status` through the existing mutation + blocked/done dialogs.
 - 2026-09-01 — Financial operations layer: `project_funding_entries`, `project_procurement_items`, `project_staff`, `project_expense_lines` (overhead only — WBS costs stay on phases/tasks); `get_project_financial_snapshot` + list/dashboard rollups; single **Finance & operations** tab (not four tabs, not ERP).
 - 2026-08-24 — Reimplement TaskFlow UX/perf ideas on factory-pms primitives (shadcn, `@/`, ar/en, RLS) instead of copying `@hypatia-ui` / `@the-factory-*` — those packages pull streams, Mongo `_id`, lodash/`any`, Capacitor, and a second design system.
 - 2026-08-24 — Spreadsheet “Excel export” is UTF-8 BOM CSV (`downloadSpreadsheet`) rather than `exceljs`/`xlsx` — Arabic-safe in Excel, no extra Node/browser bundle, dynamic import not required.

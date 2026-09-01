@@ -682,6 +682,8 @@ export const ar = {
     blockedReasonLabel: 'سبب الحظر',
     markDone: 'تعيين المهمة كمنجزة',
     noTasksKanban: 'لا توجد مهام',
+    dragToChangeStatus: 'اسحب إلى عمود آخر لتغيير الحالة',
+    kanbanDropHere: 'أفلت هنا',
     taskStatusUpdated: 'تم تحديث حالة المهمة',
     updateTaskStatusFailed: 'تعذر تحديث حالة المهمة',
   },
@@ -959,7 +961,8 @@ export const ar = {
     nameRequired: 'الاسم مطلوب',
     roleTitleRequired: 'الدور / المسمى مطلوب',
     headcountMin: 'يجب أن يكون العدد 1 على الأقل',
-    endDateBeforeStart: 'يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء أو مساوياً له',
+    endDateBeforeStart:
+      'يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء أو مساوياً له',
   },
   a11y: {
     skipToContent: 'تخطي إلى المحتوى الرئيسي',
@@ -969,6 +972,12 @@ export const ar = {
     openMenu: 'فتح قائمة التنقل',
     toggleSidebar: 'طي أو توسيع الشريط الجانبي',
     moveTaskTo: 'نقل المهمة إلى {{status}}',
+    kanbanDragInstructions:
+      'لالتقاط مهمة، اضغط مفتاح المسافة أو إدخال. استخدم الأسهم للتنقل بين الأعمدة ثم المسافة أو إدخال للإفلات. اضغط Escape للإلغاء.',
+    kanbanDragStart: 'تم التقاط {{title}}',
+    kanbanDragOver: '{{title}} فوق {{status}}',
+    kanbanDragEnd: 'تم نقل {{title}} إلى {{status}}',
+    kanbanDragCancel: 'تم إلغاء نقل {{title}}. ما زالت في {{status}}',
     notifications: 'الإشعارات',
     notificationsUnread: 'الإشعارات، {{count}} غير مقروء',
     openCommandPalette: 'فتح لوحة الأوامر',

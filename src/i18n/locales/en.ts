@@ -551,7 +551,8 @@ export const en = {
     },
     staff: {
       title: 'Operational staff',
-      description: 'Field roster and qualifications (not system login accounts).',
+      description:
+        'Field roster and qualifications (not system login accounts).',
       formDescription: 'Add operational staff assigned to this project.',
       addTitle: 'Add staff member',
       editTitle: 'Edit staff member',
@@ -695,6 +696,8 @@ export const en = {
     blockedReasonLabel: 'Blocked reason',
     markDone: 'Mark task as done',
     noTasksKanban: 'No tasks',
+    dragToChangeStatus: 'Drag to another column to change status',
+    kanbanDropHere: 'Drop here',
     taskStatusUpdated: 'Task status updated',
     updateTaskStatusFailed: 'Unable to update task status',
   },
@@ -990,6 +993,12 @@ export const en = {
     openMenu: 'Open navigation menu',
     toggleSidebar: 'Toggle sidebar',
     moveTaskTo: 'Move task to {{status}}',
+    kanbanDragInstructions:
+      'To pick up a task, press space or enter. Use the arrow keys to move between columns, then space or enter to drop. Press escape to cancel.',
+    kanbanDragStart: 'Picked up {{title}}',
+    kanbanDragOver: '{{title}} is over {{status}}',
+    kanbanDragEnd: 'Moved {{title}} to {{status}}',
+    kanbanDragCancel: 'Cancelled moving {{title}}. It remains in {{status}}',
     notifications: 'Notifications',
     notificationsUnread: 'Notifications, {{count}} unread',
     openCommandPalette: 'Open command palette',

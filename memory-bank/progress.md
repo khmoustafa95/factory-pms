@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Kanban drag-and-drop between status columns (`@dnd-kit/core`); Select dropdown kept; blocked/done dialogs unchanged
 - [x] Financial & operations layer: funding entries, procurement items, operational staff, overhead expense lines, financial snapshot RPC, Finance tab, dashboard KPIs (underfunded/overdue procurement), projects list budget-used/funding columns
 - [x] TaskFlow ports wave 1–2: debounce, virtual dashboard table, dropzone/file icons, command palette, CSV Excel export, lazy date picker
 - [x] Scorecard Phase 1: GitHub CI + locale key parity + dashboard insight/project RPCs + attention/explore dashboard split
@@ -67,6 +68,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-01 (Kanban drag-and-drop)
+
+- `@dnd-kit/core` + `@dnd-kit/utilities`: drag task cards between todo / in progress / blocked / done
+- Drop on blocked or done still opens the existing reason / completion dialogs
+- Status dropdown kept for keyboard and as a non-drag fallback
+- `npm run verify` passed
 
 ### 2026-09-01 (Financial & operations layer)
 

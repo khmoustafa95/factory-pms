@@ -6,3 +6,10 @@ export const TASK_STATUS_OPTIONS: TaskStatus[] = [
   'blocked',
   'done',
 ]
+
+export function isTaskStatus(value: unknown): value is TaskStatus {
+  return (
+    typeof value === 'string' &&
+    (TASK_STATUS_OPTIONS as readonly string[]).includes(value)
+  )
+}

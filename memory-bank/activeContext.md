@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Financial & operations layer shipped** — project funding, procurement plan, operational staff, overhead expense lines, financial snapshot RPC, unified Finance tab on project detail, dashboard KPIs, and projects list columns.
+**Kanban drag-and-drop** — task cards can be dragged between status columns; dropdown remains for keyboard/fallback. Blocked/done still open their required dialogs.
 
 ## Recent changes
 
+- [2026-09-01] Kanban drag-and-drop via `@dnd-kit/core`: droppable status columns, pointer + keyboard sensors, existing `useUpdateTaskStatus` path (blocked reason / complete dialogs). Select dropdown kept. No intra-column reorder (task `sort_order` is WBS order).
 - [2026-09-01] Form perf cleanup: `useValidationSchema` accepts explicit deps (fixes inline-factory rebuild every render); removed redundant `key={locale}` form remounts; `TaskCompleteDialog` uses `useFormDialog` + shared schema hook
 - [2026-09-01] Financial operations: migration `20260901120000_project_financial_operations.sql` (4 tables + RLS + `get_project_financial_snapshot` + extended dashboard/list RPCs); `ProjectFinancePanel` with CRUD dialogs; proposal summary + finance tab on `ProjectDetailPage`; dashboard underfunded/overdue-procurement KPIs; projects list budget-used/funding-status columns; i18n `projectFinance` ar/en
 - [2026-08-24] Browser follow-up: palette unmounts on close (no stuck overlay); dialogs keep `onFocusOutside` from dismissing when `dismissOnOutsideClick` is false so DatePicker works inside New proposal; FM login verified calendar (15 Aug 2026) + dropzone/`budget.xlsx`

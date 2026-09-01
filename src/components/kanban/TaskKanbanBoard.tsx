@@ -1,10 +1,26 @@
 import { useState } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  defaultKeyboardCoordinateGetter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
 import { toast } from 'sonner'
+import { KanbanColumn } from '@/components/kanban/KanbanColumn'
+import { KanbanTaskCardOverlay } from '@/components/kanban/KanbanTaskCard'
+import {
+  KanbanPointerSensor,
+  getDroppableStatus,
+  isKanbanTaskDragData,
+  kanbanCollisionDetection,
+} from '@/components/kanban/kanban-dnd'
 import { TaskCompleteDialog } from '@/components/tasks/TaskCompleteDialog'
-import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
 import { StaggerGroup } from '@/components/motion'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogBody,
@@ -14,18 +30,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
+import { useIsMobile } from '@/hooks/use-mobile'
 import type { TaskListItem } from '@/hooks/useTasks'
 import { useUpdateTaskStatus } from '@/hooks/useTasks'
-import { formatLocalizedDate, getTaskStatusLabel } from '@/lib/i18n-format'
+import { getTaskStatusLabel } from '@/lib/i18n-format'
 import { toastMutationError } from '@/lib/mutation-error'
 import { TASK_STATUS_OPTIONS } from '@/lib/task-status'
 import type { TaskCompletionValues } from '@/lib/validations/task'
@@ -44,12 +54,25 @@ export function TaskKanbanBoard({
   tasks,
   canManage,
 }: TaskKanbanBoardProps) {
-  const { t, locale } = useTranslation()
+  const { t } = useTranslation()
+  const isMobile = useIsMobile()
   const updateStatus = useUpdateTaskStatus(projectId)
   const [blockedTask, setBlockedTask] = useState<TaskListItem | null>(null)
   const [blockedReason, setBlockedReason] = useState('')
   const [completingTask, setCompletingTask] = useState<TaskListItem | null>(
     null,
+  )
+  const [activeTask, setActiveTask] = useState<TaskListItem | null>(null)
+
+  const sensors = useSensors(
+    useSensor(KanbanPointerSensor, {
+      activationConstraint: isMobile
+        ? { delay: 220, tolerance: 8 }
+        : { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: defaultKeyboardCoordinateGetter,
+    }),
   )
 
   const phaseNameById = new Map(phases.map((phase) => [phase.id, phase.name]))
@@ -127,101 +150,134 @@ export function TaskKanbanBoard({
     }
   }
 
+  const handleDragStart = (event: DragStartEvent) => {
+    if (!isKanbanTaskDragData(event.active.data.current)) {
+      return
+    }
+    setActiveTask(event.active.data.current.task)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveTask(null)
+
+    if (!canManage || !over || updateStatus.isPending) {
+      return
+    }
+
+    if (!isKanbanTaskDragData(active.data.current)) {
+      return
+    }
+
+    const nextStatus = getDroppableStatus(over)
+    const task = active.data.current.task
+    if (!nextStatus || nextStatus === task.status) {
+      return
+    }
+
+    void changeStatus(task, nextStatus)
+  }
+
   return (
     <>
-      <StaggerGroup
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4"
-        staggerMs={80}
-        role="list"
-        aria-label={t('projectDetail.tabs.kanban')}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={kanbanCollisionDetection}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActiveTask(null)}
+        accessibility={{
+          screenReaderInstructions: {
+            draggable: t('a11y.kanbanDragInstructions'),
+          },
+          announcements: {
+            onDragStart: ({ active }) => {
+              if (!isKanbanTaskDragData(active.data.current)) {
+                return undefined
+              }
+              return t('a11y.kanbanDragStart', {
+                title: active.data.current.task.title,
+              })
+            },
+            onDragOver: ({ active, over }) => {
+              if (!over || !isKanbanTaskDragData(active.data.current)) {
+                return undefined
+              }
+              const status = getDroppableStatus(over)
+              if (!status) {
+                return undefined
+              }
+              return t('a11y.kanbanDragOver', {
+                title: active.data.current.task.title,
+                status: getTaskStatusLabel(t, status),
+              })
+            },
+            onDragEnd: ({ active, over }) => {
+              if (!isKanbanTaskDragData(active.data.current)) {
+                return undefined
+              }
+              const title = active.data.current.task.title
+              if (!over) {
+                return t('a11y.kanbanDragCancel', {
+                  title,
+                  status: getTaskStatusLabel(
+                    t,
+                    active.data.current.task.status,
+                  ),
+                })
+              }
+              const status = getDroppableStatus(over)
+              if (!status) {
+                return undefined
+              }
+              return t('a11y.kanbanDragEnd', {
+                title,
+                status: getTaskStatusLabel(t, status),
+              })
+            },
+            onDragCancel: ({ active }) => {
+              if (!isKanbanTaskDragData(active.data.current)) {
+                return undefined
+              }
+              return t('a11y.kanbanDragCancel', {
+                title: active.data.current.task.title,
+                status: getTaskStatusLabel(t, active.data.current.task.status),
+              })
+            },
+          },
+        }}
       >
-        {TASK_STATUS_OPTIONS.map((status) => (
-          <Card
-            key={status}
-            role="listitem"
-            className="w-[min(100%,18rem)] shrink-0 snap-start bg-muted md:w-auto md:shrink"
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">
-                {getTaskStatusLabel(t, status)} ({tasksByStatus[status].length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {tasksByStatus[status].length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t('wbs.noTasksKanban')}
-                </p>
-              ) : (
-                tasksByStatus[status].map((task) => (
-                  <Card key={task.id} className="bg-card shadow-sm">
-                    <CardContent className="space-y-2 p-3">
-                      <div className="space-y-1">
-                        <p className="font-medium">{task.title}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {phaseNameById.get(task.phase_id) ??
-                            t('common.phase')}
-                        </p>
-                      </div>
-                      {task.status === 'blocked' && task.blocked_reason ? (
-                        <p className="text-xs text-destructive">
-                          {task.blocked_reason}
-                        </p>
-                      ) : null}
-                      {task.due_date ? (
-                        <p className="text-xs text-muted-foreground">
-                          {t('wbs.dueDate')}:{' '}
-                          {formatLocalizedDate(task.due_date, locale)}
-                        </p>
-                      ) : null}
-                      <TaskStatusBadge status={task.status} />
-                      {canManage ? (
-                        <div className="pt-1">
-                          <Label
-                            className="sr-only"
-                            htmlFor={`status-${task.id}`}
-                          >
-                            {t('wbs.taskStatus')}
-                          </Label>
-                          <Select
-                            value={task.status}
-                            onValueChange={(value) => {
-                              const nextStatus = value as TaskStatus
-                              if (nextStatus === task.status) {
-                                return
-                              }
-                              void changeStatus(task, nextStatus)
-                            }}
-                            disabled={updateStatus.isPending}
-                          >
-                            <SelectTrigger
-                              id={`status-${task.id}`}
-                              className="h-8 w-full text-xs"
-                              aria-label={t('a11y.moveTaskTo', {
-                                status: getTaskStatusLabel(t, task.status),
-                              })}
-                            >
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {TASK_STATUS_OPTIONS.filter(
-                                (option) => option !== task.status,
-                              ).map((option) => (
-                                <SelectItem key={option} value={option}>
-                                  {getTaskStatusLabel(t, option)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ) : null}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </StaggerGroup>
+        <StaggerGroup
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4"
+          staggerMs={80}
+          role="list"
+          aria-label={t('projectDetail.tabs.kanban')}
+        >
+          {TASK_STATUS_OPTIONS.map((status) => (
+            <KanbanColumn
+              key={status}
+              status={status}
+              tasks={tasksByStatus[status]}
+              phaseNameById={phaseNameById}
+              canManage={canManage}
+              isPending={updateStatus.isPending}
+              onStatusChange={(task, nextStatus) => {
+                void changeStatus(task, nextStatus)
+              }}
+            />
+          ))}
+        </StaggerGroup>
+        <DragOverlay>
+          {activeTask ? (
+            <KanbanTaskCardOverlay
+              task={activeTask}
+              phaseName={
+                phaseNameById.get(activeTask.phase_id) ?? t('common.phase')
+              }
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       <Dialog
         open={Boolean(blockedTask)}

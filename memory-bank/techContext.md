@@ -12,6 +12,7 @@
 | Dates        | `date-fns` + lazy `react-day-picker` calendar             |
 | Icons        | `lucide-react`                                            |
 | Charts       | `recharts` (dashboard donut/bar + drill-down filters)     |
+| Kanban       | `@dnd-kit/core` status-column drag (WBS `sort_order` unchanged) |
 | Command UI   | `cmdk` palette; `@tanstack/react-virtual` for long tables |
 | Toasts       | `sonner` + `next-themes`                                  |
 | Backend      | Supabase JS (`@supabase/supabase-js`)                     |
@@ -55,7 +56,7 @@ Never commit secrets or use the service-role key in the SPA. Put real staging/pr
 
 - Hosting: Vercel or Netlify
 - Generated `Database` types from Supabase schema
-- Additional shadcn components as screens need them (Kanban/Gantt libs TBD)
+- Additional shadcn components as screens need them
 
 ## Agent tooling
 
