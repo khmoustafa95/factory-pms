@@ -16,6 +16,8 @@ $$;
 grant execute on function public.project_detail_path(uuid) to authenticated;
 revoke all on function public.project_detail_path(uuid) from public;
 
+drop function if exists public.get_dashboard_projects();
+
 create or replace function public.get_dashboard_projects()
 returns table (
   id uuid,
@@ -108,29 +110,32 @@ as $$
           and ph.end_date < current_date
       )::bigint as overdue_phase_count,
       bool_or(
-        ph.status <> 'completed'
+        (
+          ph.status <> 'completed'
           and ph.end_date is not null
           and ph.end_date < current_date
-      )
-      or bool_or(ph.schedule_deviation_reason is not null)
-      or bool_or(ph.financial_deviation_reason is not null)
-      or bool_or(
-        ph.actual_end_date is not null
+        )
+        or ph.schedule_deviation_reason is not null
+        or (
+          ph.actual_end_date is not null
           and ph.end_date is not null
           and ph.actual_end_date > ph.end_date
-      )
-      or bool_or(
-        ph.actual_budget is not null
+        )
+        or ph.financial_deviation_reason is not null
+        or (
+          ph.actual_budget is not null
           and ph.actual_budget > ph.expected_budget + 0.009
+        )
       ) as has_phase_issue
     from public.phases ph
     where ph.project_id = p.id
   ) ps on true
   left join lateral (
     select *
-    from public.get_project_financial_snapshot(p.id)
+    from public.get_projects_financial_summary() gfs
+    where gfs.project_id = p.id
   ) fin on true
-  order by p.updated_at desc, p.title asc;
+  order by p.updated_at desc;
 $$;
 
 grant execute on function public.get_dashboard_projects() to authenticated;
