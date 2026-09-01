@@ -112,6 +112,8 @@ export function DashboardAttentionSection({
   const inProgressCount = stats.inProgressCount
   const upcomingCount = insights.upcomingDueTaskCount
   const phaseIssueCount = insights.phaseIssueCount
+  const underfundedCount = insights.underfundedProjectCount
+  const overdueProcurementCount = insights.overdueProcurementCount
 
   return (
     <div className="space-y-4">
@@ -198,6 +200,22 @@ export function DashboardAttentionSection({
               financial: insights.financialDeviationPhaseCount,
             })}
             onClick={() => onAttentionDrill('phase_issues')}
+          />
+          <DashboardKpiCard
+            label={t('dashboard.underfundedProjects')}
+            value={underfundedCount}
+            tone={underfundedCount > 0 ? 'warning' : 'default'}
+            active={attentionDrill === 'underfunded'}
+            description={t('dashboard.drillHint')}
+            onClick={() => onAttentionDrill('underfunded')}
+          />
+          <DashboardKpiCard
+            label={t('dashboard.overdueProcurement')}
+            value={overdueProcurementCount}
+            tone={overdueProcurementCount > 0 ? 'warning' : 'default'}
+            active={attentionDrill === 'overdue_procurement'}
+            description={t('dashboard.drillHint')}
+            onClick={() => onAttentionDrill('overdue_procurement')}
           />
           <DashboardKpiCard
             label={t('dashboard.activeProjects')}

@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Financial & operations layer: funding entries, procurement items, operational staff, overhead expense lines, financial snapshot RPC, Finance tab, dashboard KPIs (underfunded/overdue procurement), projects list budget-used/funding columns
 - [x] TaskFlow ports wave 1–2: debounce, virtual dashboard table, dropzone/file icons, command palette, CSV Excel export, lazy date picker
 - [x] Scorecard Phase 1: GitHub CI + locale key parity + dashboard insight/project RPCs + attention/explore dashboard split
 - [x] In-app notifications (DB + Realtime + bell inbox; no external push)
@@ -66,6 +67,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-01 (Financial & operations layer)
+
+- Migration `20260901120000_project_financial_operations.sql`: funding, procurement, staff, expense lines + RLS + `get_project_financial_snapshot` / `get_projects_financial_summary`; extended `get_dashboard_insights` and `get_dashboard_projects`
+- UI: `ProjectFinancePanel` + 4 form dialogs; finance tab + proposal summary on `ProjectDetailPage`; progress overview funding/budget bars; dashboard KPIs; projects list columns
+- i18n: `projectFinance` namespace (ar/en parity); validation keys for finance forms
+- Tests: `project-financial-snapshot.test.ts`; `npm run verify` + `npm run build` passed
 
 ### 2026-08-24 (TaskFlow-inspired UX/perf ports)
 

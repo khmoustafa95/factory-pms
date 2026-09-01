@@ -12,6 +12,29 @@ import { toProjectPayload } from '@/lib/validations/project'
 
 export type { ProjectListItem } from '@/types/joins'
 
+async function fetchProjectsFinancialMap() {
+  const supabase = getSupabase()
+  const { data, error } = await supabase.rpc('get_projects_financial_summary')
+
+  if (error) {
+    throw error
+  }
+
+  return new Map(
+    (data ?? []).map((row) => [
+      row.project_id,
+      {
+        funding_received: Number(row.funding_received),
+        budget_used_pct:
+          row.budget_used_pct != null ? Number(row.budget_used_pct) : null,
+        has_funding_gap: Boolean(row.has_funding_gap),
+        open_procurement_count: Number(row.open_procurement_count),
+        overdue_procurement_count: Number(row.overdue_procurement_count),
+      },
+    ]),
+  )
+}
+
 export function useProjectsPage(params: ProjectsPageParams) {
   return useQuery({
     queryKey: queryKeys.projectsPage(params),
@@ -38,12 +61,23 @@ export function useProjectsPage(params: ProjectsPageParams) {
         query = query.eq('factory_id', params.factoryId)
       }
 
-      return fetchPaginatedList<ProjectListItem>({
-        page: params.page,
-        pageSize: params.pageSize,
-        query,
-        mapItems: joinMappers.projectListItem,
-      })
+      const [pageResult, financialMap] = await Promise.all([
+        fetchPaginatedList<ProjectListItem>({
+          page: params.page,
+          pageSize: params.pageSize,
+          query,
+          mapItems: joinMappers.projectListItem,
+        }),
+        fetchProjectsFinancialMap(),
+      ])
+
+      return {
+        ...pageResult,
+        items: pageResult.items.map((item) => {
+          const financials = financialMap.get(item.id)
+          return financials ? { ...item, ...financials } : item
+        }),
+      }
     },
   })
 }
@@ -198,7 +232,6 @@ export function useSubmitProject() {
       const { data, error } = await supabase.rpc('transition_project_status', {
         p_project_id: id,
         p_target_status: 'proposed',
-        p_reason: null,
       })
 
       if (error) {
@@ -222,7 +255,6 @@ export function useApproveProject() {
       const { data, error } = await supabase.rpc('transition_project_status', {
         p_project_id: id,
         p_target_status: 'approved',
-        p_reason: null,
       })
 
       if (error) {
@@ -288,7 +320,6 @@ export function useStartProjectExecution() {
       const { data, error } = await supabase.rpc('transition_project_status', {
         p_project_id: id,
         p_target_status: 'in_progress',
-        p_reason: null,
       })
 
       if (error) {
@@ -348,7 +379,6 @@ export function useResumeProjectExecution() {
       const { data, error } = await supabase.rpc('transition_project_status', {
         p_project_id: id,
         p_target_status: 'in_progress',
-        p_reason: null,
       })
 
       if (error) {
@@ -378,7 +408,6 @@ export function useCompleteProjectExecution() {
       const { data, error } = await supabase.rpc('transition_project_status', {
         p_project_id: id,
         p_target_status: 'completed',
-        p_reason: null,
       })
 
       if (error) {

@@ -6,9 +6,11 @@ import {
   type AttentionDrill,
   type BlockedFilter,
   type OverdueFilter,
+  type OverdueProcurementFilter,
   type PhaseIssueFilter,
   type ProgressFilter,
   type TaskActivityFilter,
+  type UnderfundedFilter,
 } from '@/components/dashboard/dashboard-types'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
@@ -67,6 +69,10 @@ export function DashboardPage() {
   const [overdueFilter, setOverdueFilter] = useState<OverdueFilter>('all')
   const [phaseIssueFilter, setPhaseIssueFilter] =
     useState<PhaseIssueFilter>('all')
+  const [underfundedFilter, setUnderfundedFilter] =
+    useState<UnderfundedFilter>('all')
+  const [overdueProcurementFilter, setOverdueProcurementFilter] =
+    useState<OverdueProcurementFilter>('all')
   const [attentionDrill, setAttentionDrill] = useState<AttentionDrill>(null)
 
   const factoryFilterOptions = useMemo(() => {
@@ -102,6 +108,8 @@ export function DashboardPage() {
     setTaskActivityFilter('all')
     setOverdueFilter('all')
     setPhaseIssueFilter('all')
+    setUnderfundedFilter('all')
+    setOverdueProcurementFilter('all')
     setAttentionDrill(null)
   }
 
@@ -123,6 +131,10 @@ export function DashboardPage() {
       setTaskActivityFilter('in_progress')
     } else if (drill === 'phase_issues') {
       setPhaseIssueFilter('phase_issues')
+    } else if (drill === 'underfunded') {
+      setUnderfundedFilter('underfunded')
+    } else if (drill === 'overdue_procurement') {
+      setOverdueProcurementFilter('overdue_procurement')
     }
 
     scrollToProjects()
@@ -217,6 +229,17 @@ export function DashboardPage() {
         return false
       }
 
+      if (underfundedFilter === 'underfunded' && !project.hasFundingGap) {
+        return false
+      }
+
+      if (
+        overdueProcurementFilter === 'overdue_procurement' &&
+        project.overdueProcurementCount === 0
+      ) {
+        return false
+      }
+
       if (
         taskActivityFilter === 'in_progress' &&
         project.inProgressTaskCount === 0
@@ -252,6 +275,8 @@ export function DashboardPage() {
     factoryFilter,
     overdueFilter,
     phaseIssueFilter,
+    underfundedFilter,
+    overdueProcurementFilter,
     progressFilter,
     debouncedProjectSearch,
     statusFilter,
@@ -266,7 +291,9 @@ export function DashboardPage() {
     blockedFilter !== 'all' ||
     taskActivityFilter !== 'all' ||
     overdueFilter !== 'all' ||
-    phaseIssueFilter !== 'all'
+    phaseIssueFilter !== 'all' ||
+    underfundedFilter !== 'all' ||
+    overdueProcurementFilter !== 'all'
 
   return (
     <section className="space-y-6">

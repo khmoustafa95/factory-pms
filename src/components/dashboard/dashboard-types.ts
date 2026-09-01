@@ -16,6 +16,8 @@ export type BlockedFilter = 'all' | 'blocked' | 'not_blocked'
 export type TaskActivityFilter = 'all' | TaskStatus
 export type OverdueFilter = 'all' | 'overdue'
 export type PhaseIssueFilter = 'all' | 'phase_issues'
+export type UnderfundedFilter = 'all' | 'underfunded'
+export type OverdueProcurementFilter = 'all' | 'overdue_procurement'
 export type AttentionDrill =
   | 'blocked'
   | 'overdue'
@@ -24,4 +26,6 @@ export type AttentionDrill =
   | 'upcoming'
   | 'phase_issues'
   | 'in_progress'
+  | 'underfunded'
+  | 'overdue_procurement'
   | null

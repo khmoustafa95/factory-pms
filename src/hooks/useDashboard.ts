@@ -31,6 +31,8 @@ export type DashboardInsights = {
   scheduleDeviationPhaseCount: number
   financialDeviationPhaseCount: number
   phaseIssueCount: number
+  underfundedProjectCount: number
+  overdueProcurementCount: number
   projectStatusCounts: StatusCount<ProjectStatus>
   taskStatusCounts: StatusCount<TaskStatus>
   progressBuckets: Array<{
@@ -72,6 +74,11 @@ export type DashboardProjectDetail = {
   overdueTaskCount: number
   overduePhaseCount: number
   hasPhaseIssue: boolean
+  fundingReceived: number
+  budgetUsedPct: number | null
+  hasFundingGap: boolean
+  openProcurementCount: number
+  overdueProcurementCount: number
 }
 
 const PROJECT_STATUSES: ProjectStatus[] = [
@@ -241,6 +248,8 @@ export function useDashboardInsights() {
           scheduleDeviationPhaseCount: 0,
           financialDeviationPhaseCount: 0,
           phaseIssueCount: 0,
+          underfundedProjectCount: 0,
+          overdueProcurementCount: 0,
           projectStatusCounts: createCountMap(PROJECT_STATUSES),
           taskStatusCounts: createCountMap(TASK_STATUSES),
           progressBuckets: EMPTY_PROGRESS_BUCKETS.map((bucket) => ({
@@ -262,6 +271,8 @@ export function useDashboardInsights() {
           row.financial_deviation_phase_count,
         ),
         phaseIssueCount: Number(row.phase_issue_count),
+        underfundedProjectCount: Number(row.underfunded_project_count),
+        overdueProcurementCount: Number(row.overdue_procurement_count),
         projectStatusCounts: readStatusCounts(
           row.project_status_counts,
           PROJECT_STATUSES,
@@ -317,6 +328,12 @@ export function useDashboardProjects() {
         overdueTaskCount: Number(row.overdue_task_count),
         overduePhaseCount: Number(row.overdue_phase_count),
         hasPhaseIssue: Boolean(row.has_phase_issue),
+        fundingReceived: Number(row.funding_received),
+        budgetUsedPct:
+          row.budget_used_pct != null ? Number(row.budget_used_pct) : null,
+        hasFundingGap: Boolean(row.has_funding_gap),
+        openProcurementCount: Number(row.open_procurement_count),
+        overdueProcurementCount: Number(row.overdue_procurement_count),
       }))
     },
   })

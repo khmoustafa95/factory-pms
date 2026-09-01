@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
+import { Badge } from '@/components/ui/badge'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
@@ -54,6 +55,7 @@ import {
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { toastMutationError } from '@/lib/mutation-error'
 import { downloadSpreadsheet } from '@/lib/export-spreadsheet'
+import { deriveFundingStatus } from '@/lib/project-finance'
 import { formatProgress } from '@/lib/progress'
 import {
   canApproveAsDirector,
@@ -124,6 +126,19 @@ export function ProjectsPage() {
   const canManageProposals = isManager && Boolean(profile?.factory_id)
   const notAvailable = t('common.notAvailable')
 
+  const formatBudgetUsed = (project: ProjectListItem) =>
+    project.budget_used_pct != null
+      ? `${project.budget_used_pct.toFixed(0)}%`
+      : notAvailable
+
+  const formatFundingStatus = (project: ProjectListItem) => {
+    const status = deriveFundingStatus(
+      project.budget,
+      project.funding_received ?? 0,
+    )
+    return t(`projects.fundingStatusLabels.${status}`)
+  }
+
   const handleExport = () => {
     if (projects.length === 0) {
       toast.error(t('list.exportEmpty'))
@@ -158,6 +173,14 @@ export function ProjectsPage() {
                 locale,
                 notAvailable,
               ),
+          },
+          {
+            header: t('projects.budgetUsed'),
+            value: (row) => formatBudgetUsed(row),
+          },
+          {
+            header: t('projects.fundingStatus'),
+            value: (row) => formatFundingStatus(row),
           },
           {
             header: t('common.timeline'),
@@ -666,6 +689,18 @@ export function ProjectsPage() {
           </p>
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">
+              {t('projects.budgetUsed')}:{' '}
+            </span>
+            {formatBudgetUsed(project)}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
+              {t('projects.fundingStatus')}:{' '}
+            </span>
+            {formatFundingStatus(project)}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
               {t('common.timeline')}:{' '}
             </span>
             {formatProjectSchedule(project, locale, t, notAvailable)}
@@ -722,6 +757,8 @@ export function ProjectsPage() {
             {isDirector ? <TableHead>{t('common.factory')}</TableHead> : null}
             <TableHead>{t('common.status')}</TableHead>
             <TableHead>{t('common.budget')}</TableHead>
+            <TableHead>{t('projects.budgetUsed')}</TableHead>
+            <TableHead>{t('projects.fundingStatus')}</TableHead>
             <TableHead>{t('common.timeline')}</TableHead>
             {isDirector ? (
               <TableHead>{t('projects.proposedBy')}</TableHead>
@@ -772,6 +809,10 @@ export function ProjectsPage() {
                   locale,
                   notAvailable,
                 )}
+              </TableCell>
+              <TableCell>{formatBudgetUsed(project)}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{formatFundingStatus(project)}</Badge>
               </TableCell>
               <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
                 {formatProjectSchedule(project, locale, t, notAvailable)}

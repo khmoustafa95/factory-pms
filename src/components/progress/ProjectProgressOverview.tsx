@@ -10,15 +10,24 @@ import {
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { TaskListItem } from '@/hooks/useTasks'
 import {
+  budgetUsedPercent,
+  fundingReceivedPercent,
+} from '@/lib/project-financial-snapshot'
+import {
   calculatePhaseProgress,
   calculateProjectProgress,
 } from '@/lib/progress'
 import { deriveProjectFieldHealth } from '@/lib/phase-metrics'
-import type { FieldHealthStatus, Phase } from '@/types/database'
+import type {
+  FieldHealthStatus,
+  Phase,
+  ProjectFinancialSnapshot,
+} from '@/types/database'
 
 interface ProjectProgressOverviewProps {
   phases: Phase[]
   tasks: TaskListItem[]
+  snapshot?: ProjectFinancialSnapshot | null
 }
 
 const HEALTH_VARIANT: Record<
@@ -34,58 +43,76 @@ const HEALTH_VARIANT: Record<
 export function ProjectProgressOverview({
   phases,
   tasks,
+  snapshot = null,
 }: ProjectProgressOverviewProps) {
   const { t } = useTranslation()
   const projectProgress = calculateProjectProgress(phases, tasks)
   const fieldHealth = deriveProjectFieldHealth(phases, tasks)
+  const fundingPct = snapshot ? fundingReceivedPercent(snapshot) : null
+  const usedPct = snapshot ? budgetUsedPercent(snapshot) : null
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-4">
-        <div className="space-y-1">
-          <CardTitle>{t('progress.title')}</CardTitle>
-          <CardDescription>{t('progress.description')}</CardDescription>
-        </div>
-        <Badge variant={HEALTH_VARIANT[fieldHealth]}>
-          {t(`progress.fieldHealth.${fieldHealth}`)}
-        </Badge>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <ProgressBar label={t('progress.overall')} value={projectProgress} />
-
-        {phases.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t('progress.noPhases')}
-          </p>
-        ) : (
-          <div className="space-y-4">
-            {phases.map((phase) => {
-              const phaseTasks = tasks.filter(
-                (task) => task.phase_id === phase.id,
-              )
-              const phaseProgress = calculatePhaseProgress(phaseTasks)
-              const doneCount = phaseTasks.filter(
-                (task) => task.status === 'done',
-              ).length
-
-              return (
-                <div key={phase.id} className="space-y-1">
-                  <ProgressBar
-                    label={`${phase.name} (${phase.weight_percent}%)`}
-                    value={phaseProgress}
-                  />
-                  <p className="text-start text-xs text-muted-foreground">
-                    {t('progress.tasksComplete', {
-                      done: doneCount,
-                      total: phaseTasks.length,
-                    })}
-                  </p>
-                </div>
-              )
-            })}
+    <div className="space-y-4">
+      <Card>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1">
+            <CardTitle>{t('progress.title')}</CardTitle>
+            <CardDescription>{t('progress.description')}</CardDescription>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <Badge variant={HEALTH_VARIANT[fieldHealth]}>
+            {t(`progress.fieldHealth.${fieldHealth}`)}
+          </Badge>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <ProgressBar label={t('progress.overall')} value={projectProgress} />
+
+          {snapshot ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ProgressBar
+                label={t('progress.fundingReceived')}
+                value={fundingPct ?? 0}
+              />
+              <ProgressBar
+                label={t('progress.budgetUsed')}
+                value={usedPct ?? 0}
+              />
+            </div>
+          ) : null}
+
+          {phases.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t('progress.noPhases')}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {phases.map((phase) => {
+                const phaseTasks = tasks.filter(
+                  (task) => task.phase_id === phase.id,
+                )
+                const phaseProgress = calculatePhaseProgress(phaseTasks)
+                const doneCount = phaseTasks.filter(
+                  (task) => task.status === 'done',
+                ).length
+
+                return (
+                  <div key={phase.id} className="space-y-1">
+                    <ProgressBar
+                      label={`${phase.name} (${phase.weight_percent}%)`}
+                      value={phaseProgress}
+                    />
+                    <p className="text-start text-xs text-muted-foreground">
+                      {t('progress.tasksComplete', {
+                        done: doneCount,
+                        total: phaseTasks.length,
+                      })}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

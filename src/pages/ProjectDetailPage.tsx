@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
 import { ProjectAttachmentsPanel } from '@/components/projects/ProjectAttachmentsPanel'
+import { ProjectFinancePanel } from '@/components/projects/ProjectFinancePanel'
 import {
   ProjectFormDialog,
   type ProjectFormSubmitPayload,
@@ -53,6 +54,10 @@ import {
   useStartProjectExecution,
   useUpdateProject,
 } from '@/hooks/useProjects'
+import { useProjectFinancialSnapshot } from '@/hooks/useProjectFinancialSnapshot'
+import { useProjectFunding } from '@/hooks/useProjectFunding'
+import { useProjectProcurement } from '@/hooks/useProjectProcurement'
+import { sumStaffHeadcount, useProjectStaff } from '@/hooks/useProjectStaff'
 import { useProjectRealtime } from '@/hooks/useRealtime'
 import {
   useCreateTask,
@@ -66,6 +71,11 @@ import { formatProjectSchedule } from '@/lib/project-schedule'
 import { getProjectScheduleBounds } from '@/lib/duration'
 import { calculatePhaseMetrics } from '@/lib/phase-metrics'
 import { formatProgress } from '@/lib/progress'
+import {
+  canManageProjectFinance,
+  canViewProjectFinance,
+  countOpenProcurement,
+} from '@/lib/project-finance'
 import { toastMutationError } from '@/lib/mutation-error'
 import {
   canApproveAsDirector,
@@ -114,6 +124,26 @@ export function ProjectDetailPage() {
     ? isProposalReviewStatus(project.status)
     : false
   const showWbs = project ? canViewWbs(project.status) : false
+
+  const showFinance = project
+    ? canViewProjectFinance(project, profile)
+    : false
+  const canManageFinance = project
+    ? canManageProjectFinance(project, profile)
+    : false
+
+  const {
+    data: financialSnapshot,
+  } = useProjectFinancialSnapshot(projectId, Boolean(projectId) && showWbs)
+  const { data: proposalFunding = [] } = useProjectFunding(
+    projectId,
+    isProposalMode,
+  )
+  const { data: proposalProcurement = [] } = useProjectProcurement(
+    projectId,
+    isProposalMode,
+  )
+  const { data: proposalStaff = [] } = useProjectStaff(projectId, isProposalMode)
 
   const {
     data: phases = [],
@@ -675,6 +705,37 @@ export function ProjectDetailPage() {
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">
+                  {t('projects.proposalSummaryFunding')}
+                </span>
+                <span className="font-medium">
+                  {formatLocalizedBudget(
+                    proposalFunding
+                      .filter((entry) => entry.status === 'received')
+                      .reduce((sum, entry) => sum + Number(entry.amount), 0),
+                    project.currency,
+                    locale,
+                    notAvailable,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.proposalSummaryStaff')}
+                </span>
+                <span className="font-medium">
+                  {sumStaffHeadcount(proposalStaff)}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.proposalSummaryProcurement')}
+                </span>
+                <span className="font-medium">
+                  {countOpenProcurement(proposalProcurement)}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
                   {t('projects.pm')}
                 </span>
                 <span className="font-medium">
@@ -716,6 +777,15 @@ export function ProjectDetailPage() {
         </div>
       ) : null}
 
+      {project && projectId && isProposalMode && showFinance ? (
+        <ProjectFinancePanel
+          projectId={projectId}
+          currency={project.currency}
+          canManage={canManageFinance}
+          phases={[]}
+        />
+      ) : null}
+
       {project && projectId && showWbs ? (
         <QueryState
           isLoading={isWbsLoading}
@@ -730,6 +800,11 @@ export function ProjectDetailPage() {
               <TabsTrigger value="overview">
                 {t('projectDetail.tabs.overview')}
               </TabsTrigger>
+              {showFinance ? (
+                <TabsTrigger value="finance">
+                  {t('projectDetail.tabs.finance')}
+                </TabsTrigger>
+              ) : null}
               <TabsTrigger value="wbs">
                 {t('projectDetail.tabs.wbs')}
               </TabsTrigger>
@@ -748,8 +823,23 @@ export function ProjectDetailPage() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-4">
-              <ProjectProgressOverview phases={phases} tasks={tasks} />
+              <ProjectProgressOverview
+                phases={phases}
+                tasks={tasks}
+                snapshot={financialSnapshot}
+              />
             </TabsContent>
+
+            {showFinance ? (
+              <TabsContent value="finance" className="mt-4">
+                <ProjectFinancePanel
+                  projectId={projectId}
+                  currency={project.currency}
+                  canManage={canManageFinance}
+                  phases={phases}
+                />
+              </TabsContent>
+            ) : null}
 
             <TabsContent value="wbs" className="mt-4">
               <ProjectWbsTab

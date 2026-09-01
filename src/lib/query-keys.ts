@@ -19,6 +19,17 @@ export const queryKeys = {
   project: (projectId: string | undefined) => ['project', projectId] as const,
   projectAttachments: (projectId: string | undefined) =>
     ['project-attachments', projectId] as const,
+  projectFunding: (projectId: string | undefined) =>
+    ['project-funding', projectId] as const,
+  projectProcurement: (projectId: string | undefined) =>
+    ['project-procurement', projectId] as const,
+  projectStaff: (projectId: string | undefined) =>
+    ['project-staff', projectId] as const,
+  projectExpenseLines: (projectId: string | undefined) =>
+    ['project-expense-lines', projectId] as const,
+  projectFinancialSnapshot: (projectId: string | undefined) =>
+    ['project-financial-snapshot', projectId] as const,
+  projectsFinancialSummary: ['projects-financial-summary'] as const,
   phases: (projectId: string | undefined) => ['phases', projectId] as const,
   tasks: (projectId: string | undefined) => ['tasks', projectId] as const,
   comments: (entityType: string, entityId: string | undefined) =>

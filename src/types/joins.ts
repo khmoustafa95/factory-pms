@@ -19,7 +19,16 @@ export type ProfileWithFactory = Profile & {
   factories: FactorySummary | null
 }
 
-export type ProjectListItem = Project & {
+export type ProjectListFinancials = {
+  funding_received: number
+  budget_used_pct: number | null
+  has_funding_gap: boolean
+  open_procurement_count: number
+  overdue_procurement_count: number
+}
+
+export type ProjectListItem = Project &
+  Partial<ProjectListFinancials> & {
   factories: FactorySummary | null
   proposer: ProfileSummary | null
   assigned_pm: ProfileSummary | null

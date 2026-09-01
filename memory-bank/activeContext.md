@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**TaskFlow ports (wave 1 + high-value wave 2) complete** — debounce, virtualized dashboard table, dropzone + file-type icons, command palette, Excel-compatible CSV export, lazy date picker. Excel import wizard, custom fields, and Mina Scheduler calendar were left out on purpose.
+**Financial & operations layer shipped** — project funding, procurement plan, operational staff, overhead expense lines, financial snapshot RPC, unified Finance tab on project detail, dashboard KPIs, and projects list columns.
 
 ## Recent changes
 
+- [2026-09-01] Financial operations: migration `20260901120000_project_financial_operations.sql` (4 tables + RLS + `get_project_financial_snapshot` + extended dashboard/list RPCs); `ProjectFinancePanel` with CRUD dialogs; proposal summary + finance tab on `ProjectDetailPage`; dashboard underfunded/overdue-procurement KPIs; projects list budget-used/funding-status columns; i18n `projectFinance` ar/en
 - [2026-08-24] Browser follow-up: palette unmounts on close (no stuck overlay); dialogs keep `onFocusOutside` from dismissing when `dismissOnOutsideClick` is false so DatePicker works inside New proposal; FM login verified calendar (15 Aug 2026) + dropzone/`budget.xlsx`
 - [2026-08-24] Ported TaskFlow ideas into factory-pms patterns (not a package clone): `useDebouncedValue`; virtualized dashboard explore table; `FileDropzone`/`FileTypeIcon`; `Ctrl+K` command palette; CSV spreadsheet export on dashboard + projects; lazy `DatePicker` on project/phase/task forms
 - [2026-08-17] Applied `20260816120000_dashboard_insight_rpcs.sql` locally (`get_dashboard_insights` / `get_dashboard_projects` confirmed in pg_proc). Local history had leftover `20260805160000` / `20260805170000` (discarded WIP, not in repo) — marked reverted so push could proceed.
@@ -18,9 +19,9 @@
 
 ## Next steps (concrete)
 
-1. Optional next TaskFlow-inspired work: Excel import wizard, custom project fields, deadlines calendar (not a Gantt replacement)
-2. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, feature flags, demo seed profile, Sentry, further god-page splits, paged dashboard projects
-3. Apply migrations to live/staging Supabase + verify RLS
+1. Apply `20260901120000_project_financial_operations.sql` to staging/live Supabase + smoke-test finance CRUD per role
+2. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
+3. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
 
 ## Open questions
 
