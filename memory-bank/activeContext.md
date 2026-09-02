@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Human-readable project URLs** — canonical routes use `/projects/:factoryCode/:projectCode`; legacy UUID links redirect automatically.
+**Lifecycle RBAC hardening** is implemented locally: PM writes WBS, factory manager / director govern start–pause–close, approved contracts are frozen, change requests and two-step completion are in place.
 
 ## Recent changes
 
+- [2026-09-02] Lifecycle governance: migration `20260902120000_lifecycle_governance.sql` (contract freeze, WBS/finance RLS split, pause/complete roles, `completion_requested_*`, `project_change_requests`, escalation acknowledge, RPCs). UI dialogs for start / complete / change / reassign; Escalations acknowledge + filter; i18n + notification types. Applied with `supabase db push --local`. `npm run verify` and `npm test` passed.
 - [2026-09-01] Project URLs: `buildProjectPath` + dual routes (`/projects/FAC/PRJ-001` canonical, `/projects/:uuid` legacy redirect); migration `20260901140000_project_code_routes.sql` adds `project_detail_path`, dashboard RPC `code`, notification links for task/mention events
 - [2026-09-01] UX rollout: shared confirm/empty/fetching primitives; URL-synced tabs/filters; guarded deletes; finance mobile cards; dashboard/notifications/command palette polish
 - [2026-09-01] Unsaved-changes guard: `DiscardChangesDialog` + `useFormDialogClose` on all 13 `useFormDialog` form dialogs; `PhaseFormDialog`/`TaskFormDialog` basics + collapsible tracking (`sm:max-w-xl`); `TaskCompleteDialog` optional impact props + `StatusMessage`
@@ -23,10 +24,10 @@
 
 ## Next steps (concrete)
 
-1. Apply `20260901120000_project_financial_operations.sql` to staging/live Supabase + smoke-test finance CRUD per role
-2. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
-3. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
-4. Manual QA: mobile finance cards, dashboard filter chips URL sync, notification deep links, discard-changes on form dialogs
+1. Smoke the three demo roles in the browser (FM: submit → start with funding warning → request close; PM: WBS write only; director: approve, confirm close, review change, acknowledge escalation)
+2. Apply `20260902120000_lifecycle_governance.sql` (and earlier finance/URL migrations) to staging/live Supabase
+3. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
+4. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
 
 ## Open questions
 

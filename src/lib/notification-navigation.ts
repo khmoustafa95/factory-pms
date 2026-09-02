@@ -1,5 +1,3 @@
-import type { NotificationType } from '@/types/database'
-
 export type ProjectDetailTab =
   | 'overview'
   | 'finance'
@@ -35,7 +33,7 @@ export function parseProjectDetailTab(
 }
 
 export function notificationTabForType(type: string): ProjectDetailTab {
-  if (type === 'task_blocked') {
+  if (type === 'task_blocked' || type === 'escalation_acknowledged') {
     return 'kanban'
   }
 
@@ -59,20 +57,4 @@ export function appendProjectTab(
   params.set('tab', tab)
   const query = params.toString()
   return query ? `${path}?${query}` : path
-}
-
-export function isNotificationType(value: string): value is NotificationType {
-  return [
-    'project_proposed',
-    'project_approved',
-    'project_rejected',
-    'project_started',
-    'project_paused',
-    'project_resumed',
-    'project_completed',
-    'task_blocked',
-    'comment_project',
-    'comment_task',
-    'comment_mention',
-  ].includes(value)
 }

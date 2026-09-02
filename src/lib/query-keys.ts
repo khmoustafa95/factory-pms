@@ -40,6 +40,8 @@ export const queryKeys = {
     ['project-activity', projectId] as const,
   projectStatusTransitions: (projectId: string | undefined) =>
     ['project-status-transitions', projectId] as const,
+  projectChangeRequests: (projectId: string | undefined) =>
+    ['project-change-requests', projectId] as const,
   escalations: ['escalations'] as const,
   escalationsPage: (params: EscalationsPageParams) =>
     ['escalations', 'page', params] as const,

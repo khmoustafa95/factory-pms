@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   canStartExecution,
+  canManagePhases,
   getExecutionReadiness,
   isPhaseBudgetSumValid,
   remainingPhaseBudget,
@@ -67,6 +68,26 @@ describe('execution readiness', () => {
         { status: 'approved', factory_id: 'f1' },
         { id: 'u3', role: 'company_director', factory_id: null },
       ),
+    ).toBe(false)
+  })
+
+  it('does not let director or factory manager write phases', () => {
+    const project = {
+      status: 'approved' as const,
+      assigned_pm_id: 'pm1',
+      factory_id: 'f1',
+    }
+    expect(
+      canManagePhases(project, {
+        id: 'pm1',
+        role: 'project_manager',
+      }),
+    ).toBe(true)
+    expect(
+      canManagePhases(project, {
+        id: 'fm1',
+        role: 'factory_manager',
+      }),
     ).toBe(false)
   })
 

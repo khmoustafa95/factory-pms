@@ -210,6 +210,26 @@ export const ar = {
         title: 'تمت الإشارة إليك',
         body: 'أشار إليك {{actorName}}: {{preview}}',
       },
+      completion_requested: {
+        title: 'طلب إغلاق',
+        body: 'طلب {{actorName}} إغلاق «{{projectTitle}}».',
+      },
+      change_requested: {
+        title: 'طلب تغيير',
+        body: 'طلب {{actorName}} تغييراً على عقد «{{projectTitle}}». {{reason}}',
+      },
+      change_reviewed: {
+        title: 'مراجعة تغيير',
+        body: 'راجع {{actorName}} تغييراً على «{{projectTitle}}». {{reason}}',
+      },
+      pm_reassigned: {
+        title: 'إعادة إسناد مدير المشروع',
+        body: 'أعاد {{actorName}} إسناد مدير مشروع «{{projectTitle}}». {{reason}}',
+      },
+      escalation_acknowledged: {
+        title: 'اطّلاع على التصعيد',
+        body: 'اطّلع {{actorName}} على المهمة المحظورة «{{taskTitle}}».',
+      },
       unknown: {
         title: 'إشعار',
         body: 'لديك تحديث جديد.',
@@ -415,13 +435,77 @@ export const ar = {
     resumeExecutionFailed: 'تعذر استئناف تنفيذ المشروع',
     executionCompleted: 'تم إنهاء تنفيذ المشروع',
     completeExecutionFailed: 'تعذر إنهاء تنفيذ المشروع',
+    completionRequested: 'تم طلب إغلاق المشروع. بانتظار تأكيد مدير الشركة.',
+    completionRequestFailed: 'تعذر طلب إغلاق المشروع',
+    completionRequestedBanner:
+      'طلب مدير المصنع إغلاق المشروع. أكّد بعد مراجعة العمل المتبقي.',
     executionActionsLocked: 'إجراءات التنفيذ غير متاحة',
     executionHintNoAccess: 'ليست لديك صلاحية تغيير حالة تنفيذ هذا المشروع.',
     executionHintFactoryScope:
       'هذا المشروع خارج نطاق مصنعك، لذلك لا تتوفر إجراءات التنفيذ.',
     executionHintPmNotAssigned: 'لم يتم تعيين مدير مشروع لهذا المشروع بعد.',
     executionHintPmOtherAssignee:
-      'إجراءات التنفيذ متاحة فقط لمدير المشروع المعيّن على هذا المشروع.',
+      'بدء التنفيذ والإيقاف والإغلاق متاحة لمدير المصنع أو مدير الشركة.',
+    executionHintPmCannotGovern:
+      'مدير المشروع يكتب هيكل العمل. بدء التنفيذ والإيقاف والإغلاق من صلاحيات مدير المصنع أو مدير الشركة.',
+    startDialog: {
+      title: 'بدء التنفيذ',
+      description:
+        'أكد جاهزية هيكل العمل ومدير المشروع المعيّن. نقص التمويل تحذير وليس مانعاً.',
+      fundingReceived: 'التمويل المستلم',
+      fundingWarning:
+        'التمويل المستلم أقل من الميزانية المعتمدة. يمكنك مع ذلك بدء التنفيذ.',
+    },
+    completeDialog: {
+      requestTitle: 'طلب إغلاق المشروع',
+      confirmTitle: 'تأكيد إغلاق المشروع',
+      requestDescription: 'اطلب من مدير الشركة إغلاق «{{title}}».',
+      confirmDescription: 'عيّن «{{title}}» كمكتمل.',
+      requestAction: 'طلب الإغلاق',
+      tasksDone: 'جميع المهام منجزة',
+      tasksOpen: 'لا تزال هناك مهام مفتوحة',
+      blocked: '{{count}} مهام محظورة',
+      overdue: '{{count}} مهام متأخرة',
+      openProcurement: '{{count}} بنود مشتريات مفتوحة',
+      blockedClose: 'أنجز كل المهام وأزل الحظر قبل الإغلاق.',
+      procurementWarning:
+        'لا تزال هناك بنود مشتريات مفتوحة. يمكن الإغلاق بعد المراجعة.',
+    },
+    changeRequest: {
+      action: 'طلب تغيير',
+      title: 'طلب تغيير على العقد',
+      description:
+        'الميزانية والجدول مجمّدان بعد الاعتماد. أرسل طلباً لمراجعة المدير.',
+      kind: 'نوع التغيير',
+      kinds: {
+        budget: 'ميزانية',
+        schedule: 'جدول زمني',
+      },
+      requestedBudget: 'الميزانية المطلوبة',
+      startDate: 'تاريخ البدء المطلوب',
+      endDate: 'تاريخ الانتهاء المطلوب',
+      reason: 'السبب',
+      submit: 'إرسال الطلب',
+      submitted: 'تم إرسال طلب التغيير',
+      submitFailed: 'تعذر إرسال طلب التغيير',
+      pendingTitle: 'طلبات تغيير معلّقة',
+      pendingDescription: 'مراجعة المدير مطلوبة قبل تحديث العقد.',
+      approved: 'تم اعتماد طلب التغيير',
+      rejected: 'تم رفض طلب التغيير',
+      reviewFailed: 'تعذر مراجعة طلب التغيير',
+      rejectTitle: 'رفض طلب التغيير',
+      rejectDescription: 'قدّم سبباً ليتمكن مقدم الطلب من المراجعة.',
+    },
+    reassignPm: {
+      action: 'إعادة إسناد مدير المشروع',
+      title: 'إعادة إسناد مدير المشروع',
+      description:
+        'يمكن لمدير المصنع إعادة إسناد مدير المشروع بعد الاعتماد. يبقى العقد مجمّداً.',
+      reason: 'السبب',
+      submit: 'إعادة الإسناد',
+      updated: 'تم إعادة إسناد مدير المشروع',
+      failed: 'تعذر إعادة إسناد مدير المشروع',
+    },
     pauseProject: 'إيقاف المشروع مؤقتاً',
     pauseReason: 'سبب الإيقاف المؤقت',
     pauseDescription:
@@ -480,6 +564,29 @@ export const ar = {
       startNotFactoryManager: 'يمكن فقط لمدير مصنع هذا المشروع بدء التنفيذ.',
       tasksNotDone: 'يجب إنجاز جميع المهام قبل تعيين المشروع كمكتمل.',
       notAllowed: 'ليست لديك صلاحية تنفيذ هذا الإجراء على هذا المشروع.',
+      pauseNotGovernor: 'يمكن فقط لمدير المصنع أو مدير الشركة إيقاف التنفيذ.',
+      resumeNotGovernor: 'يمكن فقط لمدير المصنع أو مدير الشركة استئناف التنفيذ.',
+      completeNotDirector: 'يمكن فقط لمدير الشركة تأكيد إغلاق المشروع.',
+      requestCompleteNotFactoryManager:
+        'يمكن فقط لمدير المصنع طلب إغلاق المشروع.',
+      requestCompleteWrongStatus:
+        'يجب أن يكون المشروع قيد التنفيذ أو موقوفاً لطلب الإغلاق.',
+      contractFrozen:
+        'حقول العقد المعتمد مجمّدة. أرسل طلب تغيير بدلاً من التعديل المباشر.',
+      pmReassignRpc: 'أعد إسناد مدير المشروع عبر إجراء إعادة الإسناد.',
+      completionRequestRpc: 'اطلب الإغلاق عبر إجراء إغلاق المشروع.',
+      changeBeforeApproval: 'طلبات التغيير مسموحة فقط بعد الاعتماد.',
+      changeNotAllowed: 'ليست لديك صلاحية طلب هذا التغيير.',
+      changePendingExists: 'يوجد طلب تغيير معلّق من هذا النوع مسبقاً.',
+      changeReviewNotDirector: 'يمكن فقط لمدير الشركة مراجعة طلبات التغيير.',
+      changeNotPending: 'طلب التغيير لم يعد معلّقاً.',
+      reassignNotFactoryManager:
+        'يمكن فقط لمدير المصنع إعادة إسناد مدير المشروع.',
+      reassignCompleted: 'لا يمكن إعادة إسناد مدير المشروع بعد الإكمال.',
+      reassignInvalidPm:
+        'يجب أن يكون مدير المشروع المعيّن مديراً نشطاً في هذا المصنع.',
+      acknowledgeNotAllowed: 'ليست لديك صلاحية الاطلاع على هذا التصعيد.',
+      acknowledgeNotBlocked: 'يمكن الاطلاع فقط على المهام المحظورة.',
     },
     proposalSummaryFunding: 'التمويل المستلم',
     proposalSummaryStaff: 'الكادر المخطط',
@@ -829,6 +936,18 @@ export const ar = {
     escalateDescription: '{{title}} — ستظهر للقيادة في سجل النشاط.',
     sent: 'تم إرسال التنبيه الحرج للقيادة',
     sendFailed: 'تعذر إرسال التنبيه الحرج',
+    status: 'حالة التصعيد',
+    statusAll: 'كل الحالات',
+    statusOpen: 'غير مُعالَج',
+    statusAcknowledged: 'تم الاطلاع',
+    acknowledge: 'اطّلعت',
+    acknowledged: 'تم تسجيل الاطلاع على التصعيد',
+    acknowledgeFailed: 'تعذر تسجيل الاطلاع على التصعيد',
+    statusLabels: {
+      open: 'مفتوح',
+      acknowledged: 'تم الاطلاع',
+      resolved: 'محلول',
+    },
   },
   factories: {
     title: 'المصانع',
@@ -1006,6 +1125,8 @@ export const ar = {
     codeFormat: 'يجب أن يحتوي الرمز على أحرف كبيرة وأرقام و _ أو -',
     rejectionReasonMin: 'يجب أن يكون سبب الرفض 3 أحرف على الأقل',
     pauseReasonMin: 'يجب أن يكون سبب الإيقاف المؤقت 3 أحرف على الأقل',
+    changeReasonMin: 'يجب أن يكون سبب طلب التغيير 3 أحرف على الأقل',
+    reassignReasonMin: 'يجب أن يكون سبب إعادة الإسناد 3 أحرف على الأقل',
     commentRequired: 'لا يمكن أن يكون التعليق فارغاً',
     commentMaxLength: 'لا يمكن أن يتجاوز التعليق 4000 حرفاً',
     escalationMin: 'يجب أن تكون رسالة التنبيه الحرج 3 أحرف على الأقل',

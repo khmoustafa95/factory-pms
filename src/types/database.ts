@@ -417,6 +417,88 @@ export type Database = {
           },
         ]
       }
+      project_change_requests: {
+        Row: {
+          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          created_at: string
+          current_budget: number | null
+          current_end_date: string | null
+          current_start_date: string | null
+          id: string
+          project_id: string
+          reason: string
+          requested_budget: number | null
+          requested_by: string
+          requested_end_date: string | null
+          requested_start_date: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["change_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          created_at?: string
+          current_budget?: number | null
+          current_end_date?: string | null
+          current_start_date?: string | null
+          id?: string
+          project_id: string
+          reason: string
+          requested_budget?: number | null
+          requested_by: string
+          requested_end_date?: string | null
+          requested_start_date?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["change_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          change_kind?: Database["public"]["Enums"]["change_request_kind"]
+          created_at?: string
+          current_budget?: number | null
+          current_end_date?: string | null
+          current_start_date?: string | null
+          id?: string
+          project_id?: string
+          reason?: string
+          requested_budget?: number | null
+          requested_by?: string
+          requested_end_date?: string | null
+          requested_start_date?: string | null
+          review_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["change_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_change_requests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_change_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_change_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_expense_lines: {
         Row: {
           actual_amount: number | null
@@ -716,6 +798,8 @@ export type Database = {
           assigned_pm_id: string | null
           budget: number | null
           code: string
+          completion_requested_at: string | null
+          completion_requested_by: string | null
           created_at: string
           currency: string
           description: string | null
@@ -742,6 +826,8 @@ export type Database = {
           assigned_pm_id?: string | null
           budget?: number | null
           code: string
+          completion_requested_at?: string | null
+          completion_requested_by?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -768,6 +854,8 @@ export type Database = {
           assigned_pm_id?: string | null
           budget?: number | null
           code?: string
+          completion_requested_at?: string | null
+          completion_requested_by?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -802,6 +890,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "projects_completion_requested_by_fkey"
+            columns: ["completion_requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "projects_factory_id_fkey"
             columns: ["factory_id"]
             isOneToOne: false
@@ -828,6 +923,11 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          escalation_acknowledged_at: string | null
+          escalation_acknowledged_by: string | null
+          escalation_status:
+            | Database["public"]["Enums"]["escalation_status"]
+            | null
           expected_cost: number
           expected_duration_days: number
           financial_deviation_reason: string | null
@@ -852,6 +952,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          escalation_acknowledged_at?: string | null
+          escalation_acknowledged_by?: string | null
+          escalation_status?:
+            | Database["public"]["Enums"]["escalation_status"]
+            | null
           expected_cost?: number
           expected_duration_days?: number
           financial_deviation_reason?: string | null
@@ -876,6 +981,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          escalation_acknowledged_at?: string | null
+          escalation_acknowledged_by?: string | null
+          escalation_status?:
+            | Database["public"]["Enums"]["escalation_status"]
+            | null
           expected_cost?: number
           expected_duration_days?: number
           financial_deviation_reason?: string | null
@@ -919,7 +1029,62 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_task_escalation: {
+        Args: { p_task_id: string }
+        Returns: {
+          actual_cost: number
+          actual_duration_days: number
+          actual_end_date: string | null
+          assignee_id: string | null
+          blocked_reason: string | null
+          cost_category: Database["public"]["Enums"]["cost_category"]
+          created_at: string
+          description: string | null
+          due_date: string | null
+          escalation_acknowledged_at: string | null
+          escalation_acknowledged_by: string | null
+          escalation_status:
+            | Database["public"]["Enums"]["escalation_status"]
+            | null
+          expected_cost: number
+          expected_duration_days: number
+          financial_deviation_reason: string | null
+          id: string
+          phase_id: string
+          progress_percent: number
+          project_id: string
+          schedule_deviation_reason: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+          weight_percent: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tasks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       can_access_project: { Args: { p_project_id: string }; Returns: boolean }
+      can_govern_project: { Args: { p_project_id: string }; Returns: boolean }
+      can_manage_project_phases: {
+        Args: { p_project_id: string }
+        Returns: boolean
+      }
+      can_manage_project_tasks: {
+        Args: { p_project_id: string }
+        Returns: boolean
+      }
+      can_write_project_funding: {
+        Args: { p_project_id: string }
+        Returns: boolean
+      }
+      can_write_project_operations: {
+        Args: { p_project_id: string }
+        Returns: boolean
+      }
       create_comment: {
         Args: {
           p_body: string
@@ -1132,12 +1297,149 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: undefined
       }
+      reassign_project_pm: {
+        Args: { p_pm_id: string; p_project_id: string; p_reason: string }
+        Returns: {
+          actual_end_date: string | null
+          actual_start_date: string | null
+          approved_at: string | null
+          approved_by: string | null
+          assigned_pm_id: string | null
+          budget: number | null
+          code: string
+          completion_requested_at: string | null
+          completion_requested_by: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          factory_id: string
+          id: string
+          progress_percent: number
+          proposed_by: string | null
+          proposed_duration_unit:
+            | Database["public"]["Enums"]["duration_unit"]
+            | null
+          proposed_duration_value: number | null
+          proposed_end_date: string | null
+          proposed_start_date: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["project_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_project_change: {
+        Args: {
+          p_change_kind: Database["public"]["Enums"]["change_request_kind"]
+          p_project_id: string
+          p_reason: string
+          p_requested_budget?: number
+          p_requested_end_date?: string
+          p_requested_start_date?: string
+        }
+        Returns: {
+          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          created_at: string
+          current_budget: number | null
+          current_end_date: string | null
+          current_start_date: string | null
+          id: string
+          project_id: string
+          reason: string
+          requested_budget: number | null
+          requested_by: string
+          requested_end_date: string | null
+          requested_start_date: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["change_request_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "project_change_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_project_completion: {
+        Args: { p_project_id: string }
+        Returns: {
+          actual_end_date: string | null
+          actual_start_date: string | null
+          approved_at: string | null
+          approved_by: string | null
+          assigned_pm_id: string | null
+          budget: number | null
+          code: string
+          completion_requested_at: string | null
+          completion_requested_by: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          factory_id: string
+          id: string
+          progress_percent: number
+          proposed_by: string | null
+          proposed_duration_unit:
+            | Database["public"]["Enums"]["duration_unit"]
+            | null
+          proposed_duration_value: number | null
+          proposed_end_date: string | null
+          proposed_start_date: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["project_status"]
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "projects"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       resolve_project_id_for_entity: {
         Args: {
           p_entity_id: string
           p_entity_type: Database["public"]["Enums"]["entity_type"]
         }
         Returns: string
+      }
+      review_project_change: {
+        Args: { p_approve: boolean; p_reason?: string; p_request_id: string }
+        Returns: {
+          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          created_at: string
+          current_budget: number | null
+          current_end_date: string | null
+          current_start_date: string | null
+          id: string
+          project_id: string
+          reason: string
+          requested_budget: number | null
+          requested_by: string
+          requested_end_date: string | null
+          requested_start_date: string | null
+          review_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["change_request_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "project_change_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       revoke_user_sessions: { Args: { p_user_id: string }; Returns: undefined }
       transition_project_status: {
@@ -1154,6 +1456,8 @@ export type Database = {
           assigned_pm_id: string | null
           budget: number | null
           code: string
+          completion_requested_at: string | null
+          completion_requested_by: string | null
           created_at: string
           currency: string
           description: string | null
@@ -1181,9 +1485,12 @@ export type Database = {
       }
     }
     Enums: {
+      change_request_kind: "budget" | "schedule"
+      change_request_status: "pending" | "approved" | "rejected"
       cost_category: "raw_material" | "non_raw_material"
       duration_unit: "day" | "week" | "month"
       entity_type: "project" | "phase" | "task"
+      escalation_status: "open" | "acknowledged" | "resolved"
       expense_category:
         | "materials"
         | "labor"
@@ -1334,9 +1641,12 @@ export const Constants = {
   },
   public: {
     Enums: {
+      change_request_kind: ["budget", "schedule"],
+      change_request_status: ["pending", "approved", "rejected"],
       cost_category: ["raw_material", "non_raw_material"],
       duration_unit: ["day", "week", "month"],
       entity_type: ["project", "phase", "task"],
+      escalation_status: ["open", "acknowledged", "resolved"],
       expense_category: [
         "materials",
         "labor",
@@ -1377,6 +1687,11 @@ export type FundingEntryStatus =
 export type ProcurementStatus =
   Database['public']['Enums']['procurement_status']
 export type ExpenseCategory = Database['public']['Enums']['expense_category']
+export type ChangeRequestKind =
+  Database['public']['Enums']['change_request_kind']
+export type ChangeRequestStatus =
+  Database['public']['Enums']['change_request_status']
+export type EscalationStatus = Database['public']['Enums']['escalation_status']
 
 export type FieldHealthStatus =
   | 'on_track'
@@ -1392,7 +1707,12 @@ export type NotificationType =
   | 'project_paused'
   | 'project_resumed'
   | 'project_completed'
+  | 'completion_requested'
+  | 'change_requested'
+  | 'change_reviewed'
+  | 'pm_reassigned'
   | 'task_blocked'
+  | 'escalation_acknowledged'
   | 'comment_project'
   | 'comment_task'
   | 'comment_mention'
@@ -1429,6 +1749,8 @@ export type ProjectProcurementItem =
 export type ProjectStaff = Database['public']['Tables']['project_staff']['Row']
 export type ProjectExpenseLine =
   Database['public']['Tables']['project_expense_lines']['Row']
+export type ProjectChangeRequest =
+  Database['public']['Tables']['project_change_requests']['Row']
 
 export type ProjectFinancialSnapshot =
   Database['public']['Functions']['get_project_financial_snapshot']['Returns'][number]

@@ -42,6 +42,87 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
     pattern: /you are not allowed to transition this project/i,
     key: 'projects.rpcErrors.notAllowed',
   },
+  {
+    pattern: /only factory manager or company director can pause execution/i,
+    key: 'projects.rpcErrors.pauseNotGovernor',
+  },
+  {
+    pattern: /only factory manager or company director can resume execution/i,
+    key: 'projects.rpcErrors.resumeNotGovernor',
+  },
+  {
+    pattern: /only company director can complete project execution/i,
+    key: 'projects.rpcErrors.completeNotDirector',
+  },
+  {
+    pattern: /only the factory manager can request project completion/i,
+    key: 'projects.rpcErrors.requestCompleteNotFactoryManager',
+  },
+  {
+    pattern: /project must be in progress or paused to request completion/i,
+    key: 'projects.rpcErrors.requestCompleteWrongStatus',
+  },
+  {
+    pattern: /approved project contract fields are frozen/i,
+    key: 'projects.rpcErrors.contractFrozen',
+  },
+  {
+    pattern: /assigned pm must be changed through reassign_project_pm/i,
+    key: 'projects.rpcErrors.pmReassignRpc',
+  },
+  {
+    pattern: /completion requests must go through request_project_completion/i,
+    key: 'projects.rpcErrors.completionRequestRpc',
+  },
+  {
+    pattern: /change requests are only allowed after approval/i,
+    key: 'projects.rpcErrors.changeBeforeApproval',
+  },
+  {
+    pattern: /you are not allowed to request a project change/i,
+    key: 'projects.rpcErrors.changeNotAllowed',
+  },
+  {
+    pattern: /change request reason must be at least 3 characters/i,
+    key: 'validation.changeReasonMin',
+  },
+  {
+    pattern: /a pending change request of this kind already exists/i,
+    key: 'projects.rpcErrors.changePendingExists',
+  },
+  {
+    pattern: /only company director can review change requests/i,
+    key: 'projects.rpcErrors.changeReviewNotDirector',
+  },
+  {
+    pattern: /change request is not pending/i,
+    key: 'projects.rpcErrors.changeNotPending',
+  },
+  {
+    pattern: /only the factory manager can reassign the project manager/i,
+    key: 'projects.rpcErrors.reassignNotFactoryManager',
+  },
+  {
+    pattern: /cannot reassign pm on a completed project/i,
+    key: 'projects.rpcErrors.reassignCompleted',
+  },
+  {
+    pattern:
+      /assigned pm must be an active project manager in this factory/i,
+    key: 'projects.rpcErrors.reassignInvalidPm',
+  },
+  {
+    pattern: /reassignment reason must be at least 3 characters/i,
+    key: 'validation.reassignReasonMin',
+  },
+  {
+    pattern: /you are not allowed to acknowledge this escalation/i,
+    key: 'projects.rpcErrors.acknowledgeNotAllowed',
+  },
+  {
+    pattern: /only blocked tasks can be acknowledged/i,
+    key: 'projects.rpcErrors.acknowledgeNotBlocked',
+  },
 ]
 
 /** Maps Edge Function / auth / account API errors to i18n keys. */

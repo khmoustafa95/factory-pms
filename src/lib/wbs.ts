@@ -28,6 +28,17 @@ export function canViewWbs(status: ProjectStatus): boolean {
   return WBS_VIEW_STATUSES.includes(status)
 }
 
+function isAssignedProjectManager(
+  project: Pick<Project, 'assigned_pm_id'>,
+  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+): boolean {
+  return (
+    Boolean(profile) &&
+    isProjectManager(profile?.role) &&
+    project.assigned_pm_id === profile?.id
+  )
+}
+
 function canAccessProjectWbs(
   project: Pick<Project, 'status' | 'assigned_pm_id'>,
   profile: Pick<Profile, 'id' | 'role'> | null | undefined,
@@ -37,19 +48,47 @@ function canAccessProjectWbs(
     return false
   }
 
+  return isAssignedProjectManager(project, profile)
+}
+
+export function canGovernExecution(
+  project: Pick<Project, 'factory_id'>,
+  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+): boolean {
+  if (!profile) {
+    return false
+  }
+
   if (isCompanyDirector(profile.role)) {
     return true
   }
 
-  if (isFactoryManager(profile.role)) {
-    return true
+  return (
+    isFactoryManager(profile.role) &&
+    profile.factory_id != null &&
+    profile.factory_id === project.factory_id
+  )
+}
+
+export function canConfirmCompletion(
+  profile: Pick<Profile, 'role'> | null | undefined,
+): boolean {
+  return Boolean(profile && isCompanyDirector(profile.role))
+}
+
+export function canRequestCompletion(
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+): boolean {
+  if (!profile || !['in_progress', 'paused'].includes(project.status)) {
+    return false
   }
 
-  if (isProjectManager(profile.role)) {
-    return project.assigned_pm_id === profile.id
-  }
-
-  return false
+  return (
+    isFactoryManager(profile.role) &&
+    profile.factory_id != null &&
+    profile.factory_id === project.factory_id
+  )
 }
 
 /** @deprecated Prefer canManagePhases / canManageTasks */
@@ -79,6 +118,24 @@ export function canStartExecution(
   profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
 ): boolean {
   if (!profile || project.status !== 'approved') {
+    return false
+  }
+
+  return (
+    isFactoryManager(profile.role) &&
+    profile.factory_id != null &&
+    profile.factory_id === project.factory_id
+  )
+}
+
+export function canReassignProjectPm(
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+): boolean {
+  if (
+    !profile ||
+    !['approved', 'in_progress', 'paused'].includes(project.status)
+  ) {
     return false
   }
 

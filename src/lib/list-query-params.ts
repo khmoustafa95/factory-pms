@@ -31,4 +31,5 @@ export type EscalationsPageParams = {
   pageSize: number
   search: string
   factoryId: string
+  escalationStatus: 'all' | 'open' | 'acknowledged'
 }

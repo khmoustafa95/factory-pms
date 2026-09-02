@@ -7,6 +7,7 @@ import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { Badge } from '@/components/ui/badge'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
+import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ListToolbar } from '@/components/ListToolbar'
@@ -43,6 +44,8 @@ import {
   useUpdateProject,
   type ProjectListItem,
 } from '@/hooks/useProjects'
+import { useRequestProjectCompletion } from '@/hooks/useProjectGovernance'
+import { usePhases } from '@/hooks/usePhases'
 import { useFactories } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
@@ -69,7 +72,14 @@ import type {
   ProjectPauseValues,
   ProjectRejectValues,
 } from '@/lib/validations/approval'
-import { canManagePhases, canStartExecution, canViewWbs } from '@/lib/wbs'
+import {
+  canConfirmCompletion,
+  canGovernExecution,
+  canRequestCompletion,
+  canStartExecution,
+  canViewWbs,
+  getExecutionReadiness,
+} from '@/lib/wbs'
 import {
   isCompanyDirector,
   isFactoryManager,
@@ -112,6 +122,7 @@ export function ProjectsPage() {
   const pauseProjectExecution = usePauseProjectExecution()
   const resumeProjectExecution = useResumeProjectExecution()
   const completeProjectExecution = useCompleteProjectExecution()
+  const requestCompletion = useRequestProjectCompletion()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
@@ -121,6 +132,13 @@ export function ProjectsPage() {
   const [pausingProject, setPausingProject] = useState<ProjectListItem | null>(
     null,
   )
+  const [startingProject, setStartingProject] = useState<ProjectListItem | null>(
+    null,
+  )
+  const { data: startingPhases = [] } = usePhases(startingProject?.id)
+  const startingReadiness = startingProject
+    ? getExecutionReadiness(startingProject, startingPhases)
+    : null
   const [searchParams, setSearchParams] = useSearchParams()
 
   const isDirector = isCompanyDirector(profile?.role)
@@ -389,12 +407,17 @@ export function ProjectsPage() {
     }
   }
 
-  const handleStartExecution = async (project: ProjectListItem) => {
+  const handleStartExecution = async () => {
+    if (!startingProject) {
+      return
+    }
+
     try {
-      await startProjectExecution.mutateAsync({ id: project.id })
+      await startProjectExecution.mutateAsync({ id: startingProject.id })
       toast.success(t('projects.executionStarted'))
     } catch (submitError) {
       toastMutationError(submitError, t('projects.startExecutionFailed'), t)
+      throw submitError
     }
   }
 
@@ -431,10 +454,21 @@ export function ProjectsPage() {
 
   const handleCompleteExecution = async (project: ProjectListItem) => {
     try {
-      await completeProjectExecution.mutateAsync({ id: project.id })
-      toast.success(t('projects.executionCompleted'))
+      if (canConfirmCompletion(profile)) {
+        await completeProjectExecution.mutateAsync({ id: project.id })
+        toast.success(t('projects.executionCompleted'))
+      } else {
+        await requestCompletion.mutateAsync({ id: project.id })
+        toast.success(t('projects.completionRequested'))
+      }
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.completeExecutionFailed'), t)
+      toastMutationError(
+        submitError,
+        canConfirmCompletion(profile)
+          ? t('projects.completeExecutionFailed')
+          : t('projects.completionRequestFailed'),
+        t,
+      )
     }
   }
 
@@ -448,7 +482,8 @@ export function ProjectsPage() {
     startProjectExecution.isPending ||
     pauseProjectExecution.isPending ||
     resumeProjectExecution.isPending ||
-    completeProjectExecution.isPending
+    completeProjectExecution.isPending ||
+    requestCompletion.isPending
 
   const projectDetailLabel = (status: ProjectStatus) => {
     if (canReviewProject(status)) {
@@ -468,12 +503,7 @@ export function ProjectsPage() {
     }
 
     if (isProjectManager(profile.role)) {
-      if (!project.assigned_pm_id) {
-        return t('projects.executionHintPmNotAssigned')
-      }
-      if (project.assigned_pm_id !== profile.id) {
-        return t('projects.executionHintPmOtherAssignee')
-      }
+      return t('projects.executionHintPmCannotGovern')
     }
 
     if (
@@ -489,8 +519,10 @@ export function ProjectsPage() {
 
   const renderProjectActions = (project: ProjectListItem) => {
     const canReviewAsDirector = canApproveAsDirector(project, profile)
-    const canManageExecution = canManagePhases(project, profile)
+    const canGovern = canGovernExecution(project, profile)
     const canStart = canStartExecution(project, profile)
+    const canRequestClose = canRequestCompletion(project, profile)
+    const canConfirmClose = canConfirmCompletion(profile)
     const executionEligibleStatus =
       project.status === 'approved' ||
       project.status === 'in_progress' ||
@@ -547,32 +579,38 @@ export function ProjectsPage() {
         {canStart && project.status === 'approved' ? (
           <Button
             size="sm"
-            onClick={() => void handleStartExecution(project)}
+            onClick={() => setStartingProject(project)}
             disabled={isChangingExecutionState}
           >
             {t('common.startExecution')}
           </Button>
         ) : null}
-        {canManageExecution && project.status === 'in_progress' ? (
-          <>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => openPauseExecution(project)}
-              disabled={isChangingExecutionState}
-            >
-              {t('common.pauseExecution')}
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => void handleCompleteExecution(project)}
-              disabled={isChangingExecutionState}
-            >
-              {t('common.completeExecution')}
-            </Button>
-          </>
+        {canGovern && project.status === 'in_progress' ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => openPauseExecution(project)}
+            disabled={isChangingExecutionState}
+          >
+            {t('common.pauseExecution')}
+          </Button>
         ) : null}
-        {canManageExecution && project.status === 'paused' ? (
+        {(canConfirmClose || canRequestClose) &&
+        (project.status === 'in_progress' || project.status === 'paused') ? (
+          <Button
+            size="sm"
+            onClick={() => void handleCompleteExecution(project)}
+            disabled={
+              isChangingExecutionState ||
+              Boolean(!canConfirmClose && project.completion_requested_at)
+            }
+          >
+            {canConfirmClose
+              ? t('common.completeExecution')
+              : t('projects.completeDialog.requestAction')}
+          </Button>
+        ) : null}
+        {canGovern && project.status === 'paused' ? (
           <Button
             size="sm"
             onClick={() => void handleResumeExecution(project)}
@@ -581,7 +619,7 @@ export function ProjectsPage() {
             {t('common.resumeExecution')}
           </Button>
         ) : null}
-        {!canManageExecution && !canStart && executionEligibleStatus ? (
+        {!canGovern && !canStart && executionEligibleStatus ? (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -759,6 +797,24 @@ export function ProjectsPage() {
             onSubmit={handleReject}
             isSubmitting={rejectProject.isPending}
           />
+          {startingProject ? (
+            <ProjectStartExecutionDialog
+              open
+              onOpenChange={(open) => {
+                if (!open) {
+                  setStartingProject(null)
+                }
+              }}
+              project={startingProject}
+              pmName={
+                startingProject.assigned_pm?.full_name ?? t('common.unassigned')
+              }
+              fundingReceived={Number(startingProject.funding_received ?? 0)}
+              readinessReasons={startingReadiness?.reasons ?? []}
+              onConfirm={handleStartExecution}
+              isSubmitting={startProjectExecution.isPending}
+            />
+          ) : null}
           <ProjectPauseDialog
             open={pauseDialogOpen}
             onOpenChange={setPauseDialogOpen}

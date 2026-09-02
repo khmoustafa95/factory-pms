@@ -73,7 +73,8 @@ import type {
 interface ProjectFinancePanelProps {
   projectId: string
   currency: string
-  canManage: boolean
+  canManageFunding: boolean
+  canManageOperations: boolean
   phases?: Phase[]
   enabled?: boolean
 }
@@ -81,7 +82,8 @@ interface ProjectFinancePanelProps {
 export function ProjectFinancePanel({
   projectId,
   currency,
-  canManage,
+  canManageFunding,
+  canManageOperations,
   phases = [],
   enabled = true,
 }: ProjectFinancePanelProps) {
@@ -255,7 +257,7 @@ export function ProjectFinancePanel({
       <FinanceSection
         title={t('projectFinance.funding.title')}
         description={t('projectFinance.funding.description')}
-        canManage={canManage}
+        canManage={canManageFunding}
         onAdd={() => fundingDialog.openCreate()}
         emptyMessage={t('projectFinance.funding.empty')}
         isEmpty={funding.length === 0}
@@ -269,7 +271,7 @@ export function ProjectFinancePanel({
               <TableHead>{t('projectFinance.funding.expectedDate')}</TableHead>
               <TableHead>{t('projectFinance.funding.receivedDate')}</TableHead>
               <TableHead>{t('common.status')}</TableHead>
-              {canManage ? <TableHead>{t('common.actions')}</TableHead> : null}
+              {canManageFunding ? <TableHead>{t('common.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -288,7 +290,7 @@ export function ProjectFinancePanel({
                     {t(`projectFinance.funding.statuses.${entry.status}`)}
                   </Badge>
                 </TableCell>
-                {canManage ? (
+                {canManageFunding ? (
                   <TableCell>
                     <RowActions
                       onEdit={() => fundingDialog.openEdit(entry)}
@@ -351,7 +353,7 @@ export function ProjectFinancePanel({
                 },
               ]}
               actions={
-                canManage ? (
+                canManageFunding ? (
                   <RowActions
                     onEdit={() => fundingDialog.openEdit(entry)}
                     onDelete={() =>
@@ -380,7 +382,7 @@ export function ProjectFinancePanel({
       <FinanceSection
         title={t('projectFinance.expensePlan.title')}
         description={t('projectFinance.expensePlan.description')}
-        canManage={canManage}
+        canManage={canManageOperations}
         onAdd={() => expenseDialog.openCreate()}
         emptyMessage={t('projectFinance.expensePlan.empty')}
         isEmpty={expenseLines.length === 0}
@@ -402,7 +404,7 @@ export function ProjectFinancePanel({
               <TableHead>{t('common.description')}</TableHead>
               <TableHead>{t('projectFinance.expensePlan.plannedAmount')}</TableHead>
               <TableHead>{t('projectFinance.expensePlan.actualAmount')}</TableHead>
-              {canManage ? <TableHead>{t('common.actions')}</TableHead> : null}
+              {canManageOperations ? <TableHead>{t('common.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -414,7 +416,7 @@ export function ProjectFinancePanel({
                 <TableCell>{line.description}</TableCell>
                 <TableCell>{formatAmount(line.planned_amount)}</TableCell>
                 <TableCell>{formatAmount(line.actual_amount)}</TableCell>
-                {canManage ? (
+                {canManageOperations ? (
                   <TableCell>
                     <RowActions
                       onEdit={() => expenseDialog.openEdit(line)}
@@ -466,7 +468,7 @@ export function ProjectFinancePanel({
                 },
               ]}
               actions={
-                canManage ? (
+                canManageOperations ? (
                   <RowActions
                     onEdit={() => expenseDialog.openEdit(line)}
                     onDelete={() =>
@@ -495,7 +497,7 @@ export function ProjectFinancePanel({
       <FinanceSection
         title={t('projectFinance.procurement.title')}
         description={t('projectFinance.procurement.description')}
-        canManage={canManage}
+        canManage={canManageOperations}
         onAdd={() => procurementDialog.openCreate()}
         emptyMessage={t('projectFinance.procurement.empty')}
         isEmpty={procurement.length === 0}
@@ -516,7 +518,7 @@ export function ProjectFinancePanel({
               <TableHead>{t('projectFinance.procurement.estimatedCost')}</TableHead>
               <TableHead>{t('projectFinance.procurement.neededBy')}</TableHead>
               <TableHead>{t('common.status')}</TableHead>
-              {canManage ? <TableHead>{t('common.actions')}</TableHead> : null}
+              {canManageOperations ? <TableHead>{t('common.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -533,7 +535,7 @@ export function ProjectFinancePanel({
                     {t(`projectFinance.procurement.statuses.${item.status}`)}
                   </Badge>
                 </TableCell>
-                {canManage ? (
+                {canManageOperations ? (
                   <TableCell>
                     <RowActions
                       onEdit={() => procurementDialog.openEdit(item)}
@@ -591,7 +593,7 @@ export function ProjectFinancePanel({
                 },
               ]}
               actions={
-                canManage ? (
+                canManageOperations ? (
                   <RowActions
                     onEdit={() => procurementDialog.openEdit(item)}
                     onDelete={() =>
@@ -620,7 +622,7 @@ export function ProjectFinancePanel({
       <FinanceSection
         title={t('projectFinance.staff.title')}
         description={t('projectFinance.staff.description')}
-        canManage={canManage}
+        canManage={canManageOperations}
         onAdd={() => staffDialog.openCreate()}
         emptyMessage={t('projectFinance.staff.empty')}
         isEmpty={staff.length === 0}
@@ -640,7 +642,7 @@ export function ProjectFinancePanel({
               <TableHead>{t('projectFinance.staff.roleTitle')}</TableHead>
               <TableHead>{t('projectFinance.staff.headcount')}</TableHead>
               <TableHead>{t('projectFinance.staff.qualifications')}</TableHead>
-              {canManage ? <TableHead>{t('common.actions')}</TableHead> : null}
+              {canManageOperations ? <TableHead>{t('common.actions')}</TableHead> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -659,7 +661,7 @@ export function ProjectFinancePanel({
                 <TableCell className="max-w-xs truncate">
                   {member.qualifications ?? notAvailable}
                 </TableCell>
-                {canManage ? (
+                {canManageOperations ? (
                   <TableCell>
                     <RowActions
                       onEdit={() => staffDialog.openEdit(member)}
@@ -718,7 +720,7 @@ export function ProjectFinancePanel({
                 },
               ]}
               actions={
-                canManage ? (
+                canManageOperations ? (
                   <RowActions
                     onEdit={() => staffDialog.openEdit(member)}
                     onDelete={() =>

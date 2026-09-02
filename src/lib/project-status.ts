@@ -11,8 +11,15 @@ export const PROPOSAL_REVIEW_STATUSES: ProjectStatus[] = [
   'rejected',
 ]
 
-/** Factory managers may update project details until the project is completed. */
+/** Factory managers may rewrite proposal fields before the contract is frozen. */
 export const PROJECT_DETAILS_EDITABLE_STATUSES: ProjectStatus[] = [
+  'draft',
+  'proposed',
+  'rejected',
+]
+
+/** Supporting files stay editable until the project is closed. */
+export const PROJECT_ATTACHMENT_EDITABLE_STATUSES: ProjectStatus[] = [
   'draft',
   'proposed',
   'approved',
@@ -63,7 +70,35 @@ export function canDiscussProposal(
   return isCompanyDirector(profile.role) || isFactoryManager(profile.role)
 }
 
-/** Factory managers may manage supporting files while the project is editable. */
-export function canManageProjectAttachments(status: ProjectStatus): boolean {
-  return PROJECT_DETAILS_EDITABLE_STATUSES.includes(status)
+/** Comments on execution (including completed) for anyone who can open the project. */
+export function canCommentOnProject(
+  status: ProjectStatus,
+  profile: Pick<Profile, 'role'> | null | undefined,
+): boolean {
+  if (!profile) {
+    return false
+  }
+
+  if (PROPOSAL_REVIEW_STATUSES.includes(status)) {
+    return canDiscussProposal(profile)
+  }
+
+  return true
+}
+
+export function canManageProjectAttachments(
+  status: ProjectStatus,
+  profile: Pick<Profile, 'role' | 'factory_id'> | null | undefined,
+): boolean {
+  if (!profile || !isFactoryManager(profile.role) || !profile.factory_id) {
+    return false
+  }
+
+  return PROJECT_ATTACHMENT_EDITABLE_STATUSES.includes(status)
+}
+
+export function canRequestProjectChange(
+  status: ProjectStatus,
+): boolean {
+  return status === 'approved' || status === 'in_progress' || status === 'paused'
 }

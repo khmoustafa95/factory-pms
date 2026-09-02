@@ -38,6 +38,14 @@ export function useEscalationsPage(params: EscalationsPageParams) {
         query = query.eq('projects.factory_id', params.factoryId)
       }
 
+      if (params.escalationStatus === 'open') {
+        query = query.or(
+          'escalation_status.is.null,escalation_status.eq.open',
+        )
+      } else if (params.escalationStatus === 'acknowledged') {
+        query = query.eq('escalation_status', 'acknowledged')
+      }
+
       return fetchPaginatedList<EscalationItem>({
         page: params.page,
         pageSize: params.pageSize,

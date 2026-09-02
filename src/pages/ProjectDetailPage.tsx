@@ -9,10 +9,14 @@ import { ScrollableTabsList } from '@/components/ScrollableTabsList'
 import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
 import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
 import { PageHeader } from '@/components/PageHeader'
+import { QueryState } from '@/components/QueryState'
 import { PhaseFormDialog } from '@/components/phases/PhaseFormDialog'
 import { ProjectActivityTab } from '@/components/projects/ProjectActivityTab'
 import { ProjectApproveDialog } from '@/components/projects/ProjectApproveDialog'
 import { ProjectAttachmentsPanel } from '@/components/projects/ProjectAttachmentsPanel'
+import { ProjectChangeRequestDialog } from '@/components/projects/ProjectChangeRequestDialog'
+import { ProjectChangeRequestsPanel } from '@/components/projects/ProjectChangeRequestsPanel'
+import { ProjectCompleteDialog } from '@/components/projects/ProjectCompleteDialog'
 import { ProjectFinancePanel } from '@/components/projects/ProjectFinancePanel'
 import {
   ProjectFormDialog,
@@ -20,11 +24,13 @@ import {
 } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
+import { ProjectReassignPmDialog } from '@/components/projects/ProjectReassignPmDialog'
+import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
 import { ProjectProgressOverview } from '@/components/progress/ProjectProgressOverview'
 import { TaskFormDialog } from '@/components/tasks/TaskFormDialog'
-import { QueryState } from '@/components/QueryState'
+import { StatusMessage } from '@/components/StatusMessage'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -49,12 +55,20 @@ import {
 import {
   useApproveProject,
   useCompleteProjectExecution,
+  useFactoryProjectManagers,
   usePauseProjectExecution,
   useRejectProject,
   useResumeProjectExecution,
   useStartProjectExecution,
   useUpdateProject,
 } from '@/hooks/useProjects'
+import {
+  useProjectChangeRequests,
+  useReassignProjectPm,
+  useRequestProjectChange,
+  useRequestProjectCompletion,
+  useReviewProjectChange,
+} from '@/hooks/useProjectGovernance'
 import { useProjectFinancialSnapshot } from '@/hooks/useProjectFinancialSnapshot'
 import { useProjectFunding } from '@/hooks/useProjectFunding'
 import { useProjectProcurement } from '@/hooks/useProjectProcurement'
@@ -74,7 +88,8 @@ import { getProjectScheduleBounds } from '@/lib/duration'
 import { calculatePhaseMetrics } from '@/lib/phase-metrics'
 import { formatProgress } from '@/lib/progress'
 import {
-  canManageProjectFinance,
+  canManageProjectFunding,
+  canManageProjectOperations,
   canViewProjectFinance,
   countOpenProcurement,
 } from '@/lib/project-finance'
@@ -86,19 +101,27 @@ import {
 } from '@/lib/project-routes'
 import {
   canApproveAsDirector,
+  canCommentOnProject,
   canDiscussProposal,
   canEditProjectDetails,
   canManageProjectAttachments,
+  canRequestProjectChange,
   isProposalReviewStatus,
 } from '@/lib/project-status'
 import { isFactoryManager } from '@/lib/roles'
+import type { ChangeRequestFormValues } from '@/lib/validations/governance'
+import type { ReassignPmFormValues } from '@/lib/validations/governance'
 import type {
   ProjectPauseValues,
   ProjectRejectValues,
 } from '@/lib/validations/approval'
 import {
+  canConfirmCompletion,
+  canGovernExecution,
   canManagePhases,
   canManageTasks,
+  canReassignProjectPm,
+  canRequestCompletion,
   canStartExecution,
   getExecutionReadiness,
   canViewWbs,
@@ -150,20 +173,26 @@ export function ProjectDetailPage() {
   const showFinance = project
     ? canViewProjectFinance(project, profile)
     : false
-  const canManageFinance = project
-    ? canManageProjectFinance(project, profile)
+  const canManageFunding = project
+    ? canManageProjectFunding(project, profile)
+    : false
+  const canManageOperations = project
+    ? canManageProjectOperations(project, profile)
     : false
 
   const {
     data: financialSnapshot,
-  } = useProjectFinancialSnapshot(projectId, Boolean(projectId) && showWbs)
+  } = useProjectFinancialSnapshot(
+    projectId,
+    Boolean(projectId) && (showWbs || isProposalMode),
+  )
   const { data: proposalFunding = [] } = useProjectFunding(
     projectId,
     isProposalMode,
   )
   const { data: proposalProcurement = [] } = useProjectProcurement(
     projectId,
-    isProposalMode,
+    isProposalMode || showWbs,
   )
   const { data: proposalStaff = [] } = useProjectStaff(projectId, isProposalMode)
 
@@ -205,6 +234,17 @@ export function ProjectDetailPage() {
   const pauseProjectExecution = usePauseProjectExecution()
   const resumeProjectExecution = useResumeProjectExecution()
   const completeProjectExecution = useCompleteProjectExecution()
+  const requestCompletion = useRequestProjectCompletion()
+  const requestChange = useRequestProjectChange(projectId)
+  const reviewChange = useReviewProjectChange(projectId)
+  const reassignPm = useReassignProjectPm()
+  const { data: changeRequests = [] } = useProjectChangeRequests(
+    projectId,
+    Boolean(projectId) && showWbs,
+  )
+  const { data: factoryManagers = [] } = useFactoryProjectManagers(
+    project?.factory_id,
+  )
 
   const [phaseDialogOpen, setPhaseDialogOpen] = useState(false)
   const [editingPhase, setEditingPhase] = useState<Phase | null>(null)
@@ -215,8 +255,11 @@ export function ProjectDetailPage() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
-  const { confirm, close, handleConfirm, state: confirmState } =
-    useConfirmAction()
+  const [startDialogOpen, setStartDialogOpen] = useState(false)
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false)
+  const [changeDialogOpen, setChangeDialogOpen] = useState(false)
+  const [reassignDialogOpen, setReassignDialogOpen] = useState(false)
+  const { close, handleConfirm, state: confirmState } = useConfirmAction()
   const [activeTab, setActiveTab] = useProjectDetailTab(showFinance)
   const { data: proposalAttachments = [] } = useProjectAttachments(
     isProposalMode ? projectId : undefined,
@@ -259,8 +302,12 @@ export function ProjectDetailPage() {
   )
   const canPhases = project ? canManagePhases(project, profile) : false
   const canTasks = project ? canManageTasks(project, profile) : false
-  const canManage = canPhases || canTasks
+  const canGovern = project ? canGovernExecution(project, profile) : false
   const canStart = project ? canStartExecution(project, profile) : false
+  const canRequestClose = project
+    ? canRequestCompletion(project, profile)
+    : false
+  const canConfirmClose = canConfirmCompletion(profile)
   const executionReadiness = project
     ? getExecutionReadiness(project, phases)
     : null
@@ -269,20 +316,33 @@ export function ProjectDetailPage() {
     Boolean(profile?.factory_id) &&
     project !== undefined &&
     canEditProjectDetails(project.status)
+  const canReassignPm = project
+    ? canReassignProjectPm(project, profile)
+    : false
+  const canRequestChange =
+    project !== undefined &&
+    canRequestProjectChange(project.status) &&
+    (canReassignPm || canPhases || canTasks)
   const canReviewAsDirector = project
     ? canApproveAsDirector(project, profile)
     : false
   const canCommentOnProposal = canDiscussProposal(profile)
+  const canCommentOnExecution = project
+    ? canCommentOnProject(project.status, profile)
+    : false
   const canManageAttachments =
-    canEditDetails &&
     project !== undefined &&
-    canManageProjectAttachments(project.status)
+    canManageProjectAttachments(project.status, profile)
+  const openProcurementCount = countOpenProcurement(proposalProcurement)
+  const allTasksDone =
+    tasks.length > 0 && tasks.every((task) => task.status === 'done')
   const notAvailable = t('common.notAvailable')
   const isReviewing = approveProject.isPending || rejectProject.isPending
   const isStartingExecution = startProjectExecution.isPending
   const isPausingExecution = pauseProjectExecution.isPending
   const isResumingExecution = resumeProjectExecution.isPending
-  const isCompletingExecution = completeProjectExecution.isPending
+  const isCompletingExecution =
+    completeProjectExecution.isPending || requestCompletion.isPending
 
   const handleSaveProjectDetails = async ({
     values,
@@ -379,10 +439,68 @@ export function ProjectDetailPage() {
     }
 
     try {
-      await completeProjectExecution.mutateAsync({ id: project.id })
-      toast.success(t('projects.executionCompleted'))
+      if (canConfirmClose) {
+        await completeProjectExecution.mutateAsync({ id: project.id })
+        toast.success(t('projects.executionCompleted'))
+      } else {
+        await requestCompletion.mutateAsync({ id: project.id })
+        toast.success(t('projects.completionRequested'))
+      }
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.completeExecutionFailed'), t)
+      toastMutationError(
+        submitError,
+        canConfirmClose
+          ? t('projects.completeExecutionFailed')
+          : t('projects.completionRequestFailed'),
+        t,
+      )
+    }
+  }
+
+  const handleChangeRequest = async (values: ChangeRequestFormValues) => {
+    try {
+      await requestChange.mutateAsync({
+        kind: values.change_kind,
+        reason: values.reason,
+        requestedBudget:
+          values.change_kind === 'budget'
+            ? Number(values.requested_budget)
+            : undefined,
+        requestedStartDate:
+          values.change_kind === 'schedule'
+            ? values.requested_start_date
+            : undefined,
+        requestedEndDate:
+          values.change_kind === 'schedule'
+            ? values.requested_end_date
+            : undefined,
+      })
+      toast.success(t('projects.changeRequest.submitted'))
+    } catch (submitError) {
+      toastMutationError(
+        submitError,
+        t('projects.changeRequest.submitFailed'),
+        t,
+      )
+      throw submitError
+    }
+  }
+
+  const handleReassignPm = async (values: ReassignPmFormValues) => {
+    if (!project) {
+      return
+    }
+
+    try {
+      await reassignPm.mutateAsync({
+        id: project.id,
+        pmId: values.assigned_pm_id,
+        reason: values.reason,
+      })
+      toast.success(t('projects.reassignPm.updated'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.reassignPm.failed'), t)
+      throw submitError
     }
   }
 
@@ -552,26 +670,31 @@ export function ProjectDetailPage() {
                             id: 'start',
                             label: t('common.startExecution'),
                             disabled: isStartingExecution,
-                            onClick: () => void handleStartExecution(),
+                            onClick: () => setStartDialogOpen(true),
                           }
                         : null
-                      : canManage && project.status === 'in_progress'
+                      : (canConfirmClose || canRequestClose) &&
+                          (project.status === 'in_progress' ||
+                            project.status === 'paused') &&
+                          !(
+                            canGovern &&
+                            project.status === 'paused' &&
+                            !canConfirmClose
+                          )
                         ? {
                             id: 'complete',
-                            label: t('common.completeExecution'),
-                            disabled: isCompletingExecution,
-                            onClick: () =>
-                              confirm({
-                                title: t('confirm.completeExecutionTitle'),
-                                description:
-                                  blockedTaskCount > 0 || overdueTaskCount > 0
-                                    ? `${t('confirm.completeExecutionDescription')} ${t('confirm.completeExecutionWarning', { blocked: blockedTaskCount, overdue: overdueTaskCount })}`
-                                    : t('confirm.completeExecutionDescription'),
-                                confirmLabel: t('common.completeExecution'),
-                                onConfirm: () => handleCompleteExecution(),
-                              }),
+                            label: canConfirmClose
+                              ? t('common.completeExecution')
+                              : t('projects.completeDialog.requestAction'),
+                            disabled:
+                              isCompletingExecution ||
+                              Boolean(
+                                !canConfirmClose &&
+                                  project.completion_requested_at,
+                              ),
+                            onClick: () => setCompleteDialogOpen(true),
                           }
-                        : canManage && project.status === 'paused'
+                        : canGovern && project.status === 'paused'
                           ? {
                               id: 'resume',
                               label: t('common.resumeExecution'),
@@ -601,6 +724,18 @@ export function ProjectDetailPage() {
                     onClick: () => setProjectDialogOpen(true),
                   },
                   {
+                    id: 'reassign-pm',
+                    label: t('projects.reassignPm.action'),
+                    hidden: !canReassignPm,
+                    onClick: () => setReassignDialogOpen(true),
+                  },
+                  {
+                    id: 'change-request',
+                    label: t('projects.changeRequest.action'),
+                    hidden: !canRequestChange,
+                    onClick: () => setChangeDialogOpen(true),
+                  },
+                  {
                     id: 'start-locked',
                     label: (
                       <>
@@ -619,8 +754,19 @@ export function ProjectDetailPage() {
                     id: 'pause',
                     label: t('common.pauseExecution'),
                     disabled: isPausingExecution,
-                    hidden: !(canManage && project.status === 'in_progress'),
+                    hidden: !(canGovern && project.status === 'in_progress'),
                     onClick: () => setPauseDialogOpen(true),
+                  },
+                  {
+                    id: 'resume',
+                    label: t('common.resumeExecution'),
+                    disabled: isResumingExecution,
+                    hidden: !(
+                      canGovern &&
+                      project.status === 'paused' &&
+                      (canConfirmClose || canRequestClose)
+                    ),
+                    onClick: () => void handleResumeExecution(),
                   },
                   {
                     id: 'locked-hint',
@@ -632,8 +778,10 @@ export function ProjectDetailPage() {
                     ),
                     disabled: true,
                     hidden: !(
-                      !canManage &&
+                      !canGovern &&
                       !canStart &&
+                      !canConfirmClose &&
+                      !canRequestClose &&
                       (project.status === 'approved' ||
                         project.status === 'in_progress' ||
                         project.status === 'paused')
@@ -656,6 +804,11 @@ export function ProjectDetailPage() {
                   <span className="text-sm text-destructive">
                     {t('projects.rejectedPrefix')} {project.rejection_reason}
                   </span>
+                ) : null}
+                {project.completion_requested_at ? (
+                  <StatusMessage variant="info">
+                    {t('projects.completionRequestedBanner')}
+                  </StatusMessage>
                 ) : null}
                 <span className="flex flex-wrap gap-x-4 gap-y-1">
                   {project.factories ? (
@@ -787,7 +940,8 @@ export function ProjectDetailPage() {
         <ProjectFinancePanel
           projectId={projectId}
           currency={project.currency}
-          canManage={canManageFinance}
+          canManageFunding={canManageFunding}
+          canManageOperations={canManageOperations}
           phases={[]}
         />
       ) : null}
@@ -828,7 +982,20 @@ export function ProjectDetailPage() {
               </TabsTrigger>
             </ScrollableTabsList>
 
-            <TabsContent value="overview" className="mt-4">
+            <TabsContent value="overview" className="mt-4 space-y-4">
+              <ProjectChangeRequestsPanel
+                requests={changeRequests}
+                currency={project.currency}
+                canReview={canConfirmClose}
+                onReview={async (requestId, approve, reason) => {
+                  await reviewChange.mutateAsync({
+                    requestId,
+                    approve,
+                    reason,
+                  })
+                }}
+                isReviewing={reviewChange.isPending}
+              />
               <ProjectProgressOverview
                 phases={phases}
                 tasks={tasks}
@@ -841,7 +1008,8 @@ export function ProjectDetailPage() {
                 <ProjectFinancePanel
                   projectId={projectId}
                   currency={project.currency}
-                  canManage={canManageFinance}
+                  canManageFunding={canManageFunding}
+                  canManageOperations={canManageOperations}
                   phases={phases}
                 />
               </TabsContent>
@@ -885,7 +1053,7 @@ export function ProjectDetailPage() {
             <TabsContent value="activity" className="mt-4">
               <ProjectActivityTab
                 projectId={projectId}
-                canComment={canManage}
+                canComment={canCommentOnExecution}
               />
             </TabsContent>
 
@@ -927,6 +1095,57 @@ export function ProjectDetailPage() {
         />
       ) : null}
 
+      {canStart && project ? (
+        <ProjectStartExecutionDialog
+          open={startDialogOpen}
+          onOpenChange={setStartDialogOpen}
+          project={project}
+          pmName={project.assigned_pm?.full_name ?? t('common.unassigned')}
+          fundingReceived={Number(financialSnapshot?.funding_received ?? 0)}
+          readinessReasons={executionReadiness?.reasons ?? []}
+          onConfirm={handleStartExecution}
+          isSubmitting={startProjectExecution.isPending}
+        />
+      ) : null}
+
+      {(canRequestClose || canConfirmClose) && project ? (
+        <ProjectCompleteDialog
+          open={completeDialogOpen}
+          onOpenChange={setCompleteDialogOpen}
+          mode={canConfirmClose ? 'confirm' : 'request'}
+          projectTitle={project.title}
+          allTasksDone={allTasksDone}
+          blockedCount={blockedTaskCount}
+          overdueCount={overdueTaskCount}
+          openProcurementCount={openProcurementCount}
+          onConfirm={handleCompleteExecution}
+          isSubmitting={isCompletingExecution}
+        />
+      ) : null}
+
+      {canRequestChange && project ? (
+        <ProjectChangeRequestDialog
+          open={changeDialogOpen}
+          onOpenChange={setChangeDialogOpen}
+          currentBudget={project.budget}
+          currentStart={project.proposed_start_date}
+          currentEnd={project.proposed_end_date}
+          onSubmit={handleChangeRequest}
+          isSubmitting={requestChange.isPending}
+        />
+      ) : null}
+
+      {canReassignPm && project ? (
+        <ProjectReassignPmDialog
+          open={reassignDialogOpen}
+          onOpenChange={setReassignDialogOpen}
+          currentPmId={project.assigned_pm_id}
+          managers={factoryManagers}
+          onSubmit={handleReassignPm}
+          isSubmitting={reassignPm.isPending}
+        />
+      ) : null}
+
       <ConfirmDialog
         open={confirmState.open}
         title={confirmState.title}
@@ -953,7 +1172,7 @@ export function ProjectDetailPage() {
         />
       ) : null}
 
-      {project && canManage ? (
+      {project && canGovern ? (
         <ProjectPauseDialog
           open={pauseDialogOpen}
           onOpenChange={setPauseDialogOpen}

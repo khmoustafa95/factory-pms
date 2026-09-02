@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Lifecycle RBAC: PM writes WBS; FM/director govern pause/resume; two-step completion; frozen contract + change requests; finance write split; escalation acknowledge
 - [x] UX optimizations rollout: shared confirm/empty/fetching primitives; URL-synced project/settings/dashboard state; guarded deletes + approve/complete dialogs; `PageHeaderActions`; WBS validity banner; finance mobile cards; dashboard chart keyboard legends; notification inbox filters; command palette actions; `FetchingBar` in layout
 - [x] Unsaved-changes guard on all `useFormDialog` dialogs (`DiscardChangesDialog` + `useFormDialogClose`); phase/task collapsible tracking sections; `TaskCompleteDialog` impact message
 - [x] Kanban drag-and-drop between status columns (`@dnd-kit/core`); Select dropdown kept; blocked/done dialogs unchanged
@@ -70,6 +71,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-02 (Lifecycle RBAC hardening)
+
+- Migration `20260902120000_lifecycle_governance.sql`: contract freeze trigger; PM-only WBS write RLS; funding vs operations finance write; pause/resume = factory manager or director; complete = director only; `request_project_completion`; `project_change_requests` + review RPC; `reassign_project_pm`; task `escalation_status` + acknowledge RPC
+- UI: start-execution dialog (funding warning), two-step complete dialog, change-request + reassign dialogs, Escalations acknowledge/filter, finance capability split, Activity comments after approval including completed
+- `completion_requested` is columns on `projects`, not a new status enum
+- Local `db push`, `npm run verify`, `npm test` (59) passed
 
 ### 2026-09-01 (UX optimizations rollout)
 

@@ -210,6 +210,26 @@ export const en = {
         title: 'You were mentioned',
         body: '{{actorName}} mentioned you: {{preview}}',
       },
+      completion_requested: {
+        title: 'Closure requested',
+        body: '{{actorName}} requested closure of «{{projectTitle}}».',
+      },
+      change_requested: {
+        title: 'Change requested',
+        body: '{{actorName}} requested a contract change on «{{projectTitle}}». {{reason}}',
+      },
+      change_reviewed: {
+        title: 'Change reviewed',
+        body: '{{actorName}} reviewed a change on «{{projectTitle}}». {{reason}}',
+      },
+      pm_reassigned: {
+        title: 'Project manager reassigned',
+        body: '{{actorName}} reassigned the PM on «{{projectTitle}}». {{reason}}',
+      },
+      escalation_acknowledged: {
+        title: 'Escalation acknowledged',
+        body: '{{actorName}} acknowledged the blocked task «{{taskTitle}}».',
+      },
       unknown: {
         title: 'Notification',
         body: 'You have a new update.',
@@ -418,6 +438,10 @@ export const en = {
     resumeExecutionFailed: 'Unable to resume project execution',
     executionCompleted: 'Project marked as completed',
     completeExecutionFailed: 'Unable to complete project execution',
+    completionRequested: 'Project closure requested. Awaiting company director confirmation.',
+    completionRequestFailed: 'Unable to request project closure',
+    completionRequestedBanner:
+      'The factory manager requested closure. Confirm after reviewing remaining work.',
     executionActionsLocked: 'Execution actions locked',
     executionHintNoAccess:
       'You do not have permission to change execution status for this project.',
@@ -426,7 +450,67 @@ export const en = {
     executionHintPmNotAssigned:
       'This project has no assigned project manager yet.',
     executionHintPmOtherAssignee:
-      'Execution actions are available only for the assigned project manager.',
+      'Start, pause, and close are available to the factory manager or company director.',
+    executionHintPmCannotGovern:
+      'Project managers can write the WBS. Start, pause, and close are factory manager or company director actions.',
+    startDialog: {
+      title: 'Start execution',
+      description:
+        'Confirm WBS readiness and assigned PM. Incomplete funding is a warning, not a blocker.',
+      fundingReceived: 'Funding received',
+      fundingWarning:
+        'Funding received is below the approved budget. You can still start execution.',
+    },
+    completeDialog: {
+      requestTitle: 'Request project closure',
+      confirmTitle: 'Confirm project closure',
+      requestDescription: 'Ask the company director to close «{{title}}».',
+      confirmDescription: 'Mark «{{title}}» as completed.',
+      requestAction: 'Request closure',
+      tasksDone: 'All tasks are done',
+      tasksOpen: 'Open tasks remain',
+      blocked: '{{count}} blocked tasks',
+      overdue: '{{count}} overdue tasks',
+      openProcurement: '{{count}} open procurement items',
+      blockedClose: 'Complete every task and clear blocked work before closing.',
+      procurementWarning:
+        'Open procurement items remain. Closing is still allowed after review.',
+    },
+    changeRequest: {
+      action: 'Request change',
+      title: 'Request a contract change',
+      description:
+        'Budget and schedule are frozen after approval. Submit a change for director review.',
+      kind: 'Change type',
+      kinds: {
+        budget: 'Budget',
+        schedule: 'Schedule',
+      },
+      requestedBudget: 'Requested budget',
+      startDate: 'Requested start date',
+      endDate: 'Requested end date',
+      reason: 'Reason',
+      submit: 'Submit request',
+      submitted: 'Change request submitted',
+      submitFailed: 'Unable to submit change request',
+      pendingTitle: 'Pending change requests',
+      pendingDescription: 'Director review is required before the contract is updated.',
+      approved: 'Change request approved',
+      rejected: 'Change request rejected',
+      reviewFailed: 'Unable to review change request',
+      rejectTitle: 'Reject change request',
+      rejectDescription: 'Provide a reason so the requester can revise.',
+    },
+    reassignPm: {
+      action: 'Reassign PM',
+      title: 'Reassign project manager',
+      description:
+        'Factory managers can reassign the PM after approval. The contract stays frozen.',
+      reason: 'Reason',
+      submit: 'Reassign',
+      updated: 'Project manager reassigned',
+      failed: 'Unable to reassign project manager',
+    },
     pauseProject: 'Pause project',
     pauseReason: 'Pause reason',
     pauseDescription:
@@ -493,6 +577,32 @@ export const en = {
       tasksNotDone:
         'All tasks must be done before marking the project completed.',
       notAllowed: 'You are not allowed to perform this action on this project.',
+      pauseNotGovernor:
+        'Only the factory manager or company director can pause execution.',
+      resumeNotGovernor:
+        'Only the factory manager or company director can resume execution.',
+      completeNotDirector:
+        'Only the company director can confirm project closure.',
+      requestCompleteNotFactoryManager:
+        'Only the factory manager can request project closure.',
+      requestCompleteWrongStatus:
+        'The project must be in progress or paused to request closure.',
+      contractFrozen:
+        'Approved contract fields are frozen. Submit a change request instead.',
+      pmReassignRpc: 'Reassign the project manager through the reassignment action.',
+      completionRequestRpc: 'Request closure through the project closure action.',
+      changeBeforeApproval: 'Change requests are only allowed after approval.',
+      changeNotAllowed: 'You are not allowed to request this change.',
+      changePendingExists: 'A pending change request of this type already exists.',
+      changeReviewNotDirector: 'Only the company director can review change requests.',
+      changeNotPending: 'This change request is no longer pending.',
+      reassignNotFactoryManager:
+        'Only the factory manager can reassign the project manager.',
+      reassignCompleted: 'The project manager cannot be reassigned on a completed project.',
+      reassignInvalidPm:
+        'Assigned PM must be an active project manager in this factory.',
+      acknowledgeNotAllowed: 'You are not allowed to acknowledge this escalation.',
+      acknowledgeNotBlocked: 'Only blocked tasks can be acknowledged.',
     },
     proposalSummaryFunding: 'Funding received',
     proposalSummaryStaff: 'Planned staff',
@@ -847,6 +957,18 @@ export const en = {
       '{{title}} — leadership will see this in the activity feed.',
     sent: 'Critical alert sent to leadership',
     sendFailed: 'Unable to send critical alert',
+    status: 'Escalation status',
+    statusAll: 'All statuses',
+    statusOpen: 'Unacknowledged',
+    statusAcknowledged: 'Acknowledged',
+    acknowledge: 'Acknowledge',
+    acknowledged: 'Escalation acknowledged',
+    acknowledgeFailed: 'Unable to acknowledge escalation',
+    statusLabels: {
+      open: 'Open',
+      acknowledged: 'Acknowledged',
+      resolved: 'Resolved',
+    },
   },
   factories: {
     title: 'Factories',
@@ -1027,6 +1149,8 @@ export const en = {
     codeFormat: 'Code must be uppercase letters, numbers, _ or -',
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
     pauseReasonMin: 'Pause reason must be at least 3 characters',
+    changeReasonMin: 'Change request reason must be at least 3 characters',
+    reassignReasonMin: 'Reassignment reason must be at least 3 characters',
     commentRequired: 'Comment cannot be empty',
     commentMaxLength: 'Comment cannot exceed 4000 characters',
     escalationMin: 'Critical alert message must be at least 3 characters',
