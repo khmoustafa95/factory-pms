@@ -52,6 +52,13 @@ export function DatePicker({
   const selected = value ? parseDateOnly(value) : undefined
   const minDate = min ? parseDateOnly(min) : undefined
   const maxDate = max ? parseDateOnly(max) : undefined
+  const today = new Date()
+  const startMonth = minDate
+    ? new Date(minDate.getFullYear(), minDate.getMonth())
+    : new Date(today.getFullYear() - 50, 0)
+  const endMonth = maxDate
+    ? new Date(maxDate.getFullYear(), maxDate.getMonth())
+    : new Date(today.getFullYear() + 25, 11)
 
   return (
     <Popover modal open={open} onOpenChange={setOpen}>
@@ -98,15 +105,19 @@ export function DatePicker({
         align="start"
         onOpenAutoFocus={(event) => event.preventDefault()}
         onCloseAutoFocus={(event) => event.preventDefault()}
+        onFocusOutside={(event) => event.preventDefault()}
       >
         {open ? (
           <Suspense fallback={<Skeleton className="h-72 w-64" />}>
             <Calendar
               mode="single"
+              captionLayout="dropdown"
               dir={dir}
               locale={locale === 'ar' ? ar : enUS}
               selected={selected}
               defaultMonth={selected}
+              startMonth={startMonth}
+              endMonth={endMonth}
               disabled={[
                 ...(minDate ? [{ before: minDate }] : []),
                 ...(maxDate ? [{ after: maxDate }] : []),

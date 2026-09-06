@@ -2,10 +2,11 @@
 
 ## Current focus
 
-**Lifecycle RBAC hardening** is implemented locally: PM writes WBS, factory manager / director govern start–pause–close, approved contracts are frozen, change requests and two-step completion are in place.
+**Date picker month/year navigation** is fixed in the shared Calendar/DatePicker (react-day-picker v10). All form dialogs that use `DatePickerField` inherit the fix.
 
 ## Recent changes
 
+- [2026-09-06] Calendar nav overlay sat under the caption (legacy `navLayout`, no `relative` months, no z-index), so prev/next month clicks never hit the buttons; caption was a static label with no year jump. Fixed `calendar.tsx` (`navLayout="around"`, positioned chevrons, dropdown styles) and `DatePicker` (`captionLayout="dropdown"`, `startMonth`/`endMonth` 50y back / 25y forward). Browser: FM New proposal start date Sep→Oct, year 2028, month Mar, selected `15 Mar 2028`; end date Sep→Oct. `npm run verify` passed.
 - [2026-09-02] Lifecycle governance: migration `20260902120000_lifecycle_governance.sql` (contract freeze, WBS/finance RLS split, pause/complete roles, `completion_requested_*`, `project_change_requests`, escalation acknowledge, RPCs). UI dialogs for start / complete / change / reassign; Escalations acknowledge + filter; i18n + notification types. Applied with `supabase db push --local`. `npm run verify` and `npm test` passed.
 - [2026-09-01] Project URLs: `buildProjectPath` + dual routes (`/projects/FAC/PRJ-001` canonical, `/projects/:uuid` legacy redirect); migration `20260901140000_project_code_routes.sql` adds `project_detail_path`, dashboard RPC `code`, notification links for task/mention events
 - [2026-09-01] UX rollout: shared confirm/empty/fetching primitives; URL-synced tabs/filters; guarded deletes; finance mobile cards; dashboard/notifications/command palette polish

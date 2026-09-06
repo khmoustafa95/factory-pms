@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Date picker month/year navigation: shared Calendar/DatePicker (v10 nav overlay + dropdowns); all `DatePickerField` dialogs
 - [x] Lifecycle RBAC: PM writes WBS; FM/director govern pause/resume; two-step completion; frozen contract + change requests; finance write split; escalation acknowledge
 - [x] UX optimizations rollout: shared confirm/empty/fetching primitives; URL-synced project/settings/dashboard state; guarded deletes + approve/complete dialogs; `PageHeaderActions`; WBS validity banner; finance mobile cards; dashboard chart keyboard legends; notification inbox filters; command palette actions; `FetchingBar` in layout
 - [x] Unsaved-changes guard on all `useFormDialog` dialogs (`DiscardChangesDialog` + `useFormDialogClose`); phase/task collapsible tracking sections; `TaskCompleteDialog` impact message
@@ -71,6 +72,13 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-06 (Date picker month/year navigation)
+
+- Shared `Calendar` was unusable for month/year changes inside dialogs: DayPicker v10 legacy nav is an absolute overlay painted *behind* the caption, so prev/next never received clicks; caption was a non-interactive label.
+- `calendar.tsx`: `navLayout="around"`, relative month container, z-index + pointer-events on nav buttons, month/year dropdown classNames.
+- `DatePicker`: `captionLayout="dropdown"` plus a future `endMonth` (DayPicker’s dropdown default ends at the current year). All `DatePickerField` consumers inherit this (project, phase, task, finance, change request).
+- Browser verified on New proposal start/end dates. `npm run verify` passed.
 
 ### 2026-09-02 (Lifecycle RBAC hardening)
 
