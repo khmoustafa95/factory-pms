@@ -309,6 +309,7 @@ export function ProjectsPage() {
         editingProject && !canSubmitProject(editingProject.status)
           ? t('projects.updateFailed')
           : t('projects.saveDraftFailed'),
+        t,
       )
       throw submitError
     }

@@ -40,7 +40,7 @@ import {
   NULL_SELECT_VALUE,
   parseNullableSelectValue,
 } from '@/lib/form-utils'
-import { toastMutationError } from '@/lib/mutation-error'
+import { matchMutationErrorKey, toastMutationError } from '@/lib/mutation-error'
 import {
   createDraftProjectSchema,
   createSubmitProjectSchema,
@@ -179,6 +179,12 @@ export function ProjectFormDialog({
     }
   }
 
+  const applyCodeConflictError = (error: unknown) => {
+    if (matchMutationErrorKey(error) === 'validation.projectCodeTaken') {
+      form.setError('code', { message: t('validation.projectCodeTaken') })
+    }
+  }
+
   const saveDraft = async () => {
     form.clearErrors()
     const values = form.getValues()
@@ -204,8 +210,8 @@ export function ProjectFormDialog({
         files: pendingFiles,
       })
       closeDialog()
-    } catch {
-      // Caller handles toast
+    } catch (error) {
+      applyCodeConflictError(error)
     }
   }
 
@@ -236,8 +242,8 @@ export function ProjectFormDialog({
         files: pendingFiles,
       })
       closeDialog()
-    } catch {
-      // Caller handles toast
+    } catch (error) {
+      applyCodeConflictError(error)
     }
   }
 

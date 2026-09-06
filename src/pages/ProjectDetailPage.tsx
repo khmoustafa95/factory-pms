@@ -355,7 +355,7 @@ export function ProjectDetailPage() {
       await updateProject.mutateAsync({ id: project.id, values })
       toast.success(t('projects.updated'))
     } catch (submitError) {
-      toastMutationError(submitError, t('projects.updateFailed'))
+      toastMutationError(submitError, t('projects.updateFailed'), t)
       throw submitError
     }
   }

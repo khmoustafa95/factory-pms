@@ -1147,6 +1147,8 @@ export const en = {
     codeMax: 'Code must be at most 12 characters',
     projectCodeMax: 'Code must be at most 32 characters',
     codeFormat: 'Code must be uppercase letters, numbers, _ or -',
+    projectCodeTaken:
+      'This project code is already used in this factory. Choose a different code.',
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
     pauseReasonMin: 'Pause reason must be at least 3 characters',
     changeReasonMin: 'Change request reason must be at least 3 characters',

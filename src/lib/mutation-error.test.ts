@@ -34,4 +34,28 @@ describe('toastMutationError', () => {
     expect(t).toHaveBeenCalledWith('errors.unauthorized')
     expect(toast.error).toHaveBeenCalledWith('غير مصرح')
   })
+
+  it('localizes a duplicate project code unique violation', () => {
+    const t = vi.fn((key: string) =>
+      key === 'validation.projectCodeTaken'
+        ? 'هذا الرمز مستخدم مسبقاً في هذا المصنع. اختر رمزاً مختلفاً.'
+        : key,
+    )
+
+    toastMutationError(
+      {
+        code: '23505',
+        message:
+          'duplicate key value violates unique constraint "projects_factory_code_uidx"',
+        details: 'Key (factory_id, code)=(abc, PRJ-001) already exists.',
+      },
+      'Fallback',
+      t,
+    )
+
+    expect(t).toHaveBeenCalledWith('validation.projectCodeTaken')
+    expect(toast.error).toHaveBeenCalledWith(
+      'هذا الرمز مستخدم مسبقاً في هذا المصنع. اختر رمزاً مختلفاً.',
+    )
+  })
 })

@@ -73,6 +73,11 @@
 
 ## Changelog
 
+### 2026-09-06 (Project code taken message)
+
+- Unique violation on `projects_factory_code_uidx` maps to `validation.projectCodeTaken` (Arabic/English) via `matchMutationErrorKey`.
+- Shown on the code field in `ProjectFormDialog` and in the save/submit toast (`ProjectsPage` / `ProjectDetailPage` now pass `t`).
+
 ### 2026-09-06 (Date picker month/year navigation)
 
 - Shared `Calendar` was unusable for month/year changes inside dialogs: DayPicker v10 legacy nav is an absolute overlay painted *behind* the caption, so prev/next never received clicks; caption was a non-interactive label.

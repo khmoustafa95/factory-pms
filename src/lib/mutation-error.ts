@@ -7,6 +7,42 @@ interface ErrorMatcher {
   key: string
 }
 
+function readErrorField(error: object, field: string): string {
+  if (!(field in error)) {
+    return ''
+  }
+
+  const value = (error as Record<string, unknown>)[field]
+  return typeof value === 'string' ? value : ''
+}
+
+function getErrorSearchText(error: unknown): string {
+  if (typeof error === 'string') {
+    return error
+  }
+
+  if (typeof error !== 'object' || error === null) {
+    return ''
+  }
+
+  return [
+    readErrorField(error, 'message'),
+    readErrorField(error, 'details'),
+    readErrorField(error, 'hint'),
+    readErrorField(error, 'code'),
+  ]
+    .filter((part) => part.length > 0)
+    .join(' ')
+}
+
+/** Maps Postgres unique / check constraint failures to i18n keys. */
+const DB_CONSTRAINT_MATCHERS: ErrorMatcher[] = [
+  {
+    pattern: /projects_factory_code_uidx|\(factory_id,\s*code\)/i,
+    key: 'validation.projectCodeTaken',
+  },
+]
+
 /** Maps raw Postgres RAISE EXCEPTION text from transition_project_status to i18n keys. */
 const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
   {
@@ -189,13 +225,19 @@ const API_ERROR_MATCHERS: ErrorMatcher[] = [
   },
 ]
 
-function mapKnownErrorMessage(
-  rawMessage: string,
-  t: ValidationTranslator,
-): string | null {
-  const matchers = [...API_ERROR_MATCHERS, ...RPC_ERROR_MATCHERS]
-  const matcher = matchers.find((entry) => entry.pattern.test(rawMessage))
-  return matcher ? t(matcher.key) : null
+export function matchMutationErrorKey(error: unknown): string | null {
+  const searchText = getErrorSearchText(error)
+  if (!searchText) {
+    return null
+  }
+
+  const matcher = [
+    ...DB_CONSTRAINT_MATCHERS,
+    ...API_ERROR_MATCHERS,
+    ...RPC_ERROR_MATCHERS,
+  ].find((entry) => entry.pattern.test(searchText))
+
+  return matcher?.key ?? null
 }
 
 export function toastMutationError(
@@ -204,6 +246,6 @@ export function toastMutationError(
   t?: ValidationTranslator,
 ): void {
   const rawMessage = getQueryErrorMessage(error, fallbackMessage)
-  const localizedMessage = t ? mapKnownErrorMessage(rawMessage, t) : null
-  toast.error(localizedMessage ?? rawMessage)
+  const mappedKey = t ? matchMutationErrorKey(error) : null
+  toast.error(mappedKey && t ? t(mappedKey) : rawMessage)
 }
