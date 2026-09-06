@@ -88,8 +88,12 @@ export function ProjectFinancePanel({
   enabled = true,
 }: ProjectFinancePanelProps) {
   const { t, locale } = useTranslation()
-  const { confirm, close, handleConfirm, state: confirmState } =
-    useConfirmAction()
+  const {
+    confirm,
+    close,
+    handleConfirm,
+    state: confirmState,
+  } = useConfirmAction()
   const notAvailable = t('common.notAvailable')
   const formatAmount = (value: number | null | undefined) =>
     formatLocalizedBudget(value ?? null, currency, locale, notAvailable)
@@ -263,59 +267,67 @@ export function ProjectFinancePanel({
         isEmpty={funding.length === 0}
       >
         <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('projectFinance.funding.sourceType')}</TableHead>
-              <TableHead>{t('projectFinance.funding.amount')}</TableHead>
-              <TableHead>{t('projectFinance.funding.expectedDate')}</TableHead>
-              <TableHead>{t('projectFinance.funding.receivedDate')}</TableHead>
-              <TableHead>{t('common.status')}</TableHead>
-              {canManageFunding ? <TableHead>{t('common.actions')}</TableHead> : null}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {funding.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>
-                  {entry.source_type === 'other' && entry.source_name
-                    ? entry.source_name
-                    : t(`projectFinance.funding.sourceTypes.${entry.source_type}`)}
-                </TableCell>
-                <TableCell>{formatAmount(entry.amount)}</TableCell>
-                <TableCell>{formatDate(entry.expected_date)}</TableCell>
-                <TableCell>{formatDate(entry.received_date)}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {t(`projectFinance.funding.statuses.${entry.status}`)}
-                  </Badge>
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('projectFinance.funding.sourceType')}</TableHead>
+                <TableHead>{t('projectFinance.funding.amount')}</TableHead>
+                <TableHead>
+                  {t('projectFinance.funding.expectedDate')}
+                </TableHead>
+                <TableHead>
+                  {t('projectFinance.funding.receivedDate')}
+                </TableHead>
+                <TableHead>{t('common.status')}</TableHead>
                 {canManageFunding ? (
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => fundingDialog.openEdit(entry)}
-                      onDelete={() =>
-                        confirmDelete(async () => {
-                          try {
-                            await deleteFunding.mutateAsync(entry.id)
-                            toast.success(t('projectFinance.funding.deleted'))
-                          } catch (error) {
-                            toastMutationError(
-                              error,
-                              t('projectFinance.funding.deleteFailed'),
-                            )
-                          }
-                        })
-                      }
-                      editLabel={t('common.edit')}
-                      deleteLabel={t('common.delete')}
-                    />
-                  </TableCell>
+                  <TableHead>{t('common.actions')}</TableHead>
                 ) : null}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {funding.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell>
+                    {entry.source_type === 'other' && entry.source_name
+                      ? entry.source_name
+                      : t(
+                          `projectFinance.funding.sourceTypes.${entry.source_type}`,
+                        )}
+                  </TableCell>
+                  <TableCell>{formatAmount(entry.amount)}</TableCell>
+                  <TableCell>{formatDate(entry.expected_date)}</TableCell>
+                  <TableCell>{formatDate(entry.received_date)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {t(`projectFinance.funding.statuses.${entry.status}`)}
+                    </Badge>
+                  </TableCell>
+                  {canManageFunding ? (
+                    <TableCell>
+                      <RowActions
+                        onEdit={() => fundingDialog.openEdit(entry)}
+                        onDelete={() =>
+                          confirmDelete(async () => {
+                            try {
+                              await deleteFunding.mutateAsync(entry.id)
+                              toast.success(t('projectFinance.funding.deleted'))
+                            } catch (error) {
+                              toastMutationError(
+                                error,
+                                t('projectFinance.funding.deleteFailed'),
+                              )
+                            }
+                          })
+                        }
+                        editLabel={t('common.edit')}
+                        deleteLabel={t('common.delete')}
+                      />
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
         <div className="space-y-3 md:hidden">
           {funding.map((entry) => (
@@ -397,51 +409,63 @@ export function ProjectFinancePanel({
         }
       >
         <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('projectFinance.expensePlan.category')}</TableHead>
-              <TableHead>{t('common.description')}</TableHead>
-              <TableHead>{t('projectFinance.expensePlan.plannedAmount')}</TableHead>
-              <TableHead>{t('projectFinance.expensePlan.actualAmount')}</TableHead>
-              {canManageOperations ? <TableHead>{t('common.actions')}</TableHead> : null}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenseLines.map((line) => (
-              <TableRow key={line.id}>
-                <TableCell>
-                  {t(`projectFinance.expensePlan.categories.${line.category}`)}
-                </TableCell>
-                <TableCell>{line.description}</TableCell>
-                <TableCell>{formatAmount(line.planned_amount)}</TableCell>
-                <TableCell>{formatAmount(line.actual_amount)}</TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  {t('projectFinance.expensePlan.category')}
+                </TableHead>
+                <TableHead>{t('common.description')}</TableHead>
+                <TableHead>
+                  {t('projectFinance.expensePlan.plannedAmount')}
+                </TableHead>
+                <TableHead>
+                  {t('projectFinance.expensePlan.actualAmount')}
+                </TableHead>
                 {canManageOperations ? (
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => expenseDialog.openEdit(line)}
-                      onDelete={() =>
-                        confirmDelete(async () => {
-                          try {
-                            await deleteExpense.mutateAsync(line.id)
-                            toast.success(t('projectFinance.expensePlan.deleted'))
-                          } catch (error) {
-                            toastMutationError(
-                              error,
-                              t('projectFinance.expensePlan.deleteFailed'),
-                            )
-                          }
-                        })
-                      }
-                      editLabel={t('common.edit')}
-                      deleteLabel={t('common.delete')}
-                    />
-                  </TableCell>
+                  <TableHead>{t('common.actions')}</TableHead>
                 ) : null}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {expenseLines.map((line) => (
+                <TableRow key={line.id}>
+                  <TableCell>
+                    {t(
+                      `projectFinance.expensePlan.categories.${line.category}`,
+                    )}
+                  </TableCell>
+                  <TableCell>{line.description}</TableCell>
+                  <TableCell>{formatAmount(line.planned_amount)}</TableCell>
+                  <TableCell>{formatAmount(line.actual_amount)}</TableCell>
+                  {canManageOperations ? (
+                    <TableCell>
+                      <RowActions
+                        onEdit={() => expenseDialog.openEdit(line)}
+                        onDelete={() =>
+                          confirmDelete(async () => {
+                            try {
+                              await deleteExpense.mutateAsync(line.id)
+                              toast.success(
+                                t('projectFinance.expensePlan.deleted'),
+                              )
+                            } catch (error) {
+                              toastMutationError(
+                                error,
+                                t('projectFinance.expensePlan.deleteFailed'),
+                              )
+                            }
+                          })
+                        }
+                        editLabel={t('common.edit')}
+                        deleteLabel={t('common.delete')}
+                      />
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
         <div className="space-y-3 md:hidden">
           {expenseLines.map((line) => (
@@ -510,57 +534,67 @@ export function ProjectFinancePanel({
         }
       >
         <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('common.description')}</TableHead>
-              <TableHead>{t('projectFinance.procurement.quantity')}</TableHead>
-              <TableHead>{t('projectFinance.procurement.estimatedCost')}</TableHead>
-              <TableHead>{t('projectFinance.procurement.neededBy')}</TableHead>
-              <TableHead>{t('common.status')}</TableHead>
-              {canManageOperations ? <TableHead>{t('common.actions')}</TableHead> : null}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {procurement.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>{item.description}</TableCell>
-                <TableCell>
-                  {item.quantity} {item.unit}
-                </TableCell>
-                <TableCell>{formatAmount(item.estimated_cost)}</TableCell>
-                <TableCell>{formatDate(item.needed_by_date)}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {t(`projectFinance.procurement.statuses.${item.status}`)}
-                  </Badge>
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('common.description')}</TableHead>
+                <TableHead>
+                  {t('projectFinance.procurement.quantity')}
+                </TableHead>
+                <TableHead>
+                  {t('projectFinance.procurement.estimatedCost')}
+                </TableHead>
+                <TableHead>
+                  {t('projectFinance.procurement.neededBy')}
+                </TableHead>
+                <TableHead>{t('common.status')}</TableHead>
                 {canManageOperations ? (
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => procurementDialog.openEdit(item)}
-                      onDelete={() =>
-                        confirmDelete(async () => {
-                          try {
-                            await deleteProcurement.mutateAsync(item.id)
-                            toast.success(t('projectFinance.procurement.deleted'))
-                          } catch (error) {
-                            toastMutationError(
-                              error,
-                              t('projectFinance.procurement.deleteFailed'),
-                            )
-                          }
-                        })
-                      }
-                      editLabel={t('common.edit')}
-                      deleteLabel={t('common.delete')}
-                    />
-                  </TableCell>
+                  <TableHead>{t('common.actions')}</TableHead>
                 ) : null}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {procurement.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell>
+                    {item.quantity} {item.unit}
+                  </TableCell>
+                  <TableCell>{formatAmount(item.estimated_cost)}</TableCell>
+                  <TableCell>{formatDate(item.needed_by_date)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {t(`projectFinance.procurement.statuses.${item.status}`)}
+                    </Badge>
+                  </TableCell>
+                  {canManageOperations ? (
+                    <TableCell>
+                      <RowActions
+                        onEdit={() => procurementDialog.openEdit(item)}
+                        onDelete={() =>
+                          confirmDelete(async () => {
+                            try {
+                              await deleteProcurement.mutateAsync(item.id)
+                              toast.success(
+                                t('projectFinance.procurement.deleted'),
+                              )
+                            } catch (error) {
+                              toastMutationError(
+                                error,
+                                t('projectFinance.procurement.deleteFailed'),
+                              )
+                            }
+                          })
+                        }
+                        editLabel={t('common.edit')}
+                        deleteLabel={t('common.delete')}
+                      />
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
         <div className="space-y-3 md:hidden">
           {procurement.map((item) => (
@@ -635,58 +669,62 @@ export function ProjectFinancePanel({
         }
       >
         <div className="hidden md:block">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('common.name')}</TableHead>
-              <TableHead>{t('projectFinance.staff.roleTitle')}</TableHead>
-              <TableHead>{t('projectFinance.staff.headcount')}</TableHead>
-              <TableHead>{t('projectFinance.staff.qualifications')}</TableHead>
-              {canManageOperations ? <TableHead>{t('common.actions')}</TableHead> : null}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {staff.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell>{member.full_name}</TableCell>
-                <TableCell>
-                  {member.role_title}
-                  {member.is_contractor ? (
-                    <Badge variant="secondary" className="ms-2">
-                      {t('projectFinance.staff.contractorBadge')}
-                    </Badge>
-                  ) : null}
-                </TableCell>
-                <TableCell>{member.headcount}</TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {member.qualifications ?? notAvailable}
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('common.name')}</TableHead>
+                <TableHead>{t('projectFinance.staff.roleTitle')}</TableHead>
+                <TableHead>{t('projectFinance.staff.headcount')}</TableHead>
+                <TableHead>
+                  {t('projectFinance.staff.qualifications')}
+                </TableHead>
                 {canManageOperations ? (
-                  <TableCell>
-                    <RowActions
-                      onEdit={() => staffDialog.openEdit(member)}
-                      onDelete={() =>
-                        confirmDelete(async () => {
-                          try {
-                            await deleteStaff.mutateAsync(member.id)
-                            toast.success(t('projectFinance.staff.deleted'))
-                          } catch (error) {
-                            toastMutationError(
-                              error,
-                              t('projectFinance.staff.deleteFailed'),
-                            )
-                          }
-                        })
-                      }
-                      editLabel={t('common.edit')}
-                      deleteLabel={t('common.delete')}
-                    />
-                  </TableCell>
+                  <TableHead>{t('common.actions')}</TableHead>
                 ) : null}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {staff.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell>{member.full_name}</TableCell>
+                  <TableCell>
+                    {member.role_title}
+                    {member.is_contractor ? (
+                      <Badge variant="secondary" className="ms-2">
+                        {t('projectFinance.staff.contractorBadge')}
+                      </Badge>
+                    ) : null}
+                  </TableCell>
+                  <TableCell>{member.headcount}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {member.qualifications ?? notAvailable}
+                  </TableCell>
+                  {canManageOperations ? (
+                    <TableCell>
+                      <RowActions
+                        onEdit={() => staffDialog.openEdit(member)}
+                        onDelete={() =>
+                          confirmDelete(async () => {
+                            try {
+                              await deleteStaff.mutateAsync(member.id)
+                              toast.success(t('projectFinance.staff.deleted'))
+                            } catch (error) {
+                              toastMutationError(
+                                error,
+                                t('projectFinance.staff.deleteFailed'),
+                              )
+                            }
+                          })
+                        }
+                        editLabel={t('common.edit')}
+                        deleteLabel={t('common.delete')}
+                      />
+                    </TableCell>
+                  ) : null}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
         <div className="space-y-3 md:hidden">
           {staff.map((member) => (
@@ -759,7 +797,9 @@ export function ProjectFinancePanel({
         item={procurementDialog.editingItem}
         phases={phases}
         onSubmit={handleProcurementSubmit}
-        isSubmitting={createProcurement.isPending || updateProcurement.isPending}
+        isSubmitting={
+          createProcurement.isPending || updateProcurement.isPending
+        }
       />
       <StaffFormDialog
         open={staffDialog.open}

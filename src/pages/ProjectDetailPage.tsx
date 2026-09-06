@@ -70,9 +70,7 @@ import {
   useReviewProjectChange,
 } from '@/hooks/useProjectGovernance'
 import { useProjectFinancialSnapshot } from '@/hooks/useProjectFinancialSnapshot'
-import { useProjectFunding } from '@/hooks/useProjectFunding'
 import { useProjectProcurement } from '@/hooks/useProjectProcurement'
-import { sumStaffHeadcount, useProjectStaff } from '@/hooks/useProjectStaff'
 import { useProjectRealtime } from '@/hooks/useRealtime'
 import {
   useCreateTask,
@@ -170,9 +168,7 @@ export function ProjectDetailPage() {
     : false
   const showWbs = project ? canViewWbs(project.status) : false
 
-  const showFinance = project
-    ? canViewProjectFinance(project, profile)
-    : false
+  const showFinance = project ? canViewProjectFinance(project, profile) : false
   const canManageFunding = project
     ? canManageProjectFunding(project, profile)
     : false
@@ -180,21 +176,14 @@ export function ProjectDetailPage() {
     ? canManageProjectOperations(project, profile)
     : false
 
-  const {
-    data: financialSnapshot,
-  } = useProjectFinancialSnapshot(
+  const { data: financialSnapshot } = useProjectFinancialSnapshot(
     projectId,
-    Boolean(projectId) && (showWbs || isProposalMode),
+    Boolean(projectId) && showWbs,
   )
-  const { data: proposalFunding = [] } = useProjectFunding(
+  const { data: procurementItems = [] } = useProjectProcurement(
     projectId,
-    isProposalMode,
+    showWbs,
   )
-  const { data: proposalProcurement = [] } = useProjectProcurement(
-    projectId,
-    isProposalMode || showWbs,
-  )
-  const { data: proposalStaff = [] } = useProjectStaff(projectId, isProposalMode)
 
   const {
     data: phases = [],
@@ -278,17 +267,15 @@ export function ProjectDetailPage() {
     return grouped
   }, [phases, tasks])
 
-  const blockedTaskCount = tasks.filter((task) => task.status === 'blocked').length
+  const blockedTaskCount = tasks.filter(
+    (task) => task.status === 'blocked',
+  ).length
   const overdueTaskCount = tasks.filter((task) => {
     if (task.status === 'done' || !task.due_date?.trim()) {
       return false
     }
     return task.due_date < todayDateOnly()
   }).length
-  const proposalFundingTotal = proposalFunding.reduce(
-    (sum, entry) => sum + Number(entry.amount),
-    0,
-  )
 
   const totalWeight = sumPhaseWeights(phases)
   const weightsValid = isPhaseWeightSumValid(phases)
@@ -316,9 +303,7 @@ export function ProjectDetailPage() {
     Boolean(profile?.factory_id) &&
     project !== undefined &&
     canEditProjectDetails(project.status)
-  const canReassignPm = project
-    ? canReassignProjectPm(project, profile)
-    : false
+  const canReassignPm = project ? canReassignProjectPm(project, profile) : false
   const canRequestChange =
     project !== undefined &&
     canRequestProjectChange(project.status) &&
@@ -333,7 +318,7 @@ export function ProjectDetailPage() {
   const canManageAttachments =
     project !== undefined &&
     canManageProjectAttachments(project.status, profile)
-  const openProcurementCount = countOpenProcurement(proposalProcurement)
+  const openProcurementCount = countOpenProcurement(procurementItems)
   const allTasksDone =
     tasks.length > 0 && tasks.every((task) => task.status === 'done')
   const notAvailable = t('common.notAvailable')
@@ -690,7 +675,7 @@ export function ProjectDetailPage() {
                               isCompletingExecution ||
                               Boolean(
                                 !canConfirmClose &&
-                                  project.completion_requested_at,
+                                project.completion_requested_at,
                               ),
                             onClick: () => setCompleteDialogOpen(true),
                           }
@@ -864,37 +849,6 @@ export function ProjectDetailPage() {
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">
-                  {t('projects.proposalSummaryFunding')}
-                </span>
-                <span className="font-medium">
-                  {formatLocalizedBudget(
-                    proposalFunding
-                      .filter((entry) => entry.status === 'received')
-                      .reduce((sum, entry) => sum + Number(entry.amount), 0),
-                    project.currency,
-                    locale,
-                    notAvailable,
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.proposalSummaryStaff')}
-                </span>
-                <span className="font-medium">
-                  {sumStaffHeadcount(proposalStaff)}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.proposalSummaryProcurement')}
-                </span>
-                <span className="font-medium">
-                  {countOpenProcurement(proposalProcurement)}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
                   {t('projects.pm')}
                 </span>
                 <span className="font-medium">
@@ -936,16 +890,6 @@ export function ProjectDetailPage() {
         </div>
       ) : null}
 
-      {project && projectId && isProposalMode && showFinance ? (
-        <ProjectFinancePanel
-          projectId={projectId}
-          currency={project.currency}
-          canManageFunding={canManageFunding}
-          canManageOperations={canManageOperations}
-          phases={[]}
-        />
-      ) : null}
-
       {project && projectId && showWbs ? (
         <QueryState
           isLoading={isWbsLoading}
@@ -955,7 +899,11 @@ export function ProjectDetailPage() {
           onRetry={refetchWbs}
           isRetrying={isWbsFetching}
         >
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} dir={dir}>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as typeof activeTab)}
+            dir={dir}
+          >
             <ScrollableTabsList>
               <TabsTrigger value="overview">
                 {t('projectDetail.tabs.overview')}
@@ -1085,11 +1033,8 @@ export function ProjectDetailPage() {
           open={approveDialogOpen}
           onOpenChange={setApproveDialogOpen}
           project={project}
-          pmName={
-            project.assigned_pm?.full_name ?? t('common.unassigned')
-          }
+          pmName={project.assigned_pm?.full_name ?? t('common.unassigned')}
           attachmentCount={proposalAttachments.length}
-          fundingTotal={proposalFundingTotal}
           onConfirm={handleApprove}
           isSubmitting={approveProject.isPending}
         />

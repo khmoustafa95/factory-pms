@@ -4,6 +4,7 @@
 
 - [x] Date picker month/year navigation: shared Calendar/DatePicker (v10 nav overlay + dropdowns); all `DatePickerField` dialogs
 - [x] Lifecycle RBAC: PM writes WBS; FM/director govern pause/resume; two-step completion; frozen contract + change requests; finance write split; escalation acknowledge
+- [x] Operational finance after approval: proposal keeps funding only; procurement/staff/overhead gated to approved+ (SPA + RLS)
 - [x] UX optimizations rollout: shared confirm/empty/fetching primitives; URL-synced project/settings/dashboard state; guarded deletes + approve/complete dialogs; `PageHeaderActions`; WBS validity banner; finance mobile cards; dashboard chart keyboard legends; notification inbox filters; command palette actions; `FetchingBar` in layout
 - [x] Unsaved-changes guard on all `useFormDialog` dialogs (`DiscardChangesDialog` + `useFormDialogClose`); phase/task collapsible tracking sections; `TaskCompleteDialog` impact message
 - [x] Kanban drag-and-drop between status columns (`@dnd-kit/core`); Select dropdown kept; blocked/done dialogs unchanged
@@ -72,6 +73,17 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-06 (Funding after approval)
+
+- Incoming funding is no longer writable or shown on the proposal. Same post-approval statuses as operations; director/FM only.
+- Approve dialog no longer lists a proposed-funding total (budget remains the proposal figure).
+
+### 2026-09-06 (Operations after approval)
+
+- Proposal stage no longer accepts procurement, operational staff, or overhead expense writes (SPA + RLS).
+- Proposal detail shows funding only plus a hint; staff/procurement summary rows removed.
+- Finance tab after approval is unchanged for assigned PM + factory manager.
 
 ### 2026-09-06 (Project code taken message)
 

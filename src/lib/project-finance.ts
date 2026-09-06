@@ -5,17 +5,8 @@ import {
   isProjectManager,
 } from '@/lib/roles'
 
-const PM_OPERATIONS_STATUSES: ProjectStatus[] = [
+const POST_APPROVAL_WRITE_STATUSES: ProjectStatus[] = [
   'approved',
-  'in_progress',
-  'paused',
-]
-
-const WRITABLE_FINANCE_STATUSES: ProjectStatus[] = [
-  'draft',
-  'proposed',
-  'approved',
-  'rejected',
   'in_progress',
   'paused',
 ]
@@ -31,7 +22,7 @@ export function canManageProjectFunding(
   project: Pick<Project, 'status' | 'factory_id'>,
   profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
 ): boolean {
-  if (!profile || !WRITABLE_FINANCE_STATUSES.includes(project.status)) {
+  if (!profile || !POST_APPROVAL_WRITE_STATUSES.includes(project.status)) {
     return false
   }
 
@@ -50,7 +41,7 @@ export function canManageProjectOperations(
   project: Pick<Project, 'status' | 'assigned_pm_id' | 'factory_id'>,
   profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
 ): boolean {
-  if (!profile || !WRITABLE_FINANCE_STATUSES.includes(project.status)) {
+  if (!profile || !POST_APPROVAL_WRITE_STATUSES.includes(project.status)) {
     return false
   }
 
@@ -62,11 +53,7 @@ export function canManageProjectOperations(
     return true
   }
 
-  return (
-    isProjectManager(profile.role) &&
-    project.assigned_pm_id === profile.id &&
-    PM_OPERATIONS_STATUSES.includes(project.status)
-  )
+  return isProjectManager(profile.role) && project.assigned_pm_id === profile.id
 }
 
 /** @deprecated Prefer canManageProjectFunding / canManageProjectOperations */
@@ -80,9 +67,7 @@ export function canManageProjectFinance(
   )
 }
 
-export function countOpenProcurement(
-  items: Array<{ status: string }>,
-): number {
+export function countOpenProcurement(items: Array<{ status: string }>): number {
   return items.filter(
     (item) => item.status !== 'delivered' && item.status !== 'cancelled',
   ).length

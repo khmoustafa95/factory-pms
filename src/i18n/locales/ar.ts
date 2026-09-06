@@ -421,7 +421,6 @@ export const ar = {
       description: 'راجع الملخص أدناه قبل الاعتماد.',
       assignedPm: 'مدير المشروع المعيّن',
       attachmentCount: 'المرفقات',
-      fundingTotal: 'التمويل المقترح',
       confirm: 'اعتماد المقترح',
     },
     approveFailed: 'تعذر اعتماد المقترح',
@@ -565,7 +564,8 @@ export const ar = {
       tasksNotDone: 'يجب إنجاز جميع المهام قبل تعيين المشروع كمكتمل.',
       notAllowed: 'ليست لديك صلاحية تنفيذ هذا الإجراء على هذا المشروع.',
       pauseNotGovernor: 'يمكن فقط لمدير المصنع أو مدير الشركة إيقاف التنفيذ.',
-      resumeNotGovernor: 'يمكن فقط لمدير المصنع أو مدير الشركة استئناف التنفيذ.',
+      resumeNotGovernor:
+        'يمكن فقط لمدير المصنع أو مدير الشركة استئناف التنفيذ.',
       completeNotDirector: 'يمكن فقط لمدير الشركة تأكيد إغلاق المشروع.',
       requestCompleteNotFactoryManager:
         'يمكن فقط لمدير المصنع طلب إغلاق المشروع.',
@@ -588,9 +588,6 @@ export const ar = {
       acknowledgeNotAllowed: 'ليست لديك صلاحية الاطلاع على هذا التصعيد.',
       acknowledgeNotBlocked: 'يمكن الاطلاع فقط على المهام المحظورة.',
     },
-    proposalSummaryFunding: 'التمويل المستلم',
-    proposalSummaryStaff: 'الكادر المخطط',
-    proposalSummaryProcurement: 'بنود مشتريات مفتوحة',
     budgetUsed: 'استخدام الميزانية',
     fundingStatus: 'التمويل',
     fundingStatusLabels: {

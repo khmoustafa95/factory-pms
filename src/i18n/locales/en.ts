@@ -424,7 +424,6 @@ export const en = {
       description: 'Review the summary below before approving.',
       assignedPm: 'Assigned PM',
       attachmentCount: 'Attachments',
-      fundingTotal: 'Proposed funding',
       confirm: 'Approve proposal',
     },
     approveFailed: 'Unable to approve proposal',
@@ -438,7 +437,8 @@ export const en = {
     resumeExecutionFailed: 'Unable to resume project execution',
     executionCompleted: 'Project marked as completed',
     completeExecutionFailed: 'Unable to complete project execution',
-    completionRequested: 'Project closure requested. Awaiting company director confirmation.',
+    completionRequested:
+      'Project closure requested. Awaiting company director confirmation.',
     completionRequestFailed: 'Unable to request project closure',
     completionRequestedBanner:
       'The factory manager requested closure. Confirm after reviewing remaining work.',
@@ -472,7 +472,8 @@ export const en = {
       blocked: '{{count}} blocked tasks',
       overdue: '{{count}} overdue tasks',
       openProcurement: '{{count}} open procurement items',
-      blockedClose: 'Complete every task and clear blocked work before closing.',
+      blockedClose:
+        'Complete every task and clear blocked work before closing.',
       procurementWarning:
         'Open procurement items remain. Closing is still allowed after review.',
     },
@@ -494,7 +495,8 @@ export const en = {
       submitted: 'Change request submitted',
       submitFailed: 'Unable to submit change request',
       pendingTitle: 'Pending change requests',
-      pendingDescription: 'Director review is required before the contract is updated.',
+      pendingDescription:
+        'Director review is required before the contract is updated.',
       approved: 'Change request approved',
       rejected: 'Change request rejected',
       reviewFailed: 'Unable to review change request',
@@ -589,24 +591,27 @@ export const en = {
         'The project must be in progress or paused to request closure.',
       contractFrozen:
         'Approved contract fields are frozen. Submit a change request instead.',
-      pmReassignRpc: 'Reassign the project manager through the reassignment action.',
-      completionRequestRpc: 'Request closure through the project closure action.',
+      pmReassignRpc:
+        'Reassign the project manager through the reassignment action.',
+      completionRequestRpc:
+        'Request closure through the project closure action.',
       changeBeforeApproval: 'Change requests are only allowed after approval.',
       changeNotAllowed: 'You are not allowed to request this change.',
-      changePendingExists: 'A pending change request of this type already exists.',
-      changeReviewNotDirector: 'Only the company director can review change requests.',
+      changePendingExists:
+        'A pending change request of this type already exists.',
+      changeReviewNotDirector:
+        'Only the company director can review change requests.',
       changeNotPending: 'This change request is no longer pending.',
       reassignNotFactoryManager:
         'Only the factory manager can reassign the project manager.',
-      reassignCompleted: 'The project manager cannot be reassigned on a completed project.',
+      reassignCompleted:
+        'The project manager cannot be reassigned on a completed project.',
       reassignInvalidPm:
         'Assigned PM must be an active project manager in this factory.',
-      acknowledgeNotAllowed: 'You are not allowed to acknowledge this escalation.',
+      acknowledgeNotAllowed:
+        'You are not allowed to acknowledge this escalation.',
       acknowledgeNotBlocked: 'Only blocked tasks can be acknowledged.',
     },
-    proposalSummaryFunding: 'Funding received',
-    proposalSummaryStaff: 'Planned staff',
-    proposalSummaryProcurement: 'Open procurement items',
     budgetUsed: 'Budget used',
     fundingStatus: 'Funding',
     fundingStatusLabels: {
@@ -807,7 +812,8 @@ export const en = {
     noPhases: 'No phases yet. Add the first phase to build the WBS.',
     validityBanner: {
       weights: 'Phase weights total {{total}}% — must equal 100%.',
-      budget: 'Phase budgets total {{total}} — must match project budget {{projectBudget}}.',
+      budget:
+        'Phase budgets total {{total}} — must match project budget {{projectBudget}}.',
     },
     weight: 'Weight',
     dueDate: 'Due date',

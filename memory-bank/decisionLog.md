@@ -4,6 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
 ## Entries
 
+- 2026-09-06 — All finance writes (funding, procurement, staff, overhead) start after approval. Proposal detail is budget/timeline/PM/files/discussion only; incoming funding is recorded by director/FM on the Finance tab once the contract exists.
 - 2026-09-02 — Least-privilege lifecycle: assigned PM writes phases/tasks; factory manager (same factory) or director pause/resume; factory manager requests completion and director confirms (director may complete directly). After approval, budget/dates/code freeze except via `request_project_change` + director `review_project_change` (GUC bypass). PM reassignment is an immediate factory-manager RPC with notifications, not a director-reviewed change. `completion_requested` is timestamp columns so existing status dashboards stay valid.
 - 2026-09-02 — Escalations stay blocked-task based; `escalation_status` (`open|acknowledged|resolved`) plus acknowledge RPC for governors — leadership can mark “seen” without unblocking the task.
 - 2026-09-01 — Kanban status moves use `@dnd-kit/core` droppable columns (not `@dnd-kit/sortable`). Task `sort_order` stays WBS/phase order; dragging only changes `status` through the existing mutation + blocked/done dialogs.

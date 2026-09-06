@@ -46,12 +46,7 @@ describe('lifecycle permissions', () => {
     expect(canManageTasks(assigned, pm)).toBe(true)
     expect(canManagePhases(assigned, fm)).toBe(false)
     expect(canManagePhases(assigned, director)).toBe(false)
-    expect(
-      canManageTasks(
-        { ...assigned, status: 'approved' },
-        pm,
-      ),
-    ).toBe(false)
+    expect(canManageTasks({ ...assigned, status: 'approved' }, pm)).toBe(false)
   })
 
   it('lets factory manager or director govern pause/resume', () => {
@@ -65,9 +60,9 @@ describe('lifecycle permissions', () => {
     expect(canRequestCompletion(assigned, director)).toBe(false)
     expect(canConfirmCompletion(director)).toBe(true)
     expect(canConfirmCompletion(fm)).toBe(false)
-    expect(canStartExecution({ status: 'approved', factory_id: 'f1' }, fm)).toBe(
-      true,
-    )
+    expect(
+      canStartExecution({ status: 'approved', factory_id: 'f1' }, fm),
+    ).toBe(true)
     expect(
       canStartExecution({ status: 'approved', factory_id: 'f1' }, director),
     ).toBe(false)
@@ -92,5 +87,22 @@ describe('lifecycle permissions', () => {
     expect(
       canManageProjectFunding({ ...assigned, status: 'completed' }, fm),
     ).toBe(false)
+  })
+
+  it('blocks finance writes until the project is approved', () => {
+    const proposed = { ...assigned, status: 'proposed' as const }
+    const approved = { ...assigned, status: 'approved' as const }
+    const draft = { ...assigned, status: 'draft' as const }
+
+    expect(canManageProjectFunding(proposed, fm)).toBe(false)
+    expect(canManageProjectFunding(proposed, director)).toBe(false)
+    expect(canManageProjectOperations(proposed, fm)).toBe(false)
+    expect(canManageProjectOperations(proposed, pm)).toBe(false)
+
+    expect(canManageProjectFunding(draft, fm)).toBe(false)
+    expect(canManageProjectFunding(approved, director)).toBe(true)
+    expect(canManageProjectFunding(approved, fm)).toBe(true)
+    expect(canManageProjectOperations(approved, pm)).toBe(true)
+    expect(canManageProjectOperations(approved, fm)).toBe(true)
   })
 })

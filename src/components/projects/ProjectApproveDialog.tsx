@@ -19,7 +19,6 @@ interface ProjectApproveDialogProps {
   project: Project
   pmName: string
   attachmentCount: number
-  fundingTotal: number
   onConfirm: () => Promise<void>
   isSubmitting: boolean
 }
@@ -30,7 +29,6 @@ export function ProjectApproveDialog({
   project,
   pmName,
   attachmentCount,
-  fundingTotal,
   onConfirm,
   isSubmitting,
 }: ProjectApproveDialogProps) {
@@ -79,15 +77,6 @@ export function ProjectApproveDialog({
             ) : null}
             <p className="text-muted-foreground">
               {t('projects.approveDialog.attachmentCount')}: {attachmentCount}
-            </p>
-            <p className="text-muted-foreground">
-              {t('projects.approveDialog.fundingTotal')}:{' '}
-              {formatLocalizedBudget(
-                fundingTotal,
-                project.currency,
-                locale,
-                notAvailable,
-              )}
             </p>
           </div>
         </DialogBody>

@@ -2,10 +2,12 @@
 
 ## Current focus
 
-**Duplicate project-code errors** now show a localized message (field + toast) instead of the raw Postgres unique-constraint text.
+**All project finance is post-approval:** proposal screens have no funding or operations CRUD; those belong on the Finance tab after `approved`.
 
 ## Recent changes
 
+- [2026-09-06] Funding also moved after approval: `canManageProjectFunding` + RLS `can_write_project_funding` only in `approved`/`in_progress`/`paused` (director/FM). Proposal detail no longer shows a finance panel or funding summary; approve dialog drops proposed-funding total. Migration `20260906130000_funding_after_approval.sql`.
+- [2026-09-06] Operations first split: procurement/staff/overhead writes only after approval. Superseded for funding by the entry above.
 - [2026-09-06] Duplicate `(factory_id, code)` insert/update maps `projects_factory_code_uidx` to `validation.projectCodeTaken` (ar/en). Toast mapping in `mutation-error`; form field error in `ProjectFormDialog`; save/update callers pass `t`. `npm run verify` + mutation-error tests passed.
 - [2026-09-06] Calendar nav overlay sat under the caption (legacy `navLayout`, no `relative` months, no z-index), so prev/next month clicks never hit the buttons; caption was a static label with no year jump. Fixed `calendar.tsx` (`navLayout="around"`, positioned chevrons, dropdown styles) and `DatePicker` (`captionLayout="dropdown"`, `startMonth`/`endMonth` 50y back / 25y forward). Browser: FM New proposal start date Sep→Oct, year 2028, month Mar, selected `15 Mar 2028`; end date Sep→Oct. `npm run verify` passed.
 - [2026-09-02] Lifecycle governance: migration `20260902120000_lifecycle_governance.sql` (contract freeze, WBS/finance RLS split, pause/complete roles, `completion_requested_*`, `project_change_requests`, escalation acknowledge, RPCs). UI dialogs for start / complete / change / reassign; Escalations acknowledge + filter; i18n + notification types. Applied with `supabase db push --local`. `npm run verify` and `npm test` passed.
@@ -27,7 +29,7 @@
 ## Next steps (concrete)
 
 1. Smoke the three demo roles in the browser (FM: submit → start with funding warning → request close; PM: WBS write only; director: approve, confirm close, review change, acknowledge escalation)
-2. Apply `20260902120000_lifecycle_governance.sql` (and earlier finance/URL migrations) to staging/live Supabase
+2. Apply `20260906130000_funding_after_approval.sql` (and earlier lifecycle/finance/URL migrations) to staging/live Supabase
 3. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
 4. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
 

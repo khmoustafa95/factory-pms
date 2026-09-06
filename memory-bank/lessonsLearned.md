@@ -4,7 +4,7 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
-- 2026-09-06 — PostgREST unique errors put the constraint name on `message` and `Key (factory_id, code)=…` on `details`; match both, and pass `t` into `toastMutationError` on save (draft save previously did not, so mapping never ran).
+- 2026-09-06 — Putting any finance CRUD (including incoming funding) on an unapproved proposal implied money could be recorded before a contract existed. Gate all finance writes on approved+.
 - 2026-09-06 — react-day-picker v10 default `navLayout` is legacy: Nav is the first child of Months and absolutely positioned, while Month/caption paint later and steal clicks. Chevrons need `navLayout="around"` (or z-index on buttons) plus a `relative` month. Enabling `captionLayout="dropdown"` without `endMonth` also caps navigation at the current year — set `endMonth` into the future for project dates.
 - 2026-09-02 — Do not add a new `project_status` for two-step close; a pending-request column keeps list/dashboard filters and existing RPCs stable while still showing a banner. Contract freeze must use a session GUC so review/reassign RPCs can apply updates the trigger would otherwise reject.
 - 2026-09-01 — `@dnd-kit` PointerSensor on a whole kanban card will steal `pointerdown` from nested Select/buttons unless the activator ignores `button, [role="combobox"], [data-no-dnd]`. On mobile, use a delay constraint so horizontal column scroll does not start a drag.
