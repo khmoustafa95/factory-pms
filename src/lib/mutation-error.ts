@@ -143,8 +143,7 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
     key: 'projects.rpcErrors.reassignCompleted',
   },
   {
-    pattern:
-      /assigned pm must be an active project manager in this factory/i,
+    pattern: /assigned pm must be an active project manager in this factory/i,
     key: 'projects.rpcErrors.reassignInvalidPm',
   },
   {
@@ -158,6 +157,10 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
   {
     pattern: /only blocked tasks can be acknowledged/i,
     key: 'projects.rpcErrors.acknowledgeNotBlocked',
+  },
+  {
+    pattern: /tasks stay in planning until execution starts/i,
+    key: 'projects.rpcErrors.tasksPlanningOnly',
   },
 ]
 

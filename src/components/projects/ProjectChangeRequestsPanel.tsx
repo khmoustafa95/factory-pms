@@ -166,7 +166,11 @@ export function ProjectChangeRequestsPanel({
             />
           </DialogBody>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setRejectId(null)}
+            >
               {t('common.cancel')}
             </Button>
             <Button

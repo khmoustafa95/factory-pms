@@ -9,10 +9,7 @@ import type { StaffFormValues } from '@/lib/validations/staff'
 import { toStaffPayload } from '@/lib/validations/staff'
 import type { ProjectStaff } from '@/types/database'
 
-export function useProjectStaff(
-  projectId: string | undefined,
-  enabled = true,
-) {
+export function useProjectStaff(projectId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: queryKeys.projectStaff(projectId),
     enabled: Boolean(projectId) && enabled,
@@ -104,7 +101,10 @@ export function useDeleteProjectStaff(projectId: string | undefined) {
   return useMutation({
     mutationFn: async (id: string) => {
       const supabase = getSupabase()
-      const { error } = await supabase.from('project_staff').delete().eq('id', id)
+      const { error } = await supabase
+        .from('project_staff')
+        .delete()
+        .eq('id', id)
 
       if (error) {
         throw error

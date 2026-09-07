@@ -2,21 +2,21 @@
 
 ## Stack
 
-| Layer        | Choice                                                    |
-| ------------ | --------------------------------------------------------- |
-| App          | Vite 8 + React 19 + TypeScript                            |
-| Styling      | Tailwind CSS v4 + shadcn/ui (radix-nova) + Geist font     |
-| Routing      | react-router-dom v7                                       |
-| Server state | `@tanstack/react-query`                                   |
-| Forms        | `react-hook-form` + `zod` + `@hookform/resolvers`         |
-| Dates        | `date-fns` + lazy `react-day-picker` calendar             |
-| Icons        | `lucide-react`                                            |
-| Charts       | `recharts` (dashboard donut/bar + drill-down filters)     |
+| Layer        | Choice                                                          |
+| ------------ | --------------------------------------------------------------- |
+| App          | Vite 8 + React 19 + TypeScript                                  |
+| Styling      | Tailwind CSS v4 + shadcn/ui (radix-nova) + Geist font           |
+| Routing      | react-router-dom v7                                             |
+| Server state | `@tanstack/react-query`                                         |
+| Forms        | `react-hook-form` + `zod` + `@hookform/resolvers`               |
+| Dates        | `date-fns` + lazy `react-day-picker` calendar                   |
+| Icons        | `lucide-react`                                                  |
+| Charts       | `recharts` (dashboard donut/bar + drill-down filters)           |
 | Kanban       | `@dnd-kit/core` status-column drag (WBS `sort_order` unchanged) |
-| Command UI   | `cmdk` palette; `@tanstack/react-virtual` for long tables |
-| Toasts       | `sonner` + `next-themes`                                  |
-| Backend      | Supabase JS (`@supabase/supabase-js`)                     |
-| Tooling      | ESLint, Prettier, Husky + lint-staged, `shadcn` CLI (dev) |
+| Command UI   | `cmdk` palette; `@tanstack/react-virtual` for long tables       |
+| Toasts       | `sonner` + `next-themes`                                        |
+| Backend      | Supabase JS (`@supabase/supabase-js`)                           |
+| Tooling      | ESLint, Prettier, Husky + lint-staged, `shadcn` CLI (dev)       |
 
 ## Scripts
 
@@ -52,9 +52,14 @@ VITE_SUPABASE_PUBLISHABLE_KEY=
 
 Never commit secrets or use the service-role key in the SPA. Put real staging/production keys in `*.local` files (gitignored).
 
+## Hosting
+
+- **Official on-prem (chosen for company data):** Windows host with Docker Desktop; SPA `dist/` behind Caddy/IIS; self-hosted Supabase on the same machine; VPN for remote sites. Runbook: `docs/on-prem-production.md`.
+- **Cloud staging (optional, separate data):** `docs/staging-deployment.md` (Supabase cloud + Cloudflare/Vercel).
+
 ## Still planned
 
-- Hosting: Vercel or Netlify
+- Dedicated always-on hardware later (same Compose/volumes; DNS name unchanged)
 - Generated `Database` types from Supabase schema
 - Additional shadcn components as screens need them
 

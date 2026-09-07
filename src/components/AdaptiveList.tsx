@@ -23,7 +23,11 @@ export function AdaptiveList<T>({
 }: AdaptiveListProps<T>) {
   if (items.length === 0) {
     return (
-      <EmptyState description={emptyMessage} action={emptyAction} className={className} />
+      <EmptyState
+        description={emptyMessage}
+        action={emptyAction}
+        className={className}
+      />
     )
   }
 

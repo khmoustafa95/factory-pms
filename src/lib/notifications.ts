@@ -14,6 +14,7 @@ const KNOWN_TYPES = new Set<NotificationType>([
   'pm_reassigned',
   'task_blocked',
   'escalation_acknowledged',
+  'phases_ready',
   'comment_project',
   'comment_task',
   'comment_mention',

@@ -54,8 +54,12 @@ export function ProjectAttachmentsPanel({
   canManage,
 }: ProjectAttachmentsPanelProps) {
   const { t, locale } = useTranslation()
-  const { confirm, close, handleConfirm, state: confirmState } =
-    useConfirmAction()
+  const {
+    confirm,
+    close,
+    handleConfirm,
+    state: confirmState,
+  } = useConfirmAction()
   const { user } = useAuth()
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const {
@@ -128,113 +132,118 @@ export function ProjectAttachmentsPanel({
         }}
         onConfirm={handleConfirm}
       />
-    <Card>
-      <CardHeader className="space-y-1.5">
-        <CardTitle className="flex items-center gap-2">
-          <Paperclip className="size-4" />
-          {t('projects.attachments.title')}
-        </CardTitle>
-        <CardDescription>
-          {t('projects.attachments.description')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {canManage ? (
-          <FileDropzone
-            disabled={uploadAttachments.isPending}
-            accept={ATTACHMENT_ACCEPT}
-            onFiles={(files) => void handleFiles(files)}
-            idleLabel={
-              uploadAttachments.isPending
-                ? t('common.saving')
-                : t('projects.attachments.dropHint')
-            }
-            activeLabel={t('projects.attachments.dropActive')}
-          />
-        ) : null}
-        <QueryState
-          isLoading={isLoading}
-          error={error}
-          loadingMessage={t('common.loading')}
-          errorMessage={t('projects.attachments.loadFailed')}
-          onRetry={() => void refetch()}
-          isRetrying={isFetching}
-        >
-          {attachments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t('projects.attachments.empty')}
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {attachments.map((attachment) => (
-                <li
-                  key={attachment.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
-                >
-                  <div className="flex min-w-0 items-start gap-2">
-                    <FileTypeIcon
-                      nameOrType={
-                        attachment.mime_type || attachment.file_name
-                      }
-                      className="mt-0.5"
-                    />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
-                        {attachment.file_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(
-                          attachment.file_size_bytes,
-                          t('common.notAvailable'),
-                        )}
-                        {' · '}
-                        {formatLocalizedDateTime(attachment.created_at, locale)}
-                      </p>
+      <Card>
+        <CardHeader className="space-y-1.5">
+          <CardTitle className="flex items-center gap-2">
+            <Paperclip className="size-4" />
+            {t('projects.attachments.title')}
+          </CardTitle>
+          <CardDescription>
+            {t('projects.attachments.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {canManage ? (
+            <FileDropzone
+              disabled={uploadAttachments.isPending}
+              accept={ATTACHMENT_ACCEPT}
+              onFiles={(files) => void handleFiles(files)}
+              idleLabel={
+                uploadAttachments.isPending
+                  ? t('common.saving')
+                  : t('projects.attachments.dropHint')
+              }
+              activeLabel={t('projects.attachments.dropActive')}
+            />
+          ) : null}
+          <QueryState
+            isLoading={isLoading}
+            error={error}
+            loadingMessage={t('common.loading')}
+            errorMessage={t('projects.attachments.loadFailed')}
+            onRetry={() => void refetch()}
+            isRetrying={isFetching}
+          >
+            {attachments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t('projects.attachments.empty')}
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {attachments.map((attachment) => (
+                  <li
+                    key={attachment.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+                  >
+                    <div className="flex min-w-0 items-start gap-2">
+                      <FileTypeIcon
+                        nameOrType={
+                          attachment.mime_type || attachment.file_name
+                        }
+                        className="mt-0.5"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">
+                          {attachment.file_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(
+                            attachment.file_size_bytes,
+                            t('common.notAvailable'),
+                          )}
+                          {' · '}
+                          {formatLocalizedDateTime(
+                            attachment.created_at,
+                            locale,
+                          )}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      disabled={downloadingId === attachment.id}
-                      onClick={() => void handleDownload(attachment)}
-                    >
-                      <Download className="size-4" />
-                      <span className="sr-only">
-                        {t('projects.attachments.download')}
-                      </span>
-                    </Button>
-                    {canManage ? (
+                    <div className="flex gap-1">
                       <Button
                         type="button"
                         size="sm"
                         variant="ghost"
-                        disabled={deleteAttachment.isPending}
-                        onClick={() =>
-                          confirm({
-                            title: t('confirm.deleteAttachmentTitle'),
-                            description: t('confirm.deleteAttachmentDescription'),
-                            confirmLabel: t('common.delete'),
-                            variant: 'destructive',
-                            onConfirm: () => handleDelete(attachment),
-                          })
-                        }
+                        disabled={downloadingId === attachment.id}
+                        onClick={() => void handleDownload(attachment)}
                       >
-                        <Trash2 className="size-4 text-destructive" />
+                        <Download className="size-4" />
                         <span className="sr-only">
-                          {t('projects.attachments.delete')}
+                          {t('projects.attachments.download')}
                         </span>
                       </Button>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </QueryState>
-      </CardContent>
-    </Card>
+                      {canManage ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          disabled={deleteAttachment.isPending}
+                          onClick={() =>
+                            confirm({
+                              title: t('confirm.deleteAttachmentTitle'),
+                              description: t(
+                                'confirm.deleteAttachmentDescription',
+                              ),
+                              confirmLabel: t('common.delete'),
+                              variant: 'destructive',
+                              onConfirm: () => handleDelete(attachment),
+                            })
+                          }
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                          <span className="sr-only">
+                            {t('projects.attachments.delete')}
+                          </span>
+                        </Button>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </QueryState>
+        </CardContent>
+      </Card>
     </>
   )
 }

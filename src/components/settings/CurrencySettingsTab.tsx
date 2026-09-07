@@ -48,8 +48,12 @@ type CurrencyFormValues = z.infer<typeof currencySchema>
 
 export function CurrencySettingsTab() {
   const { t, locale } = useTranslation()
-  const { confirm, close, handleConfirm, state: confirmState } =
-    useConfirmAction()
+  const {
+    confirm,
+    close,
+    handleConfirm,
+    state: confirmState,
+  } = useConfirmAction()
   const {
     data: currencies = [],
     isLoading,

@@ -58,45 +58,50 @@ export function ProjectPauseDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('projects.pauseProject')}</DialogTitle>
-          <DialogDescription>
-            {projectTitle
-              ? `${t('projects.pauseDescription')} (${projectTitle})`
-              : t('projects.pauseDescription')}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('projects.pauseProject')}</DialogTitle>
+            <DialogDescription>
+              {projectTitle
+                ? `${t('projects.pauseDescription')} (${projectTitle})`
+                : t('projects.pauseDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="pause-reason">{t('projects.pauseReason')}</Label>
-              <Textarea
-                id="pause-reason"
-                rows={4}
-                {...form.register('pause_reason')}
-              />
-              <FormFieldError error={form.formState.errors.pause_reason} />
-            </div>
-          </DialogBody>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pause-reason">
+                  {t('projects.pauseReason')}
+                </Label>
+                <Textarea
+                  id="pause-reason"
+                  rows={4}
+                  {...form.register('pause_reason')}
+                />
+                <FormFieldError error={form.formState.errors.pause_reason} />
+              </div>
+            </DialogBody>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" variant="secondary" disabled={isSubmitting}>
-              {isSubmitting
-                ? t('common.submitting')
-                : t('common.pauseExecution')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" variant="secondary" disabled={isSubmitting}>
+                {isSubmitting
+                  ? t('common.submitting')
+                  : t('common.pauseExecution')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

@@ -24,6 +24,7 @@ import {
 } from '@/components/projects/ProjectFormDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
+import { ProjectPlanningChecklist } from '@/components/projects/ProjectPlanningChecklist'
 import { ProjectReassignPmDialog } from '@/components/projects/ProjectReassignPmDialog'
 import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
@@ -118,6 +119,7 @@ import {
   canGovernExecution,
   canManagePhases,
   canManageTasks,
+  canExecuteTasks,
   canReassignProjectPm,
   canRequestCompletion,
   canStartExecution,
@@ -289,6 +291,7 @@ export function ProjectDetailPage() {
   )
   const canPhases = project ? canManagePhases(project, profile) : false
   const canTasks = project ? canManageTasks(project, profile) : false
+  const canExecute = project ? canExecuteTasks(project, profile) : false
   const canGovern = project ? canGovernExecution(project, profile) : false
   const canStart = project ? canStartExecution(project, profile) : false
   const canRequestClose = project
@@ -650,14 +653,12 @@ export function ProjectDetailPage() {
                         onClick: () => setApproveDialogOpen(true),
                       }
                     : canStart && project.status === 'approved'
-                      ? executionReadiness?.ready
-                        ? {
-                            id: 'start',
-                            label: t('common.startExecution'),
-                            disabled: isStartingExecution,
-                            onClick: () => setStartDialogOpen(true),
-                          }
-                        : null
+                      ? {
+                          id: 'start',
+                          label: t('common.startExecution'),
+                          disabled: isStartingExecution,
+                          onClick: () => setStartDialogOpen(true),
+                        }
                       : (canConfirmClose || canRequestClose) &&
                           (project.status === 'in_progress' ||
                             project.status === 'paused') &&
@@ -719,21 +720,6 @@ export function ProjectDetailPage() {
                     label: t('projects.changeRequest.action'),
                     hidden: !canRequestChange,
                     onClick: () => setChangeDialogOpen(true),
-                  },
-                  {
-                    id: 'start-locked',
-                    label: (
-                      <>
-                        <Lock className="size-4" />
-                        {t('common.startExecution')}
-                      </>
-                    ),
-                    disabled: true,
-                    hidden: !(
-                      canStart &&
-                      project.status === 'approved' &&
-                      !executionReadiness?.ready
-                    ),
                   },
                   {
                     id: 'pause',
@@ -931,6 +917,17 @@ export function ProjectDetailPage() {
             </ScrollableTabsList>
 
             <TabsContent value="overview" className="mt-4 space-y-4">
+              {project.status === 'approved' ? (
+                <ProjectPlanningChecklist
+                  phasesReady={Boolean(executionReadiness?.ready)}
+                  tasksPrepared={tasks.length > 0}
+                  canManagePhases={canPhases}
+                  canManageTasks={canTasks}
+                  canStart={canStart}
+                  onGoToWbs={() => setActiveTab('wbs')}
+                  onStart={() => setStartDialogOpen(true)}
+                />
+              ) : null}
               <ProjectChangeRequestsPanel
                 requests={changeRequests}
                 currency={project.currency}
@@ -969,6 +966,7 @@ export function ProjectDetailPage() {
                 tasksByPhase={tasksByPhase}
                 canManagePhases={canPhases}
                 canManageTasks={canTasks}
+                isPlanning={project.status === 'approved'}
                 remainingWeight={remainingWeight}
                 totalWeight={totalWeight}
                 weightsValid={weightsValid}
@@ -985,12 +983,17 @@ export function ProjectDetailPage() {
               />
             </TabsContent>
 
-            <TabsContent value="kanban" className="mt-4">
+            <TabsContent value="kanban" className="mt-4 space-y-3">
+              {project.status === 'approved' ? (
+                <StatusMessage variant="info">
+                  {t('wbs.kanbanPlanningHint')}
+                </StatusMessage>
+              ) : null}
               <TaskKanbanBoard
                 projectId={projectId}
                 phases={phases}
                 tasks={tasks}
-                canManage={canTasks}
+                canManage={canExecute}
               />
             </TabsContent>
 
@@ -1047,6 +1050,7 @@ export function ProjectDetailPage() {
           project={project}
           pmName={project.assigned_pm?.full_name ?? t('common.unassigned')}
           fundingReceived={Number(financialSnapshot?.funding_received ?? 0)}
+          taskCount={tasks.length}
           readinessReasons={executionReadiness?.reasons ?? []}
           onConfirm={handleStartExecution}
           isSubmitting={startProjectExecution.isPending}
@@ -1162,6 +1166,7 @@ export function ProjectDetailPage() {
           phaseEndDate={activePhase?.end_date ?? null}
           remainingWeight={taskRemainingWeight}
           remainingBudget={taskRemainingBudget}
+          allowStatusChange={canExecute}
           onSubmit={handleTaskSubmit}
           isSubmitting={createTask.isPending || updateTask.isPending}
         />

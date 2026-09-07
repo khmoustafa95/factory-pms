@@ -91,18 +91,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "comment_mentions_comment_id_fkey"
-            columns: ["comment_id"]
+            foreignKeyName: 'comment_mentions_comment_id_fkey'
+            columns: ['comment_id']
             isOneToOne: false
-            referencedRelation: "comments"
-            referencedColumns: ["id"]
+            referencedRelation: 'comments'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "comment_mentions_mentioned_user_id_fkey"
-            columns: ["mentioned_user_id"]
+            foreignKeyName: 'comment_mentions_mentioned_user_id_fkey'
+            columns: ['mentioned_user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -112,7 +112,7 @@ export type Database = {
           body: string
           created_at: string
           entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
+          entity_type: Database['public']['Enums']['entity_type']
           id: string
           updated_at: string
         }
@@ -121,7 +121,7 @@ export type Database = {
           body: string
           created_at?: string
           entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
+          entity_type: Database['public']['Enums']['entity_type']
           id?: string
           updated_at?: string
         }
@@ -130,17 +130,17 @@ export type Database = {
           body?: string
           created_at?: string
           entity_id?: string
-          entity_type?: Database["public"]["Enums"]["entity_type"]
+          entity_type?: Database['public']['Enums']['entity_type']
           id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "comments_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: 'comments_author_id_fkey'
+            columns: ['author_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -249,11 +249,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: 'notifications_user_id_fkey'
+            columns: ['user_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -274,7 +274,7 @@ export type Database = {
           solution_in_progress: string | null
           sort_order: number
           start_date: string | null
-          status: Database["public"]["Enums"]["phase_status"]
+          status: Database['public']['Enums']['phase_status']
           updated_at: string
           weight_percent: number
         }
@@ -294,7 +294,7 @@ export type Database = {
           solution_in_progress?: string | null
           sort_order?: number
           start_date?: string | null
-          status?: Database["public"]["Enums"]["phase_status"]
+          status?: Database['public']['Enums']['phase_status']
           updated_at?: string
           weight_percent?: number
         }
@@ -314,17 +314,17 @@ export type Database = {
           solution_in_progress?: string | null
           sort_order?: number
           start_date?: string | null
-          status?: Database["public"]["Enums"]["phase_status"]
+          status?: Database['public']['Enums']['phase_status']
           updated_at?: string
           weight_percent?: number
         }
         Relationships: [
           {
-            foreignKeyName: "phases_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'phases_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -336,7 +336,7 @@ export type Database = {
           full_name: string
           id: string
           is_active: boolean
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database['public']['Enums']['user_role']
           updated_at: string
         }
         Insert: {
@@ -346,7 +346,7 @@ export type Database = {
           full_name: string
           id: string
           is_active?: boolean
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database['public']['Enums']['user_role']
           updated_at?: string
         }
         Update: {
@@ -356,16 +356,16 @@ export type Database = {
           full_name?: string
           id?: string
           is_active?: boolean
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database['public']['Enums']['user_role']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_factory_id_fkey"
-            columns: ["factory_id"]
+            foreignKeyName: 'profiles_factory_id_fkey'
+            columns: ['factory_id']
             isOneToOne: false
-            referencedRelation: "factories"
-            referencedColumns: ["id"]
+            referencedRelation: 'factories'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -402,24 +402,24 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "project_attachments_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_attachments_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_attachments_uploaded_by_fkey"
-            columns: ["uploaded_by"]
+            foreignKeyName: 'project_attachments_uploaded_by_fkey'
+            columns: ['uploaded_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
       project_change_requests: {
         Row: {
-          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          change_kind: Database['public']['Enums']['change_request_kind']
           created_at: string
           current_budget: number | null
           current_end_date: string | null
@@ -434,11 +434,11 @@ export type Database = {
           review_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
-          status: Database["public"]["Enums"]["change_request_status"]
+          status: Database['public']['Enums']['change_request_status']
           updated_at: string
         }
         Insert: {
-          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          change_kind: Database['public']['Enums']['change_request_kind']
           created_at?: string
           current_budget?: number | null
           current_end_date?: string | null
@@ -453,11 +453,11 @@ export type Database = {
           review_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["change_request_status"]
+          status?: Database['public']['Enums']['change_request_status']
           updated_at?: string
         }
         Update: {
-          change_kind?: Database["public"]["Enums"]["change_request_kind"]
+          change_kind?: Database['public']['Enums']['change_request_kind']
           created_at?: string
           current_budget?: number | null
           current_end_date?: string | null
@@ -472,37 +472,37 @@ export type Database = {
           review_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["change_request_status"]
+          status?: Database['public']['Enums']['change_request_status']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "project_change_requests_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_change_requests_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_change_requests_requested_by_fkey"
-            columns: ["requested_by"]
+            foreignKeyName: 'project_change_requests_requested_by_fkey'
+            columns: ['requested_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_change_requests_reviewed_by_fkey"
-            columns: ["reviewed_by"]
+            foreignKeyName: 'project_change_requests_reviewed_by_fkey'
+            columns: ['reviewed_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
       project_expense_lines: {
         Row: {
           actual_amount: number | null
-          category: Database["public"]["Enums"]["expense_category"]
+          category: Database['public']['Enums']['expense_category']
           created_at: string
           description: string
           id: string
@@ -515,7 +515,7 @@ export type Database = {
         }
         Insert: {
           actual_amount?: number | null
-          category: Database["public"]["Enums"]["expense_category"]
+          category: Database['public']['Enums']['expense_category']
           created_at?: string
           description: string
           id?: string
@@ -528,7 +528,7 @@ export type Database = {
         }
         Update: {
           actual_amount?: number | null
-          category?: Database["public"]["Enums"]["expense_category"]
+          category?: Database['public']['Enums']['expense_category']
           created_at?: string
           description?: string
           id?: string
@@ -541,18 +541,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "project_expense_lines_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'project_expense_lines_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_expense_lines_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_expense_lines_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -566,8 +566,8 @@ export type Database = {
           project_id: string
           received_date: string | null
           source_name: string | null
-          source_type: Database["public"]["Enums"]["funding_source_type"]
-          status: Database["public"]["Enums"]["funding_entry_status"]
+          source_type: Database['public']['Enums']['funding_source_type']
+          status: Database['public']['Enums']['funding_entry_status']
           updated_at: string
         }
         Insert: {
@@ -579,8 +579,8 @@ export type Database = {
           project_id: string
           received_date?: string | null
           source_name?: string | null
-          source_type: Database["public"]["Enums"]["funding_source_type"]
-          status?: Database["public"]["Enums"]["funding_entry_status"]
+          source_type: Database['public']['Enums']['funding_source_type']
+          status?: Database['public']['Enums']['funding_entry_status']
           updated_at?: string
         }
         Update: {
@@ -592,17 +592,17 @@ export type Database = {
           project_id?: string
           received_date?: string | null
           source_name?: string | null
-          source_type?: Database["public"]["Enums"]["funding_source_type"]
-          status?: Database["public"]["Enums"]["funding_entry_status"]
+          source_type?: Database['public']['Enums']['funding_source_type']
+          status?: Database['public']['Enums']['funding_entry_status']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "project_funding_entries_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_funding_entries_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -618,7 +618,7 @@ export type Database = {
           project_id: string
           quantity: number
           sort_order: number
-          status: Database["public"]["Enums"]["procurement_status"]
+          status: Database['public']['Enums']['procurement_status']
           supplier: string | null
           unit: string
           updated_at: string
@@ -634,7 +634,7 @@ export type Database = {
           project_id: string
           quantity?: number
           sort_order?: number
-          status?: Database["public"]["Enums"]["procurement_status"]
+          status?: Database['public']['Enums']['procurement_status']
           supplier?: string | null
           unit?: string
           updated_at?: string
@@ -650,25 +650,25 @@ export type Database = {
           project_id?: string
           quantity?: number
           sort_order?: number
-          status?: Database["public"]["Enums"]["procurement_status"]
+          status?: Database['public']['Enums']['procurement_status']
           supplier?: string | null
           unit?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "project_procurement_items_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'project_procurement_items_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_procurement_items_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_procurement_items_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -723,18 +723,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "project_staff_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'project_staff_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_staff_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_staff_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -742,50 +742,50 @@ export type Database = {
         Row: {
           changed_by: string
           changed_by_name: string
-          changed_by_role: Database["public"]["Enums"]["user_role"]
+          changed_by_role: Database['public']['Enums']['user_role']
           created_at: string
-          from_status: Database["public"]["Enums"]["project_status"]
+          from_status: Database['public']['Enums']['project_status']
           id: string
           project_id: string
           reason: string | null
-          to_status: Database["public"]["Enums"]["project_status"]
+          to_status: Database['public']['Enums']['project_status']
         }
         Insert: {
           changed_by: string
           changed_by_name: string
-          changed_by_role: Database["public"]["Enums"]["user_role"]
+          changed_by_role: Database['public']['Enums']['user_role']
           created_at?: string
-          from_status: Database["public"]["Enums"]["project_status"]
+          from_status: Database['public']['Enums']['project_status']
           id?: string
           project_id: string
           reason?: string | null
-          to_status: Database["public"]["Enums"]["project_status"]
+          to_status: Database['public']['Enums']['project_status']
         }
         Update: {
           changed_by?: string
           changed_by_name?: string
-          changed_by_role?: Database["public"]["Enums"]["user_role"]
+          changed_by_role?: Database['public']['Enums']['user_role']
           created_at?: string
-          from_status?: Database["public"]["Enums"]["project_status"]
+          from_status?: Database['public']['Enums']['project_status']
           id?: string
           project_id?: string
           reason?: string | null
-          to_status?: Database["public"]["Enums"]["project_status"]
+          to_status?: Database['public']['Enums']['project_status']
         }
         Relationships: [
           {
-            foreignKeyName: "project_status_transitions_changed_by_fkey"
-            columns: ["changed_by"]
+            foreignKeyName: 'project_status_transitions_changed_by_fkey'
+            columns: ['changed_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "project_status_transitions_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'project_status_transitions_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -808,13 +808,12 @@ export type Database = {
           progress_percent: number
           proposed_by: string | null
           proposed_duration_unit:
-            | Database["public"]["Enums"]["duration_unit"]
-            | null
+            Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value: number | null
           proposed_end_date: string | null
           proposed_start_date: string | null
           rejection_reason: string | null
-          status: Database["public"]["Enums"]["project_status"]
+          status: Database['public']['Enums']['project_status']
           title: string
           updated_at: string
         }
@@ -836,13 +835,12 @@ export type Database = {
           progress_percent?: number
           proposed_by?: string | null
           proposed_duration_unit?:
-            | Database["public"]["Enums"]["duration_unit"]
-            | null
+            Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value?: number | null
           proposed_end_date?: string | null
           proposed_start_date?: string | null
           rejection_reason?: string | null
-          status?: Database["public"]["Enums"]["project_status"]
+          status?: Database['public']['Enums']['project_status']
           title: string
           updated_at?: string
         }
@@ -864,51 +862,50 @@ export type Database = {
           progress_percent?: number
           proposed_by?: string | null
           proposed_duration_unit?:
-            | Database["public"]["Enums"]["duration_unit"]
-            | null
+            Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value?: number | null
           proposed_end_date?: string | null
           proposed_start_date?: string | null
           rejection_reason?: string | null
-          status?: Database["public"]["Enums"]["project_status"]
+          status?: Database['public']['Enums']['project_status']
           title?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "projects_approved_by_fkey"
-            columns: ["approved_by"]
+            foreignKeyName: 'projects_approved_by_fkey'
+            columns: ['approved_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "projects_assigned_pm_id_fkey"
-            columns: ["assigned_pm_id"]
+            foreignKeyName: 'projects_assigned_pm_id_fkey'
+            columns: ['assigned_pm_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "projects_completion_requested_by_fkey"
-            columns: ["completion_requested_by"]
+            foreignKeyName: 'projects_completion_requested_by_fkey'
+            columns: ['completion_requested_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "projects_factory_id_fkey"
-            columns: ["factory_id"]
+            foreignKeyName: 'projects_factory_id_fkey'
+            columns: ['factory_id']
             isOneToOne: false
-            referencedRelation: "factories"
-            referencedColumns: ["id"]
+            referencedRelation: 'factories'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "projects_proposed_by_fkey"
-            columns: ["proposed_by"]
+            foreignKeyName: 'projects_proposed_by_fkey'
+            columns: ['proposed_by']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -919,15 +916,14 @@ export type Database = {
           actual_end_date: string | null
           assignee_id: string | null
           blocked_reason: string | null
-          cost_category: Database["public"]["Enums"]["cost_category"]
+          cost_category: Database['public']['Enums']['cost_category']
           created_at: string
           description: string | null
           due_date: string | null
           escalation_acknowledged_at: string | null
           escalation_acknowledged_by: string | null
           escalation_status:
-            | Database["public"]["Enums"]["escalation_status"]
-            | null
+            Database['public']['Enums']['escalation_status'] | null
           expected_cost: number
           expected_duration_days: number
           financial_deviation_reason: string | null
@@ -937,7 +933,7 @@ export type Database = {
           project_id: string
           schedule_deviation_reason: string | null
           sort_order: number
-          status: Database["public"]["Enums"]["task_status"]
+          status: Database['public']['Enums']['task_status']
           title: string
           updated_at: string
           weight_percent: number
@@ -948,15 +944,14 @@ export type Database = {
           actual_end_date?: string | null
           assignee_id?: string | null
           blocked_reason?: string | null
-          cost_category?: Database["public"]["Enums"]["cost_category"]
+          cost_category?: Database['public']['Enums']['cost_category']
           created_at?: string
           description?: string | null
           due_date?: string | null
           escalation_acknowledged_at?: string | null
           escalation_acknowledged_by?: string | null
           escalation_status?:
-            | Database["public"]["Enums"]["escalation_status"]
-            | null
+            Database['public']['Enums']['escalation_status'] | null
           expected_cost?: number
           expected_duration_days?: number
           financial_deviation_reason?: string | null
@@ -966,7 +961,7 @@ export type Database = {
           project_id: string
           schedule_deviation_reason?: string | null
           sort_order?: number
-          status?: Database["public"]["Enums"]["task_status"]
+          status?: Database['public']['Enums']['task_status']
           title: string
           updated_at?: string
           weight_percent?: number
@@ -977,15 +972,14 @@ export type Database = {
           actual_end_date?: string | null
           assignee_id?: string | null
           blocked_reason?: string | null
-          cost_category?: Database["public"]["Enums"]["cost_category"]
+          cost_category?: Database['public']['Enums']['cost_category']
           created_at?: string
           description?: string | null
           due_date?: string | null
           escalation_acknowledged_at?: string | null
           escalation_acknowledged_by?: string | null
           escalation_status?:
-            | Database["public"]["Enums"]["escalation_status"]
-            | null
+            Database['public']['Enums']['escalation_status'] | null
           expected_cost?: number
           expected_duration_days?: number
           financial_deviation_reason?: string | null
@@ -995,32 +989,32 @@ export type Database = {
           project_id?: string
           schedule_deviation_reason?: string | null
           sort_order?: number
-          status?: Database["public"]["Enums"]["task_status"]
+          status?: Database['public']['Enums']['task_status']
           title?: string
           updated_at?: string
           weight_percent?: number
         }
         Relationships: [
           {
-            foreignKeyName: "tasks_assignee_id_fkey"
-            columns: ["assignee_id"]
+            foreignKeyName: 'tasks_assignee_id_fkey'
+            columns: ['assignee_id']
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "tasks_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'tasks_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "tasks_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: 'tasks_project_id_fkey'
+            columns: ['project_id']
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
+            referencedRelation: 'projects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1037,15 +1031,14 @@ export type Database = {
           actual_end_date: string | null
           assignee_id: string | null
           blocked_reason: string | null
-          cost_category: Database["public"]["Enums"]["cost_category"]
+          cost_category: Database['public']['Enums']['cost_category']
           created_at: string
           description: string | null
           due_date: string | null
           escalation_acknowledged_at: string | null
           escalation_acknowledged_by: string | null
           escalation_status:
-            | Database["public"]["Enums"]["escalation_status"]
-            | null
+            Database['public']['Enums']['escalation_status'] | null
           expected_cost: number
           expected_duration_days: number
           financial_deviation_reason: string | null
@@ -1055,14 +1048,14 @@ export type Database = {
           project_id: string
           schedule_deviation_reason: string | null
           sort_order: number
-          status: Database["public"]["Enums"]["task_status"]
+          status: Database['public']['Enums']['task_status']
           title: string
           updated_at: string
           weight_percent: number
         }
         SetofOptions: {
-          from: "*"
-          to: "tasks"
+          from: '*'
+          to: 'tasks'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1089,7 +1082,7 @@ export type Database = {
         Args: {
           p_body: string
           p_entity_id: string
-          p_entity_type: Database["public"]["Enums"]["entity_type"]
+          p_entity_type: Database['public']['Enums']['entity_type']
           p_mentioned_user_ids?: string[]
         }
         Returns: {
@@ -1097,13 +1090,13 @@ export type Database = {
           body: string
           created_at: string
           entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
+          entity_type: Database['public']['Enums']['entity_type']
           id: string
           updated_at: string
         }
         SetofOptions: {
-          from: "*"
-          to: "comments"
+          from: '*'
+          to: 'comments'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1121,7 +1114,7 @@ export type Database = {
       }
       duration_to_days: {
         Args: {
-          p_unit: Database["public"]["Enums"]["duration_unit"]
+          p_unit: Database['public']['Enums']['duration_unit']
           p_value: number
         }
         Returns: number
@@ -1129,7 +1122,7 @@ export type Database = {
       get_auth_factory_id: { Args: never; Returns: string }
       get_auth_role: {
         Args: never
-        Returns: Database["public"]["Enums"]["user_role"]
+        Returns: Database['public']['Enums']['user_role']
       }
       get_dashboard_insights: {
         Args: never
@@ -1175,11 +1168,11 @@ export type Database = {
           overdue_phase_count: number
           overdue_task_count: number
           progress_percent: number
-          proposed_duration_unit: Database["public"]["Enums"]["duration_unit"]
+          proposed_duration_unit: Database['public']['Enums']['duration_unit']
           proposed_duration_value: number
           proposed_end_date: string
           proposed_start_date: string
-          status: Database["public"]["Enums"]["project_status"]
+          status: Database['public']['Enums']['project_status']
           title: string
           todo_task_count: number
           total_task_count: number
@@ -1204,15 +1197,15 @@ export type Database = {
           activity_kind: string
           author_full_name: string
           author_id: string
-          author_role: Database["public"]["Enums"]["user_role"]
+          author_role: Database['public']['Enums']['user_role']
           body: string
           created_at: string
           entity_id: string
-          entity_type: Database["public"]["Enums"]["entity_type"]
-          from_status: Database["public"]["Enums"]["project_status"]
+          entity_type: Database['public']['Enums']['entity_type']
+          from_status: Database['public']['Enums']['project_status']
           id: string
           reason: string
-          to_status: Database["public"]["Enums"]["project_status"]
+          to_status: Database['public']['Enums']['project_status']
           updated_at: string
         }[]
       }
@@ -1252,7 +1245,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database['public']['Enums']['user_role']
         }[]
       }
       mark_all_notifications_read: { Args: never; Returns: number }
@@ -1278,19 +1271,19 @@ export type Database = {
         Returns: undefined
       }
       project_duration_days: {
-        Args: { p_project: Database["public"]["Tables"]["projects"]["Row"] }
+        Args: { p_project: Database['public']['Tables']['projects']['Row'] }
         Returns: number
       }
       project_execution_ready: {
-        Args: { p_project: Database["public"]["Tables"]["projects"]["Row"] }
+        Args: { p_project: Database['public']['Tables']['projects']['Row'] }
         Returns: boolean
       }
       project_schedule_end: {
-        Args: { p_project: Database["public"]["Tables"]["projects"]["Row"] }
+        Args: { p_project: Database['public']['Tables']['projects']['Row'] }
         Returns: string
       }
       project_schedule_start: {
-        Args: { p_project: Database["public"]["Tables"]["projects"]["Row"] }
+        Args: { p_project: Database['public']['Tables']['projects']['Row'] }
         Returns: string
       }
       recalculate_project_progress: {
@@ -1317,26 +1310,25 @@ export type Database = {
           progress_percent: number
           proposed_by: string | null
           proposed_duration_unit:
-            | Database["public"]["Enums"]["duration_unit"]
-            | null
+            Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value: number | null
           proposed_end_date: string | null
           proposed_start_date: string | null
           rejection_reason: string | null
-          status: Database["public"]["Enums"]["project_status"]
+          status: Database['public']['Enums']['project_status']
           title: string
           updated_at: string
         }
         SetofOptions: {
-          from: "*"
-          to: "projects"
+          from: '*'
+          to: 'projects'
           isOneToOne: true
           isSetofReturn: false
         }
       }
       request_project_change: {
         Args: {
-          p_change_kind: Database["public"]["Enums"]["change_request_kind"]
+          p_change_kind: Database['public']['Enums']['change_request_kind']
           p_project_id: string
           p_reason: string
           p_requested_budget?: number
@@ -1344,7 +1336,7 @@ export type Database = {
           p_requested_start_date?: string
         }
         Returns: {
-          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          change_kind: Database['public']['Enums']['change_request_kind']
           created_at: string
           current_budget: number | null
           current_end_date: string | null
@@ -1359,12 +1351,12 @@ export type Database = {
           review_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
-          status: Database["public"]["Enums"]["change_request_status"]
+          status: Database['public']['Enums']['change_request_status']
           updated_at: string
         }
         SetofOptions: {
-          from: "*"
-          to: "project_change_requests"
+          from: '*'
+          to: 'project_change_requests'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1389,19 +1381,18 @@ export type Database = {
           progress_percent: number
           proposed_by: string | null
           proposed_duration_unit:
-            | Database["public"]["Enums"]["duration_unit"]
-            | null
+            Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value: number | null
           proposed_end_date: string | null
           proposed_start_date: string | null
           rejection_reason: string | null
-          status: Database["public"]["Enums"]["project_status"]
+          status: Database['public']['Enums']['project_status']
           title: string
           updated_at: string
         }
         SetofOptions: {
-          from: "*"
-          to: "projects"
+          from: '*'
+          to: 'projects'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1409,14 +1400,14 @@ export type Database = {
       resolve_project_id_for_entity: {
         Args: {
           p_entity_id: string
-          p_entity_type: Database["public"]["Enums"]["entity_type"]
+          p_entity_type: Database['public']['Enums']['entity_type']
         }
         Returns: string
       }
       review_project_change: {
         Args: { p_approve: boolean; p_reason?: string; p_request_id: string }
         Returns: {
-          change_kind: Database["public"]["Enums"]["change_request_kind"]
+          change_kind: Database['public']['Enums']['change_request_kind']
           created_at: string
           current_budget: number | null
           current_end_date: string | null
@@ -1431,12 +1422,12 @@ export type Database = {
           review_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
-          status: Database["public"]["Enums"]["change_request_status"]
+          status: Database['public']['Enums']['change_request_status']
           updated_at: string
         }
         SetofOptions: {
-          from: "*"
-          to: "project_change_requests"
+          from: '*'
+          to: 'project_change_requests'
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1446,7 +1437,7 @@ export type Database = {
         Args: {
           p_project_id: string
           p_reason?: string
-          p_target_status: Database["public"]["Enums"]["project_status"]
+          p_target_status: Database['public']['Enums']['project_status']
         }
         Returns: {
           actual_end_date: string | null
@@ -1466,51 +1457,46 @@ export type Database = {
           progress_percent: number
           proposed_by: string | null
           proposed_duration_unit:
-            | Database["public"]["Enums"]["duration_unit"]
-            | null
+            Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value: number | null
           proposed_end_date: string | null
           proposed_start_date: string | null
           rejection_reason: string | null
-          status: Database["public"]["Enums"]["project_status"]
+          status: Database['public']['Enums']['project_status']
           title: string
           updated_at: string
         }
         SetofOptions: {
-          from: "*"
-          to: "projects"
+          from: '*'
+          to: 'projects'
           isOneToOne: true
           isSetofReturn: false
         }
       }
     }
     Enums: {
-      change_request_kind: "budget" | "schedule"
-      change_request_status: "pending" | "approved" | "rejected"
-      cost_category: "raw_material" | "non_raw_material"
-      duration_unit: "day" | "week" | "month"
-      entity_type: "project" | "phase" | "task"
-      escalation_status: "open" | "acknowledged" | "resolved"
+      change_request_kind: 'budget' | 'schedule'
+      change_request_status: 'pending' | 'approved' | 'rejected'
+      cost_category: 'raw_material' | 'non_raw_material'
+      duration_unit: 'day' | 'week' | 'month'
+      entity_type: 'project' | 'phase' | 'task'
+      escalation_status: 'open' | 'acknowledged' | 'resolved'
       expense_category:
-        | "materials"
-        | "labor"
-        | "equipment"
-        | "overhead"
-        | "other"
-      funding_entry_status: "planned" | "received" | "cancelled"
-      funding_source_type: "internal" | "loan" | "grant" | "partner" | "other"
-      phase_status: "pending" | "in_progress" | "completed"
-      procurement_status: "planned" | "ordered" | "delivered" | "cancelled"
+        'materials' | 'labor' | 'equipment' | 'overhead' | 'other'
+      funding_entry_status: 'planned' | 'received' | 'cancelled'
+      funding_source_type: 'internal' | 'loan' | 'grant' | 'partner' | 'other'
+      phase_status: 'pending' | 'in_progress' | 'completed'
+      procurement_status: 'planned' | 'ordered' | 'delivered' | 'cancelled'
       project_status:
-        | "draft"
-        | "proposed"
-        | "approved"
-        | "rejected"
-        | "in_progress"
-        | "completed"
-        | "paused"
-      task_status: "todo" | "in_progress" | "blocked" | "done"
-      user_role: "company_director" | "factory_manager" | "project_manager"
+        | 'draft'
+        | 'proposed'
+        | 'approved'
+        | 'rejected'
+        | 'in_progress'
+        | 'completed'
+        | 'paused'
+      task_status: 'todo' | 'in_progress' | 'blocked' | 'done'
+      user_role: 'company_director' | 'factory_manager' | 'project_manager'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1518,33 +1504,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1553,23 +1539,22 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1578,23 +1563,22 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1603,36 +1587,35 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof DefaultSchema['CompositeTypes']
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -1641,34 +1624,34 @@ export const Constants = {
   },
   public: {
     Enums: {
-      change_request_kind: ["budget", "schedule"],
-      change_request_status: ["pending", "approved", "rejected"],
-      cost_category: ["raw_material", "non_raw_material"],
-      duration_unit: ["day", "week", "month"],
-      entity_type: ["project", "phase", "task"],
-      escalation_status: ["open", "acknowledged", "resolved"],
+      change_request_kind: ['budget', 'schedule'],
+      change_request_status: ['pending', 'approved', 'rejected'],
+      cost_category: ['raw_material', 'non_raw_material'],
+      duration_unit: ['day', 'week', 'month'],
+      entity_type: ['project', 'phase', 'task'],
+      escalation_status: ['open', 'acknowledged', 'resolved'],
       expense_category: [
-        "materials",
-        "labor",
-        "equipment",
-        "overhead",
-        "other",
+        'materials',
+        'labor',
+        'equipment',
+        'overhead',
+        'other',
       ],
-      funding_entry_status: ["planned", "received", "cancelled"],
-      funding_source_type: ["internal", "loan", "grant", "partner", "other"],
-      phase_status: ["pending", "in_progress", "completed"],
-      procurement_status: ["planned", "ordered", "delivered", "cancelled"],
+      funding_entry_status: ['planned', 'received', 'cancelled'],
+      funding_source_type: ['internal', 'loan', 'grant', 'partner', 'other'],
+      phase_status: ['pending', 'in_progress', 'completed'],
+      procurement_status: ['planned', 'ordered', 'delivered', 'cancelled'],
       project_status: [
-        "draft",
-        "proposed",
-        "approved",
-        "rejected",
-        "in_progress",
-        "completed",
-        "paused",
+        'draft',
+        'proposed',
+        'approved',
+        'rejected',
+        'in_progress',
+        'completed',
+        'paused',
       ],
-      task_status: ["todo", "in_progress", "blocked", "done"],
-      user_role: ["company_director", "factory_manager", "project_manager"],
+      task_status: ['todo', 'in_progress', 'blocked', 'done'],
+      user_role: ['company_director', 'factory_manager', 'project_manager'],
     },
   },
 } as const
@@ -1694,10 +1677,7 @@ export type ChangeRequestStatus =
 export type EscalationStatus = Database['public']['Enums']['escalation_status']
 
 export type FieldHealthStatus =
-  | 'on_track'
-  | 'delayed'
-  | 'over_budget'
-  | 'delayed_and_over_budget'
+  'on_track' | 'delayed' | 'over_budget' | 'delayed_and_over_budget'
 
 export type NotificationType =
   | 'project_proposed'
@@ -1713,6 +1693,7 @@ export type NotificationType =
   | 'pm_reassigned'
   | 'task_blocked'
   | 'escalation_acknowledged'
+  | 'phases_ready'
   | 'comment_project'
   | 'comment_task'
   | 'comment_mention'

@@ -81,10 +81,7 @@ export function fundingReceivedPercent(
     'approved_budget' | 'funding_received'
   >,
 ): number | null {
-  if (
-    snapshot.approved_budget == null ||
-    snapshot.approved_budget <= 0
-  ) {
+  if (snapshot.approved_budget == null || snapshot.approved_budget <= 0) {
     return null
   }
 
@@ -97,15 +94,9 @@ export function fundingReceivedPercent(
 export function budgetUsedPercent(
   snapshot: Pick<ProjectFinancialSnapshot, 'approved_budget' | 'spent_total'>,
 ): number | null {
-  if (
-    snapshot.approved_budget == null ||
-    snapshot.approved_budget <= 0
-  ) {
+  if (snapshot.approved_budget == null || snapshot.approved_budget <= 0) {
     return null
   }
 
-  return Math.min(
-    100,
-    (snapshot.spent_total / snapshot.approved_budget) * 100,
-  )
+  return Math.min(100, (snapshot.spent_total / snapshot.approved_budget) * 100)
 }

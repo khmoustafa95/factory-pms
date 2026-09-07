@@ -60,36 +60,41 @@ export function EscalationFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('escalations.escalateTitle')}</DialogTitle>
-          <DialogDescription>
-            {taskTitle
-              ? t('escalations.escalateDescription', { title: taskTitle })
-              : null}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('escalations.escalateTitle')}</DialogTitle>
+            <DialogDescription>
+              {taskTitle
+                ? t('escalations.escalateDescription', { title: taskTitle })
+                : null}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <Textarea rows={4} {...form.register('message')} />
-            <FormFieldError error={form.formState.errors.message} />
-          </DialogBody>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              <Textarea rows={4} {...form.register('message')} />
+              <FormFieldError error={form.formState.errors.message} />
+            </DialogBody>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.sending') : t('common.sendEscalation')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? t('common.sending')
+                  : t('common.sendEscalation')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

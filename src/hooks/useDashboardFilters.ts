@@ -56,10 +56,9 @@ export function useDashboardFilters() {
   const [phaseIssueFilter, setPhaseIssueFilter] = useState<PhaseIssueFilter>(
     () => (searchParams.get('phaseIssues') as PhaseIssueFilter) ?? 'all',
   )
-  const [underfundedFilter, setUnderfundedFilter] =
-    useState<UnderfundedFilter>(
-      () => (searchParams.get('underfunded') as UnderfundedFilter) ?? 'all',
-    )
+  const [underfundedFilter, setUnderfundedFilter] = useState<UnderfundedFilter>(
+    () => (searchParams.get('underfunded') as UnderfundedFilter) ?? 'all',
+  )
   const [overdueProcurementFilter, setOverdueProcurementFilter] =
     useState<OverdueProcurementFilter>(
       () =>

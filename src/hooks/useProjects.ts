@@ -1,6 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
-import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
+import {
+  buildIlikeClause,
+  buildIlikePattern,
+  buildProjectsSearchOr,
+  fetchPaginatedList,
+} from '@/lib/list-query'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
 import { joinMappers } from '@/lib/supabase-joins'
@@ -48,8 +53,22 @@ export function useProjectsPage(params: ProjectsPageParams) {
         .order('created_at', { ascending: false })
 
       if (searchPattern) {
+        const { data: factoryHits, error: factorySearchError } = await supabase
+          .from('factories')
+          .select('id')
+          .or(
+            `${buildIlikeClause('name', searchPattern)},${buildIlikeClause('code', searchPattern)}`,
+          )
+
+        if (factorySearchError) {
+          throw factorySearchError
+        }
+
         query = query.or(
-          `title.ilike.${searchPattern},description.ilike.${searchPattern},factories.name.ilike.${searchPattern},factories.code.ilike.${searchPattern}`,
+          buildProjectsSearchOr(
+            searchPattern,
+            (factoryHits ?? []).map((row) => row.id),
+          ),
         )
       }
 
@@ -128,7 +147,9 @@ export function useCommandProjectSearch(search: string, enabled: boolean) {
       const { data, error } = await supabase
         .from('projects')
         .select('id, title, status, code, factories (code)')
-        .or(`title.ilike.${pattern},description.ilike.${pattern},code.ilike.${pattern}`)
+        .or(
+          `title.ilike.${pattern},description.ilike.${pattern},code.ilike.${pattern}`,
+        )
         .order('updated_at', { ascending: false })
         .limit(8)
 

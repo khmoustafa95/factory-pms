@@ -1,5 +1,10 @@
 import { Link } from 'react-router-dom'
-import { useMemo, type Dispatch, type RefObject, type SetStateAction } from 'react'
+import {
+  useMemo,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -26,11 +31,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  TableCell,
-  TableHead,
-  TableRow,
-} from '@/components/ui/table'
+import { TableCell, TableHead, TableRow } from '@/components/ui/table'
 import { VirtualizedTable } from '@/components/VirtualizedTable'
 import { useTranslation } from '@/contexts/LocaleContext'
 import type { DashboardProjectDetail } from '@/hooks/useDashboard'
@@ -77,7 +78,9 @@ type DashboardProjectsPanelProps = {
   underfundedFilter: UnderfundedFilter
   setUnderfundedFilter: Dispatch<SetStateAction<UnderfundedFilter>>
   overdueProcurementFilter: OverdueProcurementFilter
-  setOverdueProcurementFilter: Dispatch<SetStateAction<OverdueProcurementFilter>>
+  setOverdueProcurementFilter: Dispatch<
+    SetStateAction<OverdueProcurementFilter>
+  >
   setAttentionDrill: Dispatch<SetStateAction<AttentionDrill>>
 }
 
@@ -572,8 +575,7 @@ export function DashboardProjectsPanel({
                           proposed_end_date: project.proposedEndDate,
                           proposed_duration_value:
                             project.proposedDurationValue,
-                          proposed_duration_unit:
-                            project.proposedDurationUnit,
+                          proposed_duration_unit: project.proposedDurationUnit,
                           actual_start_date: project.actualStartDate,
                           actual_end_date: project.actualEndDate,
                         },
@@ -590,10 +592,7 @@ export function DashboardProjectsPanel({
                     </TableCell>
                     <TableCell>
                       {project.overdueTaskCount > 0 ? (
-                        <Badge
-                          variant="destructive"
-                          className="tabular-nums"
-                        >
+                        <Badge variant="destructive" className="tabular-nums">
                           {project.overdueTaskCount}
                         </Badge>
                       ) : (
@@ -602,10 +601,7 @@ export function DashboardProjectsPanel({
                     </TableCell>
                     <TableCell>
                       {project.blockedTaskCount > 0 ? (
-                        <Badge
-                          variant="destructive"
-                          className="tabular-nums"
-                        >
+                        <Badge variant="destructive" className="tabular-nums">
                           {project.blockedTaskCount}
                         </Badge>
                       ) : (

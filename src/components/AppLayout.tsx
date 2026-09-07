@@ -1,8 +1,4 @@
-import {
-  LogOut,
-  PanelLeft,
-  PanelRight,
-} from 'lucide-react'
+import { LogOut, PanelLeft, PanelRight } from 'lucide-react'
 import { NavLink, Outlet, useMatch } from 'react-router-dom'
 import { useIsFetching } from '@tanstack/react-query'
 import { PageTransition } from '@/components/motion'

@@ -89,7 +89,10 @@ export function ProjectChangeRequestDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
             <DialogBody className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="change-kind">
@@ -98,9 +101,13 @@ export function ProjectChangeRequestDialog({
                 <Select
                   value={kind}
                   onValueChange={(value) =>
-                    form.setValue('change_kind', value as 'budget' | 'schedule', {
-                      shouldDirty: true,
-                    })
+                    form.setValue(
+                      'change_kind',
+                      value as 'budget' | 'schedule',
+                      {
+                        shouldDirty: true,
+                      },
+                    )
                   }
                 >
                   <SelectTrigger id="change-kind">
@@ -162,7 +169,11 @@ export function ProjectChangeRequestDialog({
                 <Label htmlFor="change-reason">
                   {t('projects.changeRequest.reason')}
                 </Label>
-                <Textarea id="change-reason" rows={3} {...form.register('reason')} />
+                <Textarea
+                  id="change-reason"
+                  rows={3}
+                  {...form.register('reason')}
+                />
                 <FormFieldError error={form.formState.errors.reason} />
               </div>
             </DialogBody>

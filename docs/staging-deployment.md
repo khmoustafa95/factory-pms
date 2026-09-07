@@ -411,6 +411,7 @@ git push origin staging      # يُعيد بناء ونشر الواجهة تل�
 ## مراجع داخل المشروع
 
 - [`README.md`](../README.md) — إعداد عام وسكربتات npm
+- [`docs/on-prem-production.md`](./on-prem-production.md) — تشغيل رسمي محلي على ويندوز (بيانات داخل الشركة، بدون سحابة)
 - [`AGENTS.md`](../AGENTS.md) — أوضاع Vite والبيئة
 - [`.env.staging`](../.env.staging) — قالب متغيرات Staging
 - [`supabase/demo-accounts.md`](../supabase/demo-accounts.md) — حسابات تجريبية (محلي)

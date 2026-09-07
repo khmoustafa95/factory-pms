@@ -97,8 +97,8 @@ export function canManageProjectAttachments(
   return PROJECT_ATTACHMENT_EDITABLE_STATUSES.includes(status)
 }
 
-export function canRequestProjectChange(
-  status: ProjectStatus,
-): boolean {
-  return status === 'approved' || status === 'in_progress' || status === 'paused'
+export function canRequestProjectChange(status: ProjectStatus): boolean {
+  return (
+    status === 'approved' || status === 'in_progress' || status === 'paused'
+  )
 }

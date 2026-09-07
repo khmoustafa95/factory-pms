@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-keys'
 import { getSupabase } from '@/lib/supabase'
-import type {
-  ChangeRequestKind,
-  ProjectChangeRequest,
-} from '@/types/database'
+import type { ChangeRequestKind, ProjectChangeRequest } from '@/types/database'
 
-async function invalidateProject(queryClient: ReturnType<typeof useQueryClient>, projectId: string) {
+async function invalidateProject(
+  queryClient: ReturnType<typeof useQueryClient>,
+  projectId: string,
+) {
   await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
-  await queryClient.invalidateQueries({ queryKey: queryKeys.project(projectId) })
+  await queryClient.invalidateQueries({
+    queryKey: queryKeys.project(projectId),
+  })
   await queryClient.invalidateQueries({
     queryKey: queryKeys.projectChangeRequests(projectId),
   })
@@ -193,7 +195,9 @@ export function useAcknowledgeTaskEscalation() {
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.escalations })
-      await queryClient.invalidateQueries({ queryKey: queryKeys.tasks(data.project_id) })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.tasks(data.project_id),
+      })
     },
   })
 }

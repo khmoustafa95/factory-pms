@@ -30,10 +30,11 @@ Demo login accounts (password shared): see [`supabase/demo-accounts.md`](supabas
 
 ### Staging / production
 
-See **[`docs/staging-deployment.md`](docs/staging-deployment.md)** for the full staging deploy guide (free Supabase + Cloudflare/Vercel).
+- **On-prem (Windows host, data stays in the company):** [`docs/on-prem-production.md`](docs/on-prem-production.md)
+- **Cloud staging (free Supabase + Cloudflare/Vercel):** [`docs/staging-deployment.md`](docs/staging-deployment.md)
 
 1. Copy `.env.staging` or `.env.production` to `.env.<mode>.local` (gitignored).
-2. Fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from the Supabase dashboard.
+2. Fill `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` (cloud dashboard, or the on-prem API URL and anon key — see the matching guide).
 
 ```bash
 npm run dev:staging          # dev against staging

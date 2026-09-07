@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  buildIlikeClause,
   buildIlikePattern,
+  buildProjectsSearchOr,
   escapeIlikePattern,
   fetchPaginatedList,
   getPaginationRange,
   getShowingRange,
   getTotalPages,
+  quotePostgrestFilterValue,
 } from '@/lib/list-query'
 
 describe('fetchPaginatedList', () => {
@@ -58,6 +61,24 @@ describe('list-query helpers', () => {
   it('builds ilike patterns from trimmed search text', () => {
     expect(buildIlikePattern('  alpha  ')).toBe('%alpha%')
     expect(buildIlikePattern('   ')).toBeNull()
+  })
+
+  it('quotes PostgREST filter values', () => {
+    expect(quotePostgrestFilterValue('%Tes%')).toBe('"%Tes%"')
+    expect(quotePostgrestFilterValue('a"b')).toBe('"a\\"b"')
+  })
+
+  it('builds a project search or-filter without embedded factory columns', () => {
+    expect(buildProjectsSearchOr('%Tes%', [])).toBe(
+      [
+        buildIlikeClause('title', '%Tes%'),
+        buildIlikeClause('description', '%Tes%'),
+        buildIlikeClause('code', '%Tes%'),
+      ].join(','),
+    )
+    expect(
+      buildProjectsSearchOr('%DMS%', ['f1111111-1111-4111-8111-111111111111']),
+    ).toContain('factory_id.in.(f1111111-1111-4111-8111-111111111111)')
   })
 
   it('calculates pagination ranges', () => {

@@ -32,9 +32,7 @@ export function createStaffFormSchema(t: ValidationTranslator) {
     })
 }
 
-export type StaffFormValues = z.infer<
-  ReturnType<typeof createStaffFormSchema>
->
+export type StaffFormValues = z.infer<ReturnType<typeof createStaffFormSchema>>
 
 export function toStaffPayload(values: StaffFormValues) {
   return {

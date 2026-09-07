@@ -97,136 +97,150 @@ export function StaffFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {member
-              ? t('projectFinance.staff.editTitle')
-              : t('projectFinance.staff.addTitle')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('projectFinance.staff.formDescription')}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {member
+                ? t('projectFinance.staff.editTitle')
+                : t('projectFinance.staff.addTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('projectFinance.staff.formDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="staff-name">{t('common.name')}</Label>
-                <Input id="staff-name" {...form.register('full_name')} />
-                <FormFieldError error={form.formState.errors.full_name} />
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="staff-name">{t('common.name')}</Label>
+                  <Input id="staff-name" {...form.register('full_name')} />
+                  <FormFieldError error={form.formState.errors.full_name} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="staff-role">
+                    {t('projectFinance.staff.roleTitle')}
+                  </Label>
+                  <Input id="staff-role" {...form.register('role_title')} />
+                  <FormFieldError error={form.formState.errors.role_title} />
+                </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="staff-role">
-                  {t('projectFinance.staff.roleTitle')}
+                <Label htmlFor="staff-qualifications">
+                  {t('projectFinance.staff.qualifications')}
                 </Label>
-                <Input id="staff-role" {...form.register('role_title')} />
-                <FormFieldError error={form.formState.errors.role_title} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="staff-qualifications">
-                {t('projectFinance.staff.qualifications')}
-              </Label>
-              <Textarea
-                id="staff-qualifications"
-                rows={2}
-                {...form.register('qualifications')}
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="staff-headcount">
-                  {t('projectFinance.staff.headcount')}
-                </Label>
-                <Input
-                  id="staff-headcount"
-                  type="number"
-                  min="1"
-                  step="1"
-                  {...form.register('headcount', { valueAsNumber: true })}
-                />
-                <FormFieldError error={form.formState.errors.headcount} />
-              </div>
-              <div className="flex items-end gap-2 pb-2">
-                <Checkbox
-                  id="staff-contractor"
-                  checked={isContractor}
-                  onCheckedChange={(checked) =>
-                    form.setValue('is_contractor', checked === true)
-                  }
-                />
-                <Label htmlFor="staff-contractor">
-                  {t('projectFinance.staff.isContractor')}
-                </Label>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>{t('projectFinance.staff.startDate')}</Label>
-                <DatePickerField
-                  control={form.control}
-                  name="start_date"
-                  allowClear
+                <Textarea
+                  id="staff-qualifications"
+                  rows={2}
+                  {...form.register('qualifications')}
                 />
               </div>
-              <div className="space-y-2">
-                <Label>{t('projectFinance.staff.endDate')}</Label>
-                <DatePickerField
-                  control={form.control}
-                  name="end_date"
-                  allowClear
-                />
-                <FormFieldError error={form.formState.errors.end_date} />
-              </div>
-            </div>
 
-            {phases.length > 0 ? (
-              <div className="space-y-2">
-                <Label>{t('common.phase')}</Label>
-                <Select
-                  value={formatNullableSelectValue(selectedPhaseId)}
-                  onValueChange={(value) =>
-                    form.setValue('phase_id', parseNullableSelectValue(value) ?? '')
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('common.optional')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NULL_SELECT_VALUE}>
-                      {t('common.optional')}
-                    </SelectItem>
-                    {phases.map((phase) => (
-                      <SelectItem key={phase.id} value={phase.id}>
-                        {phase.name}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="staff-headcount">
+                    {t('projectFinance.staff.headcount')}
+                  </Label>
+                  <Input
+                    id="staff-headcount"
+                    type="number"
+                    min="1"
+                    step="1"
+                    {...form.register('headcount', { valueAsNumber: true })}
+                  />
+                  <FormFieldError error={form.formState.errors.headcount} />
+                </div>
+                <div className="flex items-end gap-2 pb-2">
+                  <Checkbox
+                    id="staff-contractor"
+                    checked={isContractor}
+                    onCheckedChange={(checked) =>
+                      form.setValue('is_contractor', checked === true)
+                    }
+                  />
+                  <Label htmlFor="staff-contractor">
+                    {t('projectFinance.staff.isContractor')}
+                  </Label>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>{t('projectFinance.staff.startDate')}</Label>
+                  <DatePickerField
+                    control={form.control}
+                    name="start_date"
+                    allowClear
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t('projectFinance.staff.endDate')}</Label>
+                  <DatePickerField
+                    control={form.control}
+                    name="end_date"
+                    allowClear
+                  />
+                  <FormFieldError error={form.formState.errors.end_date} />
+                </div>
+              </div>
+
+              {phases.length > 0 ? (
+                <div className="space-y-2">
+                  <Label>{t('common.phase')}</Label>
+                  <Select
+                    value={formatNullableSelectValue(selectedPhaseId)}
+                    onValueChange={(value) =>
+                      form.setValue(
+                        'phase_id',
+                        parseNullableSelectValue(value) ?? '',
+                      )
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('common.optional')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NULL_SELECT_VALUE}>
+                        {t('common.optional')}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      {phases.map((phase) => (
+                        <SelectItem key={phase.id} value={phase.id}>
+                          {phase.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+
+              <div className="space-y-2">
+                <Label htmlFor="staff-notes">{t('common.notes')}</Label>
+                <Textarea
+                  id="staff-notes"
+                  rows={3}
+                  {...form.register('notes')}
+                />
               </div>
-            ) : null}
+            </DialogBody>
 
-            <div className="space-y-2">
-              <Label htmlFor="staff-notes">{t('common.notes')}</Label>
-              <Textarea id="staff-notes" rows={3} {...form.register('notes')} />
-            </div>
-          </DialogBody>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? t('common.saving') : t('common.save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

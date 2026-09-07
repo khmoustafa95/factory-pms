@@ -10,7 +10,8 @@ export function escapeCsvCell(
     return ''
   }
 
-  const text = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)
+  const text =
+    typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)
 
   if (/[",\n\r]/.test(text)) {
     return `"${text.replaceAll('"', '""')}"`
@@ -19,7 +20,10 @@ export function escapeCsvCell(
   return text
 }
 
-export function buildCsv<T>(columns: SpreadsheetColumn<T>[], rows: T[]): string {
+export function buildCsv<T>(
+  columns: SpreadsheetColumn<T>[],
+  rows: T[],
+): string {
   const header = columns.map((column) => escapeCsvCell(column.header)).join(',')
   const body = rows.map((row) =>
     columns.map((column) => escapeCsvCell(column.value(row))).join(','),

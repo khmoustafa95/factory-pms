@@ -71,7 +71,7 @@ describe('execution readiness', () => {
     ).toBe(false)
   })
 
-  it('does not let director or factory manager write phases', () => {
+  it('lets only the factory manager of the same factory write phases', () => {
     const project = {
       status: 'approved' as const,
       assigned_pm_id: 'pm1',
@@ -79,14 +79,23 @@ describe('execution readiness', () => {
     }
     expect(
       canManagePhases(project, {
-        id: 'pm1',
-        role: 'project_manager',
+        id: 'fm1',
+        role: 'factory_manager',
+        factory_id: 'f1',
       }),
     ).toBe(true)
     expect(
       canManagePhases(project, {
-        id: 'fm1',
-        role: 'factory_manager',
+        id: 'pm1',
+        role: 'project_manager',
+        factory_id: 'f1',
+      }),
+    ).toBe(false)
+    expect(
+      canManagePhases(project, {
+        id: 'd1',
+        role: 'company_director',
+        factory_id: null,
       }),
     ).toBe(false)
   })

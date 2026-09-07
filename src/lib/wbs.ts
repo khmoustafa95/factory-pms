@@ -20,7 +20,13 @@ export const PHASE_MANAGE_STATUSES: ProjectStatus[] = [
   'paused',
 ]
 
-export const TASK_MANAGE_STATUSES: ProjectStatus[] = ['in_progress', 'paused']
+export const TASK_MANAGE_STATUSES: ProjectStatus[] = [
+  'approved',
+  'in_progress',
+  'paused',
+]
+
+export const TASK_EXECUTE_STATUSES: ProjectStatus[] = ['in_progress', 'paused']
 
 export const WBS_MANAGE_STATUSES = PHASE_MANAGE_STATUSES
 
@@ -93,17 +99,25 @@ export function canRequestCompletion(
 
 /** @deprecated Prefer canManagePhases / canManageTasks */
 export function canManageWbs(
-  project: Pick<Project, 'status' | 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+  project: Pick<Project, 'status' | 'assigned_pm_id' | 'factory_id'>,
+  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
 ): boolean {
-  return canAccessProjectWbs(project, profile, PHASE_MANAGE_STATUSES)
+  return canManagePhases(project, profile) || canManageTasks(project, profile)
 }
 
 export function canManagePhases(
-  project: Pick<Project, 'status' | 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
 ): boolean {
-  return canAccessProjectWbs(project, profile, PHASE_MANAGE_STATUSES)
+  if (!profile || !PHASE_MANAGE_STATUSES.includes(project.status)) {
+    return false
+  }
+
+  return (
+    isFactoryManager(profile.role) &&
+    profile.factory_id != null &&
+    profile.factory_id === project.factory_id
+  )
 }
 
 export function canManageTasks(
@@ -111,6 +125,13 @@ export function canManageTasks(
   profile: Pick<Profile, 'id' | 'role'> | null | undefined,
 ): boolean {
   return canAccessProjectWbs(project, profile, TASK_MANAGE_STATUSES)
+}
+
+export function canExecuteTasks(
+  project: Pick<Project, 'status' | 'assigned_pm_id'>,
+  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+): boolean {
+  return canAccessProjectWbs(project, profile, TASK_EXECUTE_STATUSES)
 }
 
 export function canStartExecution(

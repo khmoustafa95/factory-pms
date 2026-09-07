@@ -4,6 +4,14 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-09-07 — Letting the assigned PM own both phases and tasks after approval created a waiting loop: FM could not start until PM planned phases, and PM could not prepare tasks until start. Splitting design (FM phases) from preparation (PM tasks in `approved`) keeps one status and a visible three-step checklist.
+
+- 2026-09-07 — PostgREST `or()` does not accept dotted embed paths (`factories.name.ilike.%x%`). The parser treats `factories` as the column and then expects an operator (`eq`, `ilike`, …), so `.name` fails with `PGRST100` / `failed to parse logic tree`. Search related rows first and filter the parent with `factory_id.in.(…)` / `project_id.in.(…)`.
+
+- 2026-09-07 — PostgreSQL `CASE` of unknown string literals (`THEN 'approved' ELSE 'rejected'`) infers `text`, so assigning it to an enum column fails with `column "status" is of type … but expression is of type text`. Cast the whole CASE (or each branch) to the enum. Direct assignment of a single literal (`status = 'pending'`) usually coerces; CASE does not.
+
+- 2026-09-07 — A shared Windows PC can host on-prem PMS if sleep, Windows Update, Docker Desktop session-start, and RAM caps are treated as production risks. Requiring Ubuntu Server would block launch when the only machine has other jobs; the collapse mode is mixing `supabase start` demo JWTs / `db reset` with company data on that same PC.
+
 - 2026-09-06 — Putting any finance CRUD (including incoming funding) on an unapproved proposal implied money could be recorded before a contract existed. Gate all finance writes on approved+.
 - 2026-09-06 — react-day-picker v10 default `navLayout` is legacy: Nav is the first child of Months and absolutely positioned, while Month/caption paint later and steal clicks. Chevrons need `navLayout="around"` (or z-index on buttons) plus a `relative` month. Enabling `captionLayout="dropdown"` without `endMonth` also caps navigation at the current year — set `endMonth` into the future for project dates.
 - 2026-09-02 — Do not add a new `project_status` for two-step close; a pending-request column keeps list/dashboard filters and existing RPCs stable while still showing a banner. Contract freeze must use a session GUC so review/reassign RPCs can apply updates the trigger would otherwise reject.

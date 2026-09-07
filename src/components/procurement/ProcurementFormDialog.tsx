@@ -35,7 +35,11 @@ import {
   createProcurementFormSchema,
   type ProcurementFormValues,
 } from '@/lib/validations/procurement'
-import type { Phase, ProcurementStatus, ProjectProcurementItem } from '@/types/database'
+import type {
+  Phase,
+  ProcurementStatus,
+  ProjectProcurementItem,
+} from '@/types/database'
 
 const PROCUREMENT_STATUSES: ProcurementStatus[] = [
   'planned',
@@ -103,154 +107,175 @@ export function ProcurementFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {item
-              ? t('projectFinance.procurement.editTitle')
-              : t('projectFinance.procurement.addTitle')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('projectFinance.procurement.formDescription')}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {item
+                ? t('projectFinance.procurement.editTitle')
+                : t('projectFinance.procurement.addTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('projectFinance.procurement.formDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="procurement-description">
-                {t('common.description')}
-              </Label>
-              <Input
-                id="procurement-description"
-                {...form.register('description')}
-              />
-              <FormFieldError error={form.formState.errors.description} />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="procurement-quantity">
-                  {t('projectFinance.procurement.quantity')}
+                <Label htmlFor="procurement-description">
+                  {t('common.description')}
                 </Label>
                 <Input
-                  id="procurement-quantity"
-                  type="number"
-                  min="0"
-                  step="0.001"
-                  {...form.register('quantity', { valueAsNumber: true })}
+                  id="procurement-description"
+                  {...form.register('description')}
                 />
-                <FormFieldError error={form.formState.errors.quantity} />
+                <FormFieldError error={form.formState.errors.description} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="procurement-unit">
-                  {t('projectFinance.procurement.unit')}
-                </Label>
-                <Input id="procurement-unit" {...form.register('unit')} />
-                <FormFieldError error={form.formState.errors.unit} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="procurement-cost">
-                  {t('projectFinance.procurement.estimatedCost')}
-                </Label>
-                <Input
-                  id="procurement-cost"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  {...form.register('estimated_cost', { valueAsNumber: true })}
-                />
-                <FormFieldError error={form.formState.errors.estimated_cost} />
-              </div>
-            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label>{t('projectFinance.procurement.neededBy')}</Label>
-                <DatePickerField
-                  control={form.control}
-                  name="needed_by_date"
-                  allowClear
-                />
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="procurement-quantity">
+                    {t('projectFinance.procurement.quantity')}
+                  </Label>
+                  <Input
+                    id="procurement-quantity"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    {...form.register('quantity', { valueAsNumber: true })}
+                  />
+                  <FormFieldError error={form.formState.errors.quantity} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="procurement-unit">
+                    {t('projectFinance.procurement.unit')}
+                  </Label>
+                  <Input id="procurement-unit" {...form.register('unit')} />
+                  <FormFieldError error={form.formState.errors.unit} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="procurement-cost">
+                    {t('projectFinance.procurement.estimatedCost')}
+                  </Label>
+                  <Input
+                    id="procurement-cost"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    {...form.register('estimated_cost', {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.estimated_cost}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="procurement-supplier">
-                  {t('projectFinance.procurement.supplier')}
-                </Label>
-                <Input id="procurement-supplier" {...form.register('supplier')} />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>{t('projectFinance.procurement.neededBy')}</Label>
+                  <DatePickerField
+                    control={form.control}
+                    name="needed_by_date"
+                    allowClear
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="procurement-supplier">
+                    {t('projectFinance.procurement.supplier')}
+                  </Label>
+                  <Input
+                    id="procurement-supplier"
+                    {...form.register('supplier')}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label>{t('common.status')}</Label>
-              <Select
-                value={selectedStatus}
-                onValueChange={(value) => {
-                  if (
-                    value === 'planned' ||
-                    value === 'ordered' ||
-                    value === 'delivered' ||
-                    value === 'cancelled'
-                  ) {
-                    form.setValue('status', value)
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PROCUREMENT_STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {t(`projectFinance.procurement.statuses.${status}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {phases.length > 0 ? (
               <div className="space-y-2">
-                <Label>{t('common.phase')}</Label>
+                <Label>{t('common.status')}</Label>
                 <Select
-                  value={formatNullableSelectValue(selectedPhaseId)}
-                  onValueChange={(value) =>
-                    form.setValue('phase_id', parseNullableSelectValue(value) ?? '')
-                  }
+                  value={selectedStatus}
+                  onValueChange={(value) => {
+                    if (
+                      value === 'planned' ||
+                      value === 'ordered' ||
+                      value === 'delivered' ||
+                      value === 'cancelled'
+                    ) {
+                      form.setValue('status', value)
+                    }
+                  }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t('common.optional')} />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={NULL_SELECT_VALUE}>
-                      {t('common.optional')}
-                    </SelectItem>
-                    {phases.map((phase) => (
-                      <SelectItem key={phase.id} value={phase.id}>
-                        {phase.name}
+                    {PROCUREMENT_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {t(`projectFinance.procurement.statuses.${status}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            ) : null}
 
-            <div className="space-y-2">
-              <Label htmlFor="procurement-notes">{t('common.notes')}</Label>
-              <Textarea id="procurement-notes" rows={3} {...form.register('notes')} />
-            </div>
-          </DialogBody>
+              {phases.length > 0 ? (
+                <div className="space-y-2">
+                  <Label>{t('common.phase')}</Label>
+                  <Select
+                    value={formatNullableSelectValue(selectedPhaseId)}
+                    onValueChange={(value) =>
+                      form.setValue(
+                        'phase_id',
+                        parseNullableSelectValue(value) ?? '',
+                      )
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('common.optional')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NULL_SELECT_VALUE}>
+                        {t('common.optional')}
+                      </SelectItem>
+                      {phases.map((phase) => (
+                        <SelectItem key={phase.id} value={phase.id}>
+                          {phase.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+              <div className="space-y-2">
+                <Label htmlFor="procurement-notes">{t('common.notes')}</Label>
+                <Textarea
+                  id="procurement-notes"
+                  rows={3}
+                  {...form.register('notes')}
+                />
+              </div>
+            </DialogBody>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? t('common.saving') : t('common.save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

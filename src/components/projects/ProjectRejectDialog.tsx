@@ -58,47 +58,56 @@ export function ProjectRejectDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('projects.rejectProposal')}</DialogTitle>
-          <DialogDescription>
-            {projectTitle
-              ? `${t('projects.rejectDescription')} (${projectTitle})`
-              : t('projects.rejectDescription')}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('projects.rejectProposal')}</DialogTitle>
+            <DialogDescription>
+              {projectTitle
+                ? `${t('projects.rejectDescription')} (${projectTitle})`
+                : t('projects.rejectDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="rejection-reason">
-                {t('projects.rejectionReason')}
-              </Label>
-              <Textarea
-                id="rejection-reason"
-                rows={4}
-                {...form.register('rejection_reason')}
-              />
-              <FormFieldError error={form.formState.errors.rejection_reason} />
-            </div>
-          </DialogBody>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="rejection-reason">
+                  {t('projects.rejectionReason')}
+                </Label>
+                <Textarea
+                  id="rejection-reason"
+                  rows={4}
+                  {...form.register('rejection_reason')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.rejection_reason}
+                />
+              </div>
+            </DialogBody>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" variant="destructive" disabled={isSubmitting}>
-              {isSubmitting
-                ? t('common.submitting')
-                : t('projects.rejectProposal')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? t('common.submitting')
+                  : t('projects.rejectProposal')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

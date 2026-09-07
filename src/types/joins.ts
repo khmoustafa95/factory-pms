@@ -29,10 +29,10 @@ export type ProjectListFinancials = {
 
 export type ProjectListItem = Project &
   Partial<ProjectListFinancials> & {
-  factories: FactorySummary | null
-  proposer: ProfileSummary | null
-  assigned_pm: ProfileSummary | null
-}
+    factories: FactorySummary | null
+    proposer: ProfileSummary | null
+    assigned_pm: ProfileSummary | null
+  }
 
 export type ProjectDetail = Project & {
   factories: FactorySummary | null

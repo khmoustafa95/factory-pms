@@ -74,14 +74,19 @@ export function ProjectReassignPmDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
             <DialogBody className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="reassign-pm">{t('projects.assignedPm')}</Label>
                 <Select
                   value={selected}
                   onValueChange={(value) =>
-                    form.setValue('assigned_pm_id', value, { shouldDirty: true })
+                    form.setValue('assigned_pm_id', value, {
+                      shouldDirty: true,
+                    })
                   }
                 >
                   <SelectTrigger id="reassign-pm">

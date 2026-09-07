@@ -11,7 +11,11 @@ import { QueryState } from '@/components/QueryState'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useDashboardFilters } from '@/hooks/useDashboardFilters'
-import { useDashboardInsights, useDashboardProjects, useDashboardStats } from '@/hooks/useDashboard'
+import {
+  useDashboardInsights,
+  useDashboardProjects,
+  useDashboardStats,
+} from '@/hooks/useDashboard'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { buildProjectPath } from '@/lib/project-routes'
@@ -283,9 +287,7 @@ export function DashboardPage() {
           project.id,
           buildProjectPath({
             code: project.code,
-            factories: project.factory
-              ? { code: project.factory.code }
-              : null,
+            factories: project.factory ? { code: project.factory.code } : null,
           }),
         ]),
       ),

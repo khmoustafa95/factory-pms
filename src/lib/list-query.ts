@@ -30,6 +30,43 @@ export function buildIlikePattern(value: string): string | null {
   return `%${escapeIlikePattern(trimmed)}%`
 }
 
+/** Quote a PostgREST filter value so commas/`()` in search text cannot break `.or()`. */
+export function quotePostgrestFilterValue(value: string): string {
+  return `"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
+}
+
+export function buildIlikeClause(column: string, pattern: string): string {
+  return `${column}.ilike.${quotePostgrestFilterValue(pattern)}`
+}
+
+export function buildSearchOr(
+  columns: string[],
+  pattern: string,
+  related?: { column: string; ids: string[] },
+): string {
+  const clauses = columns.map((column) => buildIlikeClause(column, pattern))
+
+  if (related && related.ids.length > 0) {
+    clauses.push(`${related.column}.in.(${related.ids.join(',')})`)
+  }
+
+  return clauses.join(',')
+}
+
+/**
+ * Project list search OR-filter. PostgREST cannot parse `factories.column`
+ * inside `or()`, so factory matches are applied via `factory_id`.
+ */
+export function buildProjectsSearchOr(
+  pattern: string,
+  matchingFactoryIds: string[],
+): string {
+  return buildSearchOr(['title', 'description', 'code'], pattern, {
+    column: 'factory_id',
+    ids: matchingFactoryIds,
+  })
+}
+
 export function getTotalPages(total: number, pageSize: number): number {
   if (total === 0) {
     return 1

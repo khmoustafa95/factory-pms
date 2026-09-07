@@ -1,6 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { getSupabase } from '@/lib/supabase'
-import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
+import {
+  buildIlikeClause,
+  buildIlikePattern,
+  buildSearchOr,
+  fetchPaginatedList,
+} from '@/lib/list-query'
 import type { EscalationsPageParams } from '@/lib/list-query-params'
 import { queryKeys } from '@/lib/query-keys'
 import { joinMappers } from '@/lib/supabase-joins'
@@ -29,8 +34,22 @@ export function useEscalationsPage(params: EscalationsPageParams) {
         .order('updated_at', { ascending: false })
 
       if (searchPattern) {
+        const { data: projectHits, error: projectSearchError } = await supabase
+          .from('projects')
+          .select('id')
+          .or(
+            `${buildIlikeClause('title', searchPattern)},${buildIlikeClause('code', searchPattern)}`,
+          )
+
+        if (projectSearchError) {
+          throw projectSearchError
+        }
+
         query = query.or(
-          `title.ilike.${searchPattern},blocked_reason.ilike.${searchPattern},projects.title.ilike.${searchPattern}`,
+          buildSearchOr(['title', 'blocked_reason'], searchPattern, {
+            column: 'project_id',
+            ids: (projectHits ?? []).map((row) => row.id),
+          }),
         )
       }
 
@@ -39,9 +58,7 @@ export function useEscalationsPage(params: EscalationsPageParams) {
       }
 
       if (params.escalationStatus === 'open') {
-        query = query.or(
-          'escalation_status.is.null,escalation_status.eq.open',
-        )
+        query = query.or('escalation_status.is.null,escalation_status.eq.open')
       } else if (params.escalationStatus === 'acknowledged') {
         query = query.eq('escalation_status', 'acknowledged')
       }

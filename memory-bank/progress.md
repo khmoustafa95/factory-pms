@@ -2,6 +2,11 @@
 
 ## Done
 
+- [x] WBS role handoff: factory manager designs phases; assigned PM prepares tasks in `approved`; Kanban execution after start
+- [x] Projects list search — PostgREST `or()` no longer uses `factories.name`/`factories.code`
+- [x] `review_project_change` enum cast — director can approve/reject pending change requests
+- [x] `docs/on-prem-production.md` — official on-prem runbook for shared Windows host
+- [x] `docs/user-stories.md` — implemented stories vs PRD for product review
 - [x] Date picker month/year navigation: shared Calendar/DatePicker (v10 nav overlay + dropdowns); all `DatePickerField` dialogs
 - [x] Lifecycle RBAC: PM writes WBS; FM/director govern pause/resume; two-step completion; frozen contract + change requests; finance write split; escalation acknowledge
 - [x] Operational finance after approval: proposal keeps funding only; procurement/staff/overhead gated to approved+ (SPA + RLS)
@@ -74,6 +79,34 @@
 
 ## Changelog
 
+### 2026-09-07 (WBS role handoff)
+
+- Factory manager writes phases after approval; assigned PM prepares tasks while `approved` (status stays `todo` until start).
+- Start execution still requires phase readiness; empty tasks and underfunding are warnings. Detail Start always opens the dialog with reasons.
+- Overview planning checklist + role-specific WBS empty states; `phases_ready` notification to the assigned PM.
+- Migration `20260907140000_wbs_role_handoff.sql`.
+
+### 2026-09-07 (Projects search PostgREST or-filter)
+
+- Typing in the projects search box sent `or=(…factories.name.ilike…,factories.code.ilike…)` which PostgREST cannot parse (`PGRST100`, column 56 = `name` after `factories.`).
+- Search now ORs project title/description/code with matching `factory_id`s from a factories query; escalations search uses the same pattern for project title/code.
+- Confirmed old filter returns HTTP 400 with the UI error; new filter parses (HTTP 200).
+
+### 2026-09-07 (Change-request review enum cast)
+
+- Director Approve/Reject on a pending budget/schedule change request failed: Postgres inferred the `CASE` status expression as `text`, not `change_request_status`.
+- New migration `20260907120000_fix_review_project_change_status_cast.sql` casts the CASE. Applied locally (`supabase db push --local`).
+- Confirmed with `pg_typeof`: uncast CASE is `text`; cast CASE is `change_request_status`.
+
+### 2026-09-07 (On-prem Windows production guide)
+
+- Added `docs/on-prem-production.md` (Arabic): official local hosting with data on-prem, Windows PC as shared server (other office tasks; not Ubuntu Server), Docker Desktop resource caps, sleep/update/firewall hardening, three phases (LAN → VPN remotes → later machine), backup checklist for company director.
+- README and `docs/staging-deployment.md` now point at the on-prem path vs cloud staging.
+
+### 2026-09-07 (User stories review file)
+
+- Added `docs/user-stories.md` (Arabic): current implemented stories for review, mapped to PRD US-01–US-06 and later modules (lifecycle, finance after approval, notifications, settings).
+
 ### 2026-09-06 (Funding after approval)
 
 - Incoming funding is no longer writable or shown on the proposal. Same post-approval statuses as operations; director/FM only.
@@ -92,7 +125,7 @@
 
 ### 2026-09-06 (Date picker month/year navigation)
 
-- Shared `Calendar` was unusable for month/year changes inside dialogs: DayPicker v10 legacy nav is an absolute overlay painted *behind* the caption, so prev/next never received clicks; caption was a non-interactive label.
+- Shared `Calendar` was unusable for month/year changes inside dialogs: DayPicker v10 legacy nav is an absolute overlay painted _behind_ the caption, so prev/next never received clicks; caption was a non-interactive label.
 - `calendar.tsx`: `navLayout="around"`, relative month container, z-index + pointer-events on nav buttons, month/year dropdown classNames.
 - `DatePicker`: `captionLayout="dropdown"` plus a future `endMonth` (DayPicker’s dropdown default ends at the current year). All `DatePickerField` consumers inherit this (project, phase, task, finance, change request).
 - Browser verified on New proposal start/end dates. `npm run verify` passed.

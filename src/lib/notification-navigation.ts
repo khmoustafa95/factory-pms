@@ -37,6 +37,10 @@ export function notificationTabForType(type: string): ProjectDetailTab {
     return 'kanban'
   }
 
+  if (type === 'phases_ready') {
+    return 'wbs'
+  }
+
   if (
     type === 'comment_project' ||
     type === 'comment_task' ||

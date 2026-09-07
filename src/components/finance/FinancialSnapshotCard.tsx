@@ -18,13 +18,7 @@ interface FinancialSnapshotCardProps {
   currency: string
 }
 
-function SnapshotRow({
-  label,
-  value,
-}: {
-  label: string
-  value: string
-}) {
+function SnapshotRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4 text-sm">
       <span className="text-muted-foreground">{label}</span>
@@ -49,7 +43,9 @@ export function FinancialSnapshotCard({
     <Card>
       <CardHeader>
         <CardTitle>{t('projectFinance.snapshot.title')}</CardTitle>
-        <CardDescription>{t('projectFinance.snapshot.description')}</CardDescription>
+        <CardDescription>
+          {t('projectFinance.snapshot.description')}
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2">
         <SnapshotRow

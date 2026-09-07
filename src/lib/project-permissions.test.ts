@@ -4,6 +4,7 @@ import {
   canGovernExecution,
   canManagePhases,
   canManageTasks,
+  canExecuteTasks,
   canRequestCompletion,
   canStartExecution,
 } from '@/lib/wbs'
@@ -41,12 +42,15 @@ const assigned = {
 }
 
 describe('lifecycle permissions', () => {
-  it('lets only the assigned PM write WBS', () => {
-    expect(canManagePhases(assigned, pm)).toBe(true)
-    expect(canManageTasks(assigned, pm)).toBe(true)
-    expect(canManagePhases(assigned, fm)).toBe(false)
+  it('lets the factory manager write phases and the assigned PM write tasks', () => {
+    expect(canManagePhases(assigned, fm)).toBe(true)
+    expect(canManagePhases(assigned, pm)).toBe(false)
     expect(canManagePhases(assigned, director)).toBe(false)
-    expect(canManageTasks({ ...assigned, status: 'approved' }, pm)).toBe(false)
+    expect(canManageTasks(assigned, pm)).toBe(true)
+    expect(canManageTasks(assigned, fm)).toBe(false)
+    expect(canManageTasks({ ...assigned, status: 'approved' }, pm)).toBe(true)
+    expect(canExecuteTasks({ ...assigned, status: 'approved' }, pm)).toBe(false)
+    expect(canExecuteTasks(assigned, pm)).toBe(true)
   })
 
   it('lets factory manager or director govern pause/resume', () => {

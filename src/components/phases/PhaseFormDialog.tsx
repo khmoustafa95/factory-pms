@@ -169,241 +169,256 @@ export function PhaseFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>
-            {phase ? t('wbs.editPhase') : t('wbs.newPhase')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('wbs.weightRemaining', { remaining: maxWeight.toFixed(1) })}
-            {' · '}
-            {t('wbs.budgetRemaining', { remaining: maxBudget.toFixed(2) })}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>
+              {phase ? t('wbs.editPhase') : t('wbs.newPhase')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('wbs.weightRemaining', { remaining: maxWeight.toFixed(1) })}
+              {' · '}
+              {t('wbs.budgetRemaining', { remaining: maxBudget.toFixed(2) })}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">{t('wbs.basicsSection')}</h4>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">
+                  {t('wbs.basicsSection')}
+                </h4>
 
-            <div className="space-y-2">
-              <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
-              <Input id="phase-name" {...form.register('name')} />
-              <FormFieldError error={form.formState.errors.name} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phase-description">
-                {t('common.description')}
-              </Label>
-              <Textarea
-                id="phase-description"
-                rows={3}
-                {...form.register('description')}
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="phase-weight">{t('wbs.phaseWeight')}</Label>
-                <Input
-                  id="phase-weight"
-                  type="number"
-                  min="0"
-                  max={maxWeight}
-                  step="0.1"
-                  {...form.register('weight_percent', { valueAsNumber: true })}
-                />
-                <FormFieldError error={form.formState.errors.weight_percent} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phase-expected-budget">
-                  {t('wbs.expectedBudget')}
-                </Label>
-                <Input
-                  id="phase-expected-budget"
-                  type="number"
-                  min="0"
-                  max={maxBudget}
-                  step="0.01"
-                  {...form.register('expected_budget', { valueAsNumber: true })}
-                />
-                <FormFieldError error={form.formState.errors.expected_budget} />
-                {projectBudget != null ? (
-                  <p className="text-xs text-muted-foreground">
-                    {t('common.budget')}: {Number(projectBudget).toFixed(2)}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                {t('wbs.phaseScheduleHint', { range: scheduleHint })}
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="phase-start">{t('wbs.startDate')}</Label>
-                <DatePickerField
-                  id="phase-start"
-                  control={form.control}
-                  name="start_date"
-                  min={schedule.start ?? undefined}
-                  max={schedule.end ?? undefined}
-                />
-                <FormFieldError error={form.formState.errors.start_date} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phase-end">{t('wbs.endDate')}</Label>
-                <DatePickerField
-                  id="phase-end"
-                  control={form.control}
-                  name="end_date"
-                  min={schedule.start ?? undefined}
-                  max={schedule.end ?? undefined}
-                />
-                <FormFieldError error={form.formState.errors.end_date} />
-              </div>
-            </div>
-            </div>
-
-            {phase ? (
-              <Collapsible defaultOpen={Boolean(phase)}>
-                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 text-sm font-medium [&[data-state=open]>svg]:rotate-180">
-                  {t('wbs.trackingSection')}
-                  <ChevronDown className="size-4 shrink-0 transition-transform" />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label>{t('wbs.phaseStatus')}</Label>
-                  <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
-                    {getPhaseStatusLabel(t, phase.status)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t('wbs.phaseStatusHint')}
-                  </p>
+                  <Label htmlFor="phase-name">{t('wbs.phaseName')}</Label>
+                  <Input id="phase-name" {...form.register('name')} />
+                  <FormFieldError error={form.formState.errors.name} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phase-actual-end">
-                    {t('wbs.actualEndDate')}
+                  <Label htmlFor="phase-description">
+                    {t('common.description')}
                   </Label>
-                  <DatePickerField
-                    id="phase-actual-end"
-                    control={form.control}
-                    name="actual_end_date"
-                    allowClear
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.actual_end_date}
+                  <Textarea
+                    id="phase-description"
+                    rows={3}
+                    {...form.register('description')}
                   />
                 </div>
 
-                {showActualBudget ? (
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="phase-actual-budget">
-                      {t('wbs.actualBudget')}
-                    </Label>
+                    <Label htmlFor="phase-weight">{t('wbs.phaseWeight')}</Label>
                     <Input
-                      id="phase-actual-budget"
+                      id="phase-weight"
                       type="number"
                       min="0"
-                      step="0.01"
-                      {...form.register('actual_budget', {
-                        setValueAs: (value) =>
-                          value === '' || value === null ? null : Number(value),
+                      max={maxWeight}
+                      step="0.1"
+                      {...form.register('weight_percent', {
+                        valueAsNumber: true,
                       })}
                     />
                     <FormFieldError
-                      error={form.formState.errors.actual_budget}
+                      error={form.formState.errors.weight_percent}
                     />
                   </div>
-                ) : null}
 
-                <div className="space-y-2">
-                  <Label htmlFor="phase-schedule-reason">
-                    {t('wbs.scheduleDeviationReason')}
-                  </Label>
-                  <Textarea
-                    id="phase-schedule-reason"
-                    rows={2}
-                    {...form.register('schedule_deviation_reason')}
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.schedule_deviation_reason}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phase-financial-reason">
-                    {t('wbs.financialDeviationReason')}
-                  </Label>
-                  <Textarea
-                    id="phase-financial-reason"
-                    rows={2}
-                    {...form.register('financial_deviation_reason')}
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.financial_deviation_reason}
-                  />
-                  {actualCostTotal > 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      {t('wbs.actualCostHint', {
-                        amount: actualCostTotal.toFixed(2),
+                  <div className="space-y-2">
+                    <Label htmlFor="phase-expected-budget">
+                      {t('wbs.expectedBudget')}
+                    </Label>
+                    <Input
+                      id="phase-expected-budget"
+                      type="number"
+                      min="0"
+                      max={maxBudget}
+                      step="0.01"
+                      {...form.register('expected_budget', {
+                        valueAsNumber: true,
                       })}
-                    </p>
-                  ) : null}
+                    />
+                    <FormFieldError
+                      error={form.formState.errors.expected_budget}
+                    />
+                    {projectBudget != null ? (
+                      <p className="text-xs text-muted-foreground">
+                        {t('common.budget')}: {Number(projectBudget).toFixed(2)}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phase-problem">
-                    {t('wbs.problemDescription')}
-                  </Label>
-                  <Textarea
-                    id="phase-problem"
-                    rows={2}
-                    {...form.register('problem_description')}
-                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('wbs.phaseScheduleHint', { range: scheduleHint })}
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phase-solution">
-                    {t('wbs.solutionInProgress')}
-                  </Label>
-                  <Textarea
-                    id="phase-solution"
-                    rows={2}
-                    {...form.register('solution_in_progress')}
-                  />
-                </div>
-                </CollapsibleContent>
-              </Collapsible>
-            ) : null}
-          </DialogBody>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="phase-start">{t('wbs.startDate')}</Label>
+                    <DatePickerField
+                      id="phase-start"
+                      control={form.control}
+                      name="start_date"
+                      min={schedule.start ?? undefined}
+                      max={schedule.end ?? undefined}
+                    />
+                    <FormFieldError error={form.formState.errors.start_date} />
+                  </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? t('common.saving')
-                : phase
-                  ? t('common.save')
-                  : t('common.addPhase')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+                  <div className="space-y-2">
+                    <Label htmlFor="phase-end">{t('wbs.endDate')}</Label>
+                    <DatePickerField
+                      id="phase-end"
+                      control={form.control}
+                      name="end_date"
+                      min={schedule.start ?? undefined}
+                      max={schedule.end ?? undefined}
+                    />
+                    <FormFieldError error={form.formState.errors.end_date} />
+                  </div>
+                </div>
+              </div>
+
+              {phase ? (
+                <Collapsible defaultOpen={Boolean(phase)}>
+                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 text-sm font-medium [&[data-state=open]>svg]:rotate-180">
+                    {t('wbs.trackingSection')}
+                    <ChevronDown className="size-4 shrink-0 transition-transform" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label>{t('wbs.phaseStatus')}</Label>
+                      <p className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground">
+                        {getPhaseStatusLabel(t, phase.status)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('wbs.phaseStatusHint')}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phase-actual-end">
+                        {t('wbs.actualEndDate')}
+                      </Label>
+                      <DatePickerField
+                        id="phase-actual-end"
+                        control={form.control}
+                        name="actual_end_date"
+                        allowClear
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.actual_end_date}
+                      />
+                    </div>
+
+                    {showActualBudget ? (
+                      <div className="space-y-2">
+                        <Label htmlFor="phase-actual-budget">
+                          {t('wbs.actualBudget')}
+                        </Label>
+                        <Input
+                          id="phase-actual-budget"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          {...form.register('actual_budget', {
+                            setValueAs: (value) =>
+                              value === '' || value === null
+                                ? null
+                                : Number(value),
+                          })}
+                        />
+                        <FormFieldError
+                          error={form.formState.errors.actual_budget}
+                        />
+                      </div>
+                    ) : null}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phase-schedule-reason">
+                        {t('wbs.scheduleDeviationReason')}
+                      </Label>
+                      <Textarea
+                        id="phase-schedule-reason"
+                        rows={2}
+                        {...form.register('schedule_deviation_reason')}
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.schedule_deviation_reason}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phase-financial-reason">
+                        {t('wbs.financialDeviationReason')}
+                      </Label>
+                      <Textarea
+                        id="phase-financial-reason"
+                        rows={2}
+                        {...form.register('financial_deviation_reason')}
+                      />
+                      <FormFieldError
+                        error={form.formState.errors.financial_deviation_reason}
+                      />
+                      {actualCostTotal > 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          {t('wbs.actualCostHint', {
+                            amount: actualCostTotal.toFixed(2),
+                          })}
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phase-problem">
+                        {t('wbs.problemDescription')}
+                      </Label>
+                      <Textarea
+                        id="phase-problem"
+                        rows={2}
+                        {...form.register('problem_description')}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phase-solution">
+                        {t('wbs.solutionInProgress')}
+                      </Label>
+                      <Textarea
+                        id="phase-solution"
+                        rows={2}
+                        {...form.register('solution_in_progress')}
+                      />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ) : null}
+            </DialogBody>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? t('common.saving')
+                  : phase
+                    ? t('common.save')
+                    : t('common.addPhase')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
       <DiscardChangesDialog
         open={discardOpen}
         onConfirm={confirmDiscard}

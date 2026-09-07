@@ -107,7 +107,7 @@ export const en = {
   },
   list: {
     search: 'Search',
-    searchProjects: 'Search by title, description, or factory…',
+    searchProjects: 'Search by title, code, description, or factory…',
     searchFactories: 'Search by name, code, or location…',
     searchAccounts: 'Search by name or email…',
     searchEscalations: 'Search by task, project, or blocked reason…',
@@ -229,6 +229,10 @@ export const en = {
       escalation_acknowledged: {
         title: 'Escalation acknowledged',
         body: '{{actorName}} acknowledged the blocked task «{{taskTitle}}».',
+      },
+      phases_ready: {
+        title: 'Phases are ready',
+        body: '{{actorName}} finished the phase plan for «{{projectTitle}}». You can prepare tasks.',
       },
       unknown: {
         title: 'Notification',
@@ -452,14 +456,34 @@ export const en = {
     executionHintPmOtherAssignee:
       'Start, pause, and close are available to the factory manager or company director.',
     executionHintPmCannotGovern:
-      'Project managers can write the WBS. Start, pause, and close are factory manager or company director actions.',
+      'Project managers prepare tasks. Start, pause, and close are factory manager or company director actions.',
     startDialog: {
       title: 'Start execution',
       description:
-        'Confirm WBS readiness and assigned PM. Incomplete funding is a warning, not a blocker.',
+        'Confirm phase readiness and assigned PM. Missing tasks and incomplete funding are warnings, not blockers.',
       fundingReceived: 'Funding received',
       fundingWarning:
         'Funding received is below the approved budget. You can still start execution.',
+      noTasksWarning:
+        'The project manager has not prepared tasks yet. You can still start execution.',
+    },
+    planning: {
+      title: 'Planning handoff',
+      description:
+        'The factory manager designs phases. The assigned project manager prepares tasks. Then the factory manager starts execution.',
+      stepPhases: 'Design phases',
+      stepTasks: 'Prepare tasks',
+      stepStart: 'Start execution',
+      done: 'Done',
+      waitingFm: 'Waiting for the factory manager',
+      waitingPm: 'Waiting for the project manager',
+      phasesHintFm: 'Split the approved budget and schedule into phases.',
+      tasksHintPm: 'Add tasks under each phase before work begins.',
+      startHintFm:
+        'Start when the phase plan is ready. Missing tasks are a warning only.',
+      ctaAddPhase: 'Add phases',
+      ctaAddTask: 'Prepare tasks',
+      ctaStart: 'Start execution',
     },
     completeDialog: {
       requestTitle: 'Request project closure',
@@ -611,6 +635,8 @@ export const en = {
       acknowledgeNotAllowed:
         'You are not allowed to acknowledge this escalation.',
       acknowledgeNotBlocked: 'Only blocked tasks can be acknowledged.',
+      tasksPlanningOnly:
+        'Tasks stay in planning until the factory manager starts execution.',
     },
     budgetUsed: 'Budget used',
     fundingStatus: 'Funding',
@@ -794,8 +820,10 @@ export const en = {
   },
   wbs: {
     title: 'Work breakdown structure',
-    manageDescription:
-      'Define phases with weights that total 100%, then add weighted tasks under each phase. Actual duration and cost roll up from tasks.',
+    fmManageDescription:
+      'Design phases with weights that total 100% and budgets that match the project. The project manager prepares tasks under each phase.',
+    pmManageDescription:
+      'Prepare weighted tasks under each phase. Status changes on the Kanban start after execution begins.',
     viewDescription: 'View phases and tasks for this project.',
     weightSummary: 'Phase weights: {{total}}% / 100%',
     weightRemaining: '{{remaining}}% remaining',
@@ -809,7 +837,9 @@ export const en = {
     taskWeightSummary: 'Task weights: {{total}}% / 100%',
     taskWeightInvalid: 'Task weights in this phase must total exactly 100%.',
     taskWeightRemaining: '{{remaining}}% task weight remaining',
-    noPhases: 'No phases yet. Add the first phase to build the WBS.',
+    noPhases: 'No phases yet.',
+    noPhasesFm: 'No phases yet. Add the first phase to build the plan.',
+    noPhasesPm: 'Waiting for the factory manager to design phases.',
     validityBanner: {
       weights: 'Phase weights total {{total}}% — must equal 100%.',
       budget:
@@ -820,6 +850,11 @@ export const en = {
     assignee: 'Assignee',
     tasks: 'Tasks',
     noTasks: 'No tasks in this phase.',
+    noTasksPmPlanning: 'Prepare tasks in this phase before execution starts.',
+    noTasksFmPlanning:
+      'Waiting for the project manager to prepare tasks in this phase.',
+    kanbanPlanningHint:
+      'Kanban is for execution. Prepare tasks in the WBS tab; status changes unlock after start.',
     editPhase: 'Edit phase',
     newPhase: 'New phase',
     phaseName: 'Phase name',

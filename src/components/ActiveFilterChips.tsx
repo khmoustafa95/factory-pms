@@ -30,7 +30,9 @@ export function ActiveFilterChips({
     <div
       className={`flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm ${className ?? ''}`}
     >
-      <span className="text-muted-foreground">{t('dashboard.activeDrill')}</span>
+      <span className="text-muted-foreground">
+        {t('dashboard.activeDrill')}
+      </span>
       {chips.map((chip) => (
         <Badge key={chip.id} variant="secondary" className="gap-1 pe-1">
           {chip.label}

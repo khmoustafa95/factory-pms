@@ -46,6 +46,7 @@ import {
 } from '@/hooks/useProjects'
 import { useRequestProjectCompletion } from '@/hooks/useProjectGovernance'
 import { usePhases } from '@/hooks/usePhases'
+import { useTasks } from '@/hooks/useTasks'
 import { useFactories } from '@/hooks/useFactories'
 import { useListQueryState } from '@/hooks/useListQueryState'
 import type { ProjectsPageParams } from '@/lib/list-query-params'
@@ -132,10 +133,10 @@ export function ProjectsPage() {
   const [pausingProject, setPausingProject] = useState<ProjectListItem | null>(
     null,
   )
-  const [startingProject, setStartingProject] = useState<ProjectListItem | null>(
-    null,
-  )
+  const [startingProject, setStartingProject] =
+    useState<ProjectListItem | null>(null)
   const { data: startingPhases = [] } = usePhases(startingProject?.id)
+  const { data: startingTasks = [] } = useTasks(startingProject?.id)
   const startingReadiness = startingProject
     ? getExecutionReadiness(startingProject, startingPhases)
     : null
@@ -221,8 +222,7 @@ export function ProjectsPage() {
           },
           {
             header: t('common.timeline'),
-            value: (row) =>
-              formatProjectSchedule(row, locale, t, notAvailable),
+            value: (row) => formatProjectSchedule(row, locale, t, notAvailable),
           },
         ],
         projects,
@@ -653,11 +653,7 @@ export function ProjectsPage() {
           }
           actions={
             <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleExport}
-              >
+              <Button type="button" variant="outline" onClick={handleExport}>
                 <Download className="size-4" />
                 {t('list.exportExcel')}
               </Button>
@@ -811,6 +807,7 @@ export function ProjectsPage() {
                 startingProject.assigned_pm?.full_name ?? t('common.unassigned')
               }
               fundingReceived={Number(startingProject.funding_received ?? 0)}
+              taskCount={startingTasks.length}
               readinessReasons={startingReadiness?.reasons ?? []}
               onConfirm={handleStartExecution}
               isSubmitting={startProjectExecution.isPending}

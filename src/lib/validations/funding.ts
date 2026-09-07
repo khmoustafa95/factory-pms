@@ -33,10 +33,7 @@ export function createFundingFormSchema(t: ValidationTranslator) {
         })
       }
 
-      if (
-        values.source_type === 'other' &&
-        !values.source_name?.trim()
-      ) {
+      if (values.source_type === 'other' && !values.source_name?.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: t('validation.fundingSourceNameRequired'),

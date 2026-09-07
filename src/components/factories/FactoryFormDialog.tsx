@@ -71,61 +71,66 @@ export function FactoryFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {factory ? t('factories.editFactory') : t('factories.newFactory')}
-          </DialogTitle>
-          <DialogDescription>
-            {t('factories.formDescription')}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {factory ? t('factories.editFactory') : t('factories.newFactory')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('factories.formDescription')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="factory-name">{t('common.name')}</Label>
-              <Input id="factory-name" {...form.register('name')} />
-              <FormFieldError error={form.formState.errors.name} />
-            </div>
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="factory-name">{t('common.name')}</Label>
+                <Input id="factory-name" {...form.register('name')} />
+                <FormFieldError error={form.formState.errors.name} />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="factory-code">{t('common.code')}</Label>
-              <Input
-                id="factory-code"
-                className="uppercase"
-                {...form.register('code')}
+              <div className="space-y-2">
+                <Label htmlFor="factory-code">{t('common.code')}</Label>
+                <Input
+                  id="factory-code"
+                  className="uppercase"
+                  {...form.register('code')}
+                />
+                <FormFieldError error={form.formState.errors.code} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="factory-location">{t('common.location')}</Label>
+                <Input id="factory-location" {...form.register('location')} />
+              </div>
+
+              <FormCheckboxField
+                id="factory-active"
+                label={t('factories.activeFactory')}
+                checked={isActive}
+                onCheckedChange={(checked) =>
+                  form.setValue('is_active', checked)
+                }
               />
-              <FormFieldError error={form.formState.errors.code} />
-            </div>
+            </DialogBody>
 
-            <div className="space-y-2">
-              <Label htmlFor="factory-location">{t('common.location')}</Label>
-              <Input id="factory-location" {...form.register('location')} />
-            </div>
-
-            <FormCheckboxField
-              id="factory-active"
-              label={t('factories.activeFactory')}
-              checked={isActive}
-              onCheckedChange={(checked) => form.setValue('is_active', checked)}
-            />
-          </DialogBody>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('common.save')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? t('common.saving') : t('common.save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

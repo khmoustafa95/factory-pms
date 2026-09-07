@@ -9,8 +9,8 @@ Factories and leadership rely on weekly/monthly reports. Problems surface late. 
 | Role             | Scope                    | Key jobs                                         |
 | ---------------- | ------------------------ | ------------------------------------------------ |
 | Company Director | All factories / projects | Discuss & approve proposals, executive dashboard |
-| Factory Manager  | Own factory              | Propose projects + files, discuss with director  |
-| Project Manager  | Assigned projects        | Execute WBS after approval, escalate             |
+| Factory Manager  | Own factory              | Propose, design phases, start execution          |
+| Project Manager  | Assigned projects        | Prepare tasks after approval, execute, escalate  |
 
 ## Personas (from PRD)
 
@@ -35,7 +35,7 @@ Factories and leadership rely on weekly/monthly reports. Problems surface late. 
 - **US-01** — Director sees all factories + auto progress
 - **US-02** — Factory Manager submits proposal (+ supporting files, assigned PM) → `proposed`
 - **US-03** — Company Director discusses with Factory Manager via comments, then approve/reject with reason
-- **US-04** — PM phases with weights summing to 100%
+- **US-04** — Factory Manager phases with weights summing to 100%
 - **US-05** — Tasks with statuses; blocked requires reason; Realtime
 - **US-06** — Comments on phase/task with author + role + time
 

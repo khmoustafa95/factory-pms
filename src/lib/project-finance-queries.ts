@@ -32,9 +32,7 @@ export async function invalidateProjectFinanceQueries(
 
 export async function getNextSortOrder(
   table:
-    | 'project_procurement_items'
-    | 'project_staff'
-    | 'project_expense_lines',
+    'project_procurement_items' | 'project_staff' | 'project_expense_lines',
   projectId: string,
 ): Promise<number> {
   const supabase = getSupabase()

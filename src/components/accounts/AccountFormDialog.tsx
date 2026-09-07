@@ -74,25 +74,26 @@ export function AccountFormDialog({
     [isCreate],
   )
 
-  const { form, createSubmitHandler, isDirty } = useFormDialog<AccountDialogFormValues>({
-    open,
-    resolver: zodResolver(schema),
-    defaultValues: {
-      email: '',
-      full_name: '',
-      role: defaultRole,
-      factory_id: lockFactoryId ?? null,
-      is_active: true,
-    },
-    getValues: () => ({
-      email: account?.email ?? '',
-      full_name: account?.full_name ?? '',
-      role: account?.role ?? defaultRole,
-      factory_id: account?.factory_id ?? lockFactoryId ?? null,
-      is_active: account?.is_active ?? true,
-    }),
-    resetDependencies: [account, lockFactoryId, defaultRole, isCreate],
-  })
+  const { form, createSubmitHandler, isDirty } =
+    useFormDialog<AccountDialogFormValues>({
+      open,
+      resolver: zodResolver(schema),
+      defaultValues: {
+        email: '',
+        full_name: '',
+        role: defaultRole,
+        factory_id: lockFactoryId ?? null,
+        is_active: true,
+      },
+      getValues: () => ({
+        email: account?.email ?? '',
+        full_name: account?.full_name ?? '',
+        role: account?.role ?? defaultRole,
+        factory_id: account?.factory_id ?? lockFactoryId ?? null,
+        is_active: account?.is_active ?? true,
+      }),
+      resetDependencies: [account, lockFactoryId, defaultRole, isCreate],
+    })
 
   const { discardOpen, handleOpenChange, confirmDiscard, cancelDiscard } =
     useFormDialogClose(isDirty, onOpenChange)
@@ -135,112 +136,117 @@ export function AccountFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {isCreate ? t('accounts.newAccount') : t('accounts.editAccount')}
-          </DialogTitle>
-          <DialogDescription>
-            {isCreate
-              ? t('accounts.createDescription')
-              : (account?.email ?? '')}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isCreate ? t('accounts.newAccount') : t('accounts.editAccount')}
+            </DialogTitle>
+            <DialogDescription>
+              {isCreate
+                ? t('accounts.createDescription')
+                : (account?.email ?? '')}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <DialogBody className="space-y-4">
-            {isCreate ? (
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              {isCreate ? (
+                <div className="space-y-2">
+                  <Label htmlFor="account-email">{t('common.email')}</Label>
+                  <Input
+                    id="account-email"
+                    type="email"
+                    autoComplete="off"
+                    {...form.register('email')}
+                  />
+                  <FormFieldError error={form.formState.errors.email} />
+                </div>
+              ) : null}
+
               <div className="space-y-2">
-                <Label htmlFor="account-email">{t('common.email')}</Label>
-                <Input
-                  id="account-email"
-                  type="email"
-                  autoComplete="off"
-                  {...form.register('email')}
-                />
-                <FormFieldError error={form.formState.errors.email} />
+                <Label htmlFor="account-name">{t('accounts.fullName')}</Label>
+                <Input id="account-name" {...form.register('full_name')} />
+                <FormFieldError error={form.formState.errors.full_name} />
               </div>
-            ) : null}
 
-            <div className="space-y-2">
-              <Label htmlFor="account-name">{t('accounts.fullName')}</Label>
-              <Input id="account-name" {...form.register('full_name')} />
-              <FormFieldError error={form.formState.errors.full_name} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('accounts.role')}</Label>
-              <Select
-                value={selectedRole}
-                onValueChange={(value) => {
-                  if (allowedRoles.includes(value as UserRole)) {
-                    form.setValue('role', value as UserRole)
-                  }
-                }}
-                disabled={!isCreate && allowedRoles.length <= 1}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {allowedRoles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {getRoleLabel(t, role)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('common.factory')}</Label>
-              <Select
-                value={selectedFactoryId ?? undefined}
-                onValueChange={(value) => form.setValue('factory_id', value)}
-                disabled={factoryLocked}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {factories
-                    .filter((factory) => factory.is_active)
-                    .map((factory) => (
-                      <SelectItem key={factory.id} value={factory.id}>
-                        {formatFactoryLabel(factory)}
+              <div className="space-y-2">
+                <Label>{t('accounts.role')}</Label>
+                <Select
+                  value={selectedRole}
+                  onValueChange={(value) => {
+                    if (allowedRoles.includes(value as UserRole)) {
+                      form.setValue('role', value as UserRole)
+                    }
+                  }}
+                  disabled={!isCreate && allowedRoles.length <= 1}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allowedRoles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {getRoleLabel(t, role)}
                       </SelectItem>
                     ))}
-                </SelectContent>
-              </Select>
-              <FormFieldError error={form.formState.errors.factory_id} />
-            </div>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <FormCheckboxField
-              id="account-active"
-              label={t('accounts.activeAccount')}
-              checked={isActive}
-              onCheckedChange={(checked) => form.setValue('is_active', checked)}
-            />
-          </DialogBody>
+              <div className="space-y-2">
+                <Label>{t('common.factory')}</Label>
+                <Select
+                  value={selectedFactoryId ?? undefined}
+                  onValueChange={(value) => form.setValue('factory_id', value)}
+                  disabled={factoryLocked}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {factories
+                      .filter((factory) => factory.is_active)
+                      .map((factory) => (
+                        <SelectItem key={factory.id} value={factory.id}>
+                          {formatFactoryLabel(factory)}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <FormFieldError error={form.formState.errors.factory_id} />
+              </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? t('common.saving')
-                : isCreate
-                  ? t('accounts.createAccount')
-                  : t('common.save')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+              <FormCheckboxField
+                id="account-active"
+                label={t('accounts.activeAccount')}
+                checked={isActive}
+                onCheckedChange={(checked) =>
+                  form.setValue('is_active', checked)
+                }
+              />
+            </DialogBody>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting
+                  ? t('common.saving')
+                  : isCreate
+                    ? t('accounts.createAccount')
+                    : t('common.save')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

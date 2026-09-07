@@ -123,110 +123,110 @@ export function TaskCompleteDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('wbs.markDone')}</DialogTitle>
-          <DialogDescription>
-            {taskTitle}
-            {dueDate ? (
-              <>
-                {' · '}
-                {t('wbs.dueDate')}: {formatLocalizedDate(dueDate, locale)}
-              </>
-            ) : null}
-            {' · '}
-            {t('wbs.expectedCost')}: {Number(expectedCost).toFixed(2)}
-          </DialogDescription>
-        </DialogHeader>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('wbs.markDone')}</DialogTitle>
+            <DialogDescription>
+              {taskTitle}
+              {dueDate ? (
+                <>
+                  {' · '}
+                  {t('wbs.dueDate')}: {formatLocalizedDate(dueDate, locale)}
+                </>
+              ) : null}
+              {' · '}
+              {t('wbs.expectedCost')}: {Number(expectedCost).toFixed(2)}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={handleSubmit}
-        >
-          <DialogBody className="space-y-4">
-            {showImpact ? (
-              <StatusMessage variant="info">
-                {t('wbs.taskCompleteImpact', {
-                  weight: taskWeightPercent,
-                  phase: phaseName,
-                  openTasks: openTaskCount,
-                })}
-              </StatusMessage>
-            ) : null}
+          <form
+            className="flex min-h-0 flex-1 flex-col"
+            onSubmit={handleSubmit}
+          >
+            <DialogBody className="space-y-4">
+              {showImpact ? (
+                <StatusMessage variant="info">
+                  {t('wbs.taskCompleteImpact', {
+                    weight: taskWeightPercent,
+                    phase: phaseName,
+                    openTasks: openTaskCount,
+                  })}
+                </StatusMessage>
+              ) : null}
 
-            <div className="space-y-2">
-              <Label htmlFor="complete-actual-end">
-                {t('wbs.actualEndDate')}
-              </Label>
-              <DatePickerField
-                id="complete-actual-end"
-                control={form.control}
-                name="actual_end_date"
-              />
-              <FormFieldError error={form.formState.errors.actual_end_date} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="complete-actual-cost">
-                {t('wbs.actualCost')}
-              </Label>
-              <Input
-                id="complete-actual-cost"
-                type="number"
-                min="0"
-                step="0.01"
-                {...form.register('actual_cost', { valueAsNumber: true })}
-              />
-              <FormFieldError error={form.formState.errors.actual_cost} />
-            </div>
-
-            {scheduleOverrun ? (
               <div className="space-y-2">
-                <Label htmlFor="complete-schedule-reason">
-                  {t('wbs.scheduleDeviationReason')}
+                <Label htmlFor="complete-actual-end">
+                  {t('wbs.actualEndDate')}
                 </Label>
-                <Textarea
-                  id="complete-schedule-reason"
-                  rows={3}
-                  {...form.register('schedule_deviation_reason')}
+                <DatePickerField
+                  id="complete-actual-end"
+                  control={form.control}
+                  name="actual_end_date"
                 />
-                <FormFieldError
-                  error={form.formState.errors.schedule_deviation_reason}
-                />
+                <FormFieldError error={form.formState.errors.actual_end_date} />
               </div>
-            ) : null}
 
-            {financialOverrun ? (
               <div className="space-y-2">
-                <Label htmlFor="complete-financial-reason">
-                  {t('wbs.financialDeviationReason')}
+                <Label htmlFor="complete-actual-cost">
+                  {t('wbs.actualCost')}
                 </Label>
-                <Textarea
-                  id="complete-financial-reason"
-                  rows={3}
-                  {...form.register('financial_deviation_reason')}
+                <Input
+                  id="complete-actual-cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  {...form.register('actual_cost', { valueAsNumber: true })}
                 />
-                <FormFieldError
-                  error={form.formState.errors.financial_deviation_reason}
-                />
+                <FormFieldError error={form.formState.errors.actual_cost} />
               </div>
-            ) : null}
-          </DialogBody>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? t('common.saving') : t('wbs.markDone')}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
+              {scheduleOverrun ? (
+                <div className="space-y-2">
+                  <Label htmlFor="complete-schedule-reason">
+                    {t('wbs.scheduleDeviationReason')}
+                  </Label>
+                  <Textarea
+                    id="complete-schedule-reason"
+                    rows={3}
+                    {...form.register('schedule_deviation_reason')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.schedule_deviation_reason}
+                  />
+                </div>
+              ) : null}
+
+              {financialOverrun ? (
+                <div className="space-y-2">
+                  <Label htmlFor="complete-financial-reason">
+                    {t('wbs.financialDeviationReason')}
+                  </Label>
+                  <Textarea
+                    id="complete-financial-reason"
+                    rows={3}
+                    {...form.register('financial_deviation_reason')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.financial_deviation_reason}
+                  />
+                </div>
+              ) : null}
+            </DialogBody>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+              >
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? t('common.saving') : t('wbs.markDone')}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
       </Dialog>
       <DiscardChangesDialog
         open={discardOpen}

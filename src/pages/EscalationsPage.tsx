@@ -114,10 +114,7 @@ export function EscalationsPage() {
           label: t('common.factory'),
           value: listState.filters.factoryId,
           onChange: (value: string) => listState.setFilter('factoryId', value),
-          options: buildFactoryFilterOptions(
-            factories,
-            t('list.allFactories'),
-          ),
+          options: buildFactoryFilterOptions(factories, t('list.allFactories')),
         },
       ]
     : []
@@ -131,10 +128,7 @@ export function EscalationsPage() {
       return false
     }
 
-    return canGovernExecution(
-      { factory_id: task.projects.factory_id },
-      profile,
-    )
+    return canGovernExecution({ factory_id: task.projects.factory_id }, profile)
   }
 
   const renderActions = (task: EscalationItem) => (
@@ -148,11 +142,7 @@ export function EscalationsPage() {
           {t('escalations.acknowledge')}
         </Button>
       ) : null}
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => setSelectedTask(task)}
-      >
+      <Button size="sm" variant="outline" onClick={() => setSelectedTask(task)}>
         {t('common.escalate')}
       </Button>
     </div>

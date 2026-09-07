@@ -21,6 +21,7 @@ interface ProjectStartExecutionDialogProps {
   project: Project
   pmName: string
   fundingReceived: number
+  taskCount: number
   readinessReasons: ExecutionReadinessReason[]
   onConfirm: () => Promise<void>
   isSubmitting: boolean
@@ -32,6 +33,7 @@ export function ProjectStartExecutionDialog({
   project,
   pmName,
   fundingReceived,
+  taskCount,
   readinessReasons,
   onConfirm,
   isSubmitting,
@@ -41,6 +43,7 @@ export function ProjectStartExecutionDialog({
   const budget = Number(project.budget ?? 0)
   const underfunded = budget > 0 && fundingReceived < budget - 0.009
   const ready = readinessReasons.length === 0
+  const noTasks = taskCount === 0
 
   const handleConfirm = async () => {
     await onConfirm()
@@ -96,6 +99,12 @@ export function ProjectStartExecutionDialog({
               {t('projects.startDialog.fundingWarning')}
             </StatusMessage>
           ) : null}
+
+          {ready && noTasks ? (
+            <StatusMessage variant="warning">
+              {t('projects.startDialog.noTasksWarning')}
+            </StatusMessage>
+          ) : null}
         </DialogBody>
 
         <DialogFooter>
@@ -112,9 +121,7 @@ export function ProjectStartExecutionDialog({
             onClick={() => void handleConfirm()}
           >
             <Play className="size-4" />
-            {isSubmitting
-              ? t('common.submitting')
-              : t('common.startExecution')}
+            {isSubmitting ? t('common.submitting') : t('common.startExecution')}
           </Button>
         </DialogFooter>
       </DialogContent>

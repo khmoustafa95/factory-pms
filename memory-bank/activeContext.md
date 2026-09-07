@@ -2,10 +2,25 @@
 
 ## Current focus
 
+WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
+
+Projects list search: PostgREST `or()` cannot parse dotted embed columns (`factories.name`). Search now matches project title/description/code plus factory ids from a separate factories query.
+
+Budget change-request review: director-only approve/reject was failing on `review_project_change` because a `CASE` of string literals inferred `text` instead of `change_request_status`. Fixed locally via `20260907120000_fix_review_project_change_status_cast.sql`.
+
+On-prem production runbook: `docs/on-prem-production.md` (Arabic). Official hosting on a **Windows PC that also runs other office work** — not Ubuntu Server; data stays on-prem; remote sites wait for VPN.
+
+Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user stories vs PRD US-01–US-06, plus post-approval finance/lifecycle stories.
+
 **All project finance is post-approval:** proposal screens have no funding or operations CRUD; those belong on the Finance tab after `approved`.
 
 ## Recent changes
 
+- [2026-09-07] WBS role handoff: FM owns phases (`can_manage_project_phases`); assigned PM owns tasks including `approved`; trigger keeps task status `todo` until start; `phases_ready` inbox event. Planning checklist on overview; Start dialog always available to FM with readiness reasons + empty-task warning. Kanban `canExecuteTasks` only after `in_progress`. Migration `20260907140000_wbs_role_handoff.sql` applied locally (`supabase db push --local`). `npm run verify` passed.
+- [2026-09-07] Projects list search (`Tes`) failed with PostgREST `PGRST100` / `failed to parse logic tree` at `factories.name` inside `.or()`. `or()` treats `factories` as a column and then expects an operator, not `.name`. Search now uses project `title`/`description`/`code` plus `factory_id.in.(…)` from a factories name/code query. Same pattern on escalations (`projects.title`). Quoted ilike values. Native search-cancel hidden so only one clear X. `npm run verify` passed.
+- [2026-09-07] Director approve/reject of a pending budget (or schedule) change request failed with `column "status" is of type change_request_status but expression is of type text`. Root cause: `CASE WHEN p_approve THEN 'approved' ELSE 'rejected' END` in `review_project_change` infers `text`. Cast the CASE to `change_request_status`. Migration `20260907120000_fix_review_project_change_status_cast.sql` applied with `supabase db push --local`. Flow is otherwise as designed: FM/assigned PM request after approval → in-app notify all company directors → director reviews on project overview (no dashboard KPI queue).
+- [2026-09-07] Added `docs/on-prem-production.md`: official on-prem guide for a shared Windows host (Docker Desktop + Caddy, no Ubuntu Server), LAN-first then VPN for remote PCs, 200-user cap, director-operable backups. Linked from README and staging doc.
+- [2026-09-07] Generated `docs/user-stories.md` for product review: PRD US-01–US-06 with current acceptance, plus US-A01–US-A93 covering auth, org, proposals, lifecycle, WBS, finance, escalations, notifications, dashboard, settings. Sourced from Notion PRD + implemented RBAC/UI.
 - [2026-09-06] Funding also moved after approval: `canManageProjectFunding` + RLS `can_write_project_funding` only in `approved`/`in_progress`/`paused` (director/FM). Proposal detail no longer shows a finance panel or funding summary; approve dialog drops proposed-funding total. Migration `20260906130000_funding_after_approval.sql`.
 - [2026-09-06] Operations first split: procurement/staff/overhead writes only after approval. Superseded for funding by the entry above.
 - [2026-09-06] Duplicate `(factory_id, code)` insert/update maps `projects_factory_code_uidx` to `validation.projectCodeTaken` (ar/en). Toast mapping in `mutation-error`; form field error in `ProjectFormDialog`; save/update callers pass `t`. `npm run verify` + mutation-error tests passed.
@@ -28,11 +43,14 @@
 
 ## Next steps (concrete)
 
-1. Smoke the three demo roles in the browser (FM: submit → start with funding warning → request close; PM: WBS write only; director: approve, confirm close, review change, acknowledge escalation)
-2. Apply `20260906130000_funding_after_approval.sql` (and earlier lifecycle/finance/URL migrations) to staging/live Supabase
-3. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
-4. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
+1. Follow `docs/on-prem-production.md` on the Windows host: power/Docker caps/firewall, then production secrets (not demo JWT), then LAN users only
+2. Choose VPN (Tailscale vs WireGuard) before creating accounts at unlinked remote sites
+3. Smoke the three demo roles in the browser (FM: approve wait → design phases → start with funding/no-task warning; PM: wait for phases → prepare tasks → Kanban after start; director: approve, confirm close, review change, acknowledge escalation)
+4. Apply `20260906130000_funding_after_approval.sql` (and earlier lifecycle/finance/URL migrations) when a non-dev database is created — on-prem production uses a clean migration apply, not `db reset`
+5. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
+6. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
 
 ## Open questions
 
-- Hosting: company on-prem / self-hosted Supabase (preferred for air-gapped) vs cloud SPA + self-hosted API
+- VPN choice for unlinked remote sites (Tailscale vs site-to-site WireGuard) — not decided in the runbook
+- Later hardware upgrade: same Docker volumes + keep `pms.factory.local`; OS of the future server can differ

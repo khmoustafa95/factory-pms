@@ -44,9 +44,7 @@ export function VirtualizedTable({
   const paddingTop = items.length > 0 ? items[0].start : 0
   const lastItem = items.at(-1)
   const paddingBottom =
-    lastItem && rowCount > 0
-      ? virtualizer.getTotalSize() - lastItem.end
-      : 0
+    lastItem && rowCount > 0 ? virtualizer.getTotalSize() - lastItem.end : 0
 
   return (
     <div

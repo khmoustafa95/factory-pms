@@ -178,58 +178,58 @@ export function BlockedProjectsBarChart({
     <div className="space-y-3">
       <div className="h-56 w-full min-w-0" dir="ltr">
         <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
-        >
-          <XAxis type="number" allowDecimals={false} tickLine={false} />
-          <YAxis
-            type="category"
-            dataKey="shortTitle"
-            width={120}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 12 }}
-          />
-          <Tooltip
-            formatter={(value) => [
-              typeof value === 'number' ? value : Number(value ?? 0),
-              '',
-            ]}
-            labelFormatter={(_, payload) => {
-              const row = payload?.[0]?.payload as
-                { projectTitle?: string } | undefined
-              return row?.projectTitle ?? ''
-            }}
-            contentStyle={{
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--card)',
-              color: 'var(--card-foreground)',
-              direction: dir,
-            }}
-          />
-          <Bar
-            dataKey="blockedTaskCount"
-            fill="var(--destructive)"
-            radius={[0, 4, 4, 0]}
-            cursor={onBarClick ? 'pointer' : undefined}
-            onClick={(entry) => {
-              const projectId =
-                typeof entry === 'object' &&
-                entry !== null &&
-                'projectId' in entry &&
-                typeof entry.projectId === 'string'
-                  ? entry.projectId
-                  : null
-              if (projectId && onBarClick) {
-                onBarClick(projectId)
-              }
-            }}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
+          >
+            <XAxis type="number" allowDecimals={false} tickLine={false} />
+            <YAxis
+              type="category"
+              dataKey="shortTitle"
+              width={120}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 12 }}
+            />
+            <Tooltip
+              formatter={(value) => [
+                typeof value === 'number' ? value : Number(value ?? 0),
+                '',
+              ]}
+              labelFormatter={(_, payload) => {
+                const row = payload?.[0]?.payload as
+                  { projectTitle?: string } | undefined
+                return row?.projectTitle ?? ''
+              }}
+              contentStyle={{
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--card)',
+                color: 'var(--card-foreground)',
+                direction: dir,
+              }}
+            />
+            <Bar
+              dataKey="blockedTaskCount"
+              fill="var(--destructive)"
+              radius={[0, 4, 4, 0]}
+              cursor={onBarClick ? 'pointer' : undefined}
+              onClick={(entry) => {
+                const projectId =
+                  typeof entry === 'object' &&
+                  entry !== null &&
+                  'projectId' in entry &&
+                  typeof entry.projectId === 'string'
+                    ? entry.projectId
+                    : null
+                if (projectId && onBarClick) {
+                  onBarClick(projectId)
+                }
+              }}
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
       {onBarClick ? (
         <ul className="flex flex-wrap gap-2">
