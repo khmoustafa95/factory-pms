@@ -47,7 +47,11 @@ export function ProjectReassignPmDialog({
   isSubmitting,
 }: ProjectReassignPmDialogProps) {
   const { t } = useTranslation()
-  const schema = useValidationSchema(createReassignPmSchema)
+  const isFirstAssign = currentPmId == null
+  const schema = useValidationSchema(
+    (translator) => createReassignPmSchema(translator, !isFirstAssign),
+    [isFirstAssign],
+  )
   const { form, createSubmitHandler, isDirty } = useFormDialog({
     open,
     resolver: zodResolver(schema),
@@ -68,9 +72,15 @@ export function ProjectReassignPmDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('projects.reassignPm.title')}</DialogTitle>
+            <DialogTitle>
+              {isFirstAssign
+                ? t('projects.reassignPm.assignTitle')
+                : t('projects.reassignPm.title')}
+            </DialogTitle>
             <DialogDescription>
-              {t('projects.reassignPm.description')}
+              {isFirstAssign
+                ? t('projects.reassignPm.assignDescription')
+                : t('projects.reassignPm.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -82,7 +92,7 @@ export function ProjectReassignPmDialog({
               <div className="space-y-2">
                 <Label htmlFor="reassign-pm">{t('projects.assignedPm')}</Label>
                 <Select
-                  value={selected}
+                  value={selected || undefined}
                   onValueChange={(value) =>
                     form.setValue('assigned_pm_id', value, {
                       shouldDirty: true,
@@ -90,7 +100,7 @@ export function ProjectReassignPmDialog({
                   }
                 >
                   <SelectTrigger id="reassign-pm">
-                    <SelectValue />
+                    <SelectValue placeholder={t('projects.assignedPm')} />
                   </SelectTrigger>
                   <SelectContent>
                     {managers.map((manager) => (
@@ -103,17 +113,19 @@ export function ProjectReassignPmDialog({
                 <FormFieldError error={form.formState.errors.assigned_pm_id} />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="reassign-reason">
-                  {t('projects.reassignPm.reason')}
-                </Label>
-                <Textarea
-                  id="reassign-reason"
-                  rows={3}
-                  {...form.register('reason')}
-                />
-                <FormFieldError error={form.formState.errors.reason} />
-              </div>
+              {isFirstAssign ? null : (
+                <div className="space-y-2">
+                  <Label htmlFor="reassign-reason">
+                    {t('projects.reassignPm.reason')}
+                  </Label>
+                  <Textarea
+                    id="reassign-reason"
+                    rows={3}
+                    {...form.register('reason')}
+                  />
+                  <FormFieldError error={form.formState.errors.reason} />
+                </div>
+              )}
             </DialogBody>
 
             <DialogFooter>
@@ -127,7 +139,9 @@ export function ProjectReassignPmDialog({
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting
                   ? t('common.submitting')
-                  : t('projects.reassignPm.submit')}
+                  : isFirstAssign
+                    ? t('projects.reassignPm.assignSubmit')
+                    : t('projects.reassignPm.submit')}
               </Button>
             </DialogFooter>
           </form>

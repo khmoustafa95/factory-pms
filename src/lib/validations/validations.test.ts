@@ -46,7 +46,11 @@ describe('localized validation schemas', () => {
       currency: 'USD',
       proposed_start_date: '2024-01-10',
       proposed_end_date: '2024-01-01',
-      assigned_pm_id: '123e4567-e89b-12d3-a456-426614174000',
+      announcement_date: '',
+      announcing_entity: '',
+      priority: '',
+      research_opinion: '',
+      board_opinion: '',
     })
 
     expect(result.success).toBe(false)
@@ -57,9 +61,9 @@ describe('localized validation schemas', () => {
     }
   })
 
-  it('requires a valid project code, description, budget, and PM on submit', () => {
+  it('requires a valid project code, description, and budget on submit, not a PM', () => {
     const t = createTranslator(en)
-    const result = createSubmitProjectSchema(t).safeParse({
+    const incomplete = createSubmitProjectSchema(t).safeParse({
       code: 'x',
       title: 'A valid title',
       description: 'hi',
@@ -67,16 +71,36 @@ describe('localized validation schemas', () => {
       currency: 'USD',
       proposed_start_date: '2024-01-01',
       proposed_end_date: '2024-01-10',
-      assigned_pm_id: '',
+      announcement_date: '',
+      announcing_entity: '',
+      priority: '',
+      research_opinion: '',
+      board_opinion: '',
     })
 
-    expect(result.success).toBe(false)
-    if (!result.success) {
-      const messages = result.error.issues.map((issue) => issue.message)
+    expect(incomplete.success).toBe(false)
+    if (!incomplete.success) {
+      const messages = incomplete.error.issues.map((issue) => issue.message)
       expect(messages).toContain('Code must be at least 2 characters')
       expect(messages).toContain('Description must be at least 3 characters')
       expect(messages).toContain('Budget is required')
-      expect(messages).toContain('Assigned project manager is required')
+      expect(messages).not.toContain('Assigned project manager is required')
     }
+
+    const complete = createSubmitProjectSchema(t).safeParse({
+      code: 'PRJ-001',
+      title: 'A valid title',
+      description: 'A valid description',
+      budget: '1000',
+      currency: 'USD',
+      proposed_start_date: '2024-01-01',
+      proposed_end_date: '2024-01-10',
+      announcement_date: '',
+      announcing_entity: '',
+      priority: '',
+      research_opinion: '',
+      board_opinion: '',
+    })
+    expect(complete.success).toBe(true)
   })
 })

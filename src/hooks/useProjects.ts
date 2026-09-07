@@ -1,4 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type {
+  ProjectUpsertKey,
+  ProjectWritePayload,
+} from '@/lib/import/projects-import'
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase'
 import {
   buildIlikeClause,
@@ -158,6 +162,99 @@ export function useCommandProjectSearch(search: string, enabled: boolean) {
       }
 
       return data
+    },
+  })
+}
+
+async function fetchAllProjectUpsertKeys(): Promise<ProjectUpsertKey[]> {
+  const supabase = getSupabase()
+  const pageSize = 1000
+  const rows: ProjectUpsertKey[] = []
+  let from = 0
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('factory_id, code')
+      .range(from, from + pageSize - 1)
+
+    if (error) {
+      throw error
+    }
+
+    const page = data ?? []
+    rows.push(...page)
+    if (page.length < pageSize) {
+      break
+    }
+    from += pageSize
+  }
+
+  return rows
+}
+
+export function useProjectUpsertKeys(enabled: boolean) {
+  return useQuery({
+    queryKey: queryKeys.projectUpsertKeys,
+    enabled,
+    queryFn: fetchAllProjectUpsertKeys,
+  })
+}
+
+export function useUpsertProjects() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      payloads,
+      userId,
+    }: {
+      payloads: ProjectWritePayload[]
+      userId: string
+    }) => {
+      const supabase = getSupabase()
+      const existing = await fetchAllProjectUpsertKeys()
+      const existingKeys = new Set(
+        existing.map(
+          (key) => `${key.factory_id}:${key.code.trim().toUpperCase()}`,
+        ),
+      )
+
+      const { data, error } = await supabase
+        .from('projects')
+        .upsert(payloads, { onConflict: 'factory_id,code' })
+        .select('id, factory_id, code, proposed_by')
+
+      if (error) {
+        throw error
+      }
+
+      const insertIds = (data ?? [])
+        .filter(
+          (row) =>
+            !existingKeys.has(`${row.factory_id}:${row.code.toUpperCase()}`),
+        )
+        .map((row) => row.id)
+
+      if (insertIds.length > 0) {
+        const { error: proposedByError } = await supabase
+          .from('projects')
+          .update({ proposed_by: userId })
+          .in('id', insertIds)
+          .is('proposed_by', null)
+
+        if (proposedByError) {
+          throw proposedByError
+        }
+      }
+
+      return data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectUpsertKeys,
+      })
     },
   })
 }

@@ -66,9 +66,13 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
     key: 'projects.rpcErrors.tasksNotDone',
   },
   {
+    pattern: /assigned pm is required before starting execution/i,
+    key: 'projects.executionNotReady.missing_assigned_pm',
+  },
+  {
     pattern:
       /assigned pm is required before (submitting|resubmitting) proposal/i,
-    key: 'projects.pmRequiredToSubmit',
+    key: 'validation.assignedPmRequired',
   },
   {
     pattern: /rejection reason must be at least 3 characters/i,
@@ -145,6 +149,11 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
   {
     pattern: /cannot reassign pm on a completed project/i,
     key: 'projects.rpcErrors.reassignCompleted',
+  },
+  {
+    pattern:
+      /cannot assign pm unless the project is approved, in progress, or paused/i,
+    key: 'projects.rpcErrors.reassignWrongStatus',
   },
   {
     pattern: /assigned pm must be an active project manager in this factory/i,

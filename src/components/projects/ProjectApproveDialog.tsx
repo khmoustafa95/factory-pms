@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useTranslation } from '@/contexts/LocaleContext'
-import { formatLocalizedBudget, formatLocalizedDate } from '@/lib/i18n-format'
+import { formatLocalizedBudget, formatLocalizedDate, getProjectPriorityLabel } from '@/lib/i18n-format'
 import type { Project } from '@/types/database'
 
 interface ProjectApproveDialogProps {
@@ -73,6 +73,27 @@ export function ProjectApproveDialog({
                 {t('common.timeline')}:{' '}
                 {formatLocalizedDate(project.proposed_start_date, locale)} →{' '}
                 {formatLocalizedDate(project.proposed_end_date, locale)}
+              </p>
+            ) : null}
+            {project.announcing_entity ? (
+              <p className="text-muted-foreground">
+                {t('projects.announcingEntity')}: {project.announcing_entity}
+              </p>
+            ) : null}
+            {project.priority ? (
+              <p className="text-muted-foreground">
+                {t('projects.priority')}:{' '}
+                {getProjectPriorityLabel(t, project.priority)}
+              </p>
+            ) : null}
+            {project.research_opinion ? (
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {t('projects.researchOpinion')}: {project.research_opinion}
+              </p>
+            ) : null}
+            {project.board_opinion ? (
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {t('projects.boardOpinion')}: {project.board_opinion}
               </p>
             ) : null}
             <p className="text-muted-foreground">

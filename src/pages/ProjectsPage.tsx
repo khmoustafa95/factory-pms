@@ -1,11 +1,13 @@
-import { Check, Download, Eye, Layers, Lock, Plus, Send, X } from 'lucide-react'
+import { Check, Download, Eye, Layers, Lock, Plus, Send, Upload, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
+import { PageHeaderActions } from '@/components/PageHeaderActions'
 import { Badge } from '@/components/ui/badge'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
+import { ProjectImportDialog } from '@/components/projects/ProjectImportDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
@@ -55,6 +57,7 @@ import { buildProjectPath } from '@/lib/project-routes'
 import {
   formatLocalizedBudget,
   formatFactoryLabel,
+  getProjectPriorityLabel,
   getProjectStatusLabel,
 } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
@@ -125,6 +128,7 @@ export function ProjectsPage() {
   const completeProjectExecution = useCompleteProjectExecution()
   const requestCompletion = useRequestProjectCompletion()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -221,6 +225,26 @@ export function ProjectsPage() {
             value: (row) => formatFundingStatus(row),
           },
           {
+            header: t('projects.priority'),
+            value: (row) => getProjectPriorityLabel(t, row.priority, ''),
+          },
+          {
+            header: t('projects.announcementDate'),
+            value: (row) => row.announcement_date ?? '',
+          },
+          {
+            header: t('projects.announcingEntity'),
+            value: (row) => row.announcing_entity ?? '',
+          },
+          {
+            header: t('projects.researchOpinion'),
+            value: (row) => row.research_opinion ?? '',
+          },
+          {
+            header: t('projects.boardOpinion'),
+            value: (row) => row.board_opinion ?? '',
+          },
+          {
             header: t('common.timeline'),
             value: (row) => formatProjectSchedule(row, locale, t, notAvailable),
           },
@@ -250,15 +274,6 @@ export function ProjectsPage() {
     }
 
     return profile.factory_id
-  }
-
-  const ensureAssignedPm = (assignedPmId: string | null): boolean => {
-    if (assignedPmId) {
-      return true
-    }
-
-    toast.error(t('projects.pmRequiredToSubmit'))
-    return false
   }
 
   const uploadFilesForProject = async (projectId: string, files: File[]) => {
@@ -326,10 +341,6 @@ export function ProjectsPage() {
       return
     }
 
-    if (!ensureAssignedPm(values.assigned_pm_id)) {
-      throw new Error('PM_REQUIRED')
-    }
-
     try {
       if (editingProject) {
         await updateProject.mutateAsync({ id: editingProject.id, values })
@@ -356,10 +367,6 @@ export function ProjectsPage() {
     const userId = user?.id
 
     if (!userId) {
-      return
-    }
-
-    if (!ensureAssignedPm(project.assigned_pm_id)) {
       return
     }
 
@@ -652,18 +659,45 @@ export function ProjectsPage() {
                 : t('projects.pmDescription')
           }
           actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" onClick={handleExport}>
-                <Download className="size-4" />
-                {t('list.exportExcel')}
-              </Button>
-              {canManageProposals ? (
-                <Button onClick={openCreate}>
-                  <Plus className="size-4" />
-                  {t('common.newProposal')}
-                </Button>
-              ) : null}
-            </div>
+            <PageHeaderActions
+              primary={
+                canManageProposals
+                  ? {
+                      id: 'new-proposal',
+                      label: (
+                        <>
+                          <Plus className="size-4" />
+                          {t('common.newProposal')}
+                        </>
+                      ),
+                      onClick: openCreate,
+                    }
+                  : null
+              }
+              secondary={[
+                {
+                  id: 'export-projects',
+                  label: (
+                    <>
+                      <Download className="size-4" />
+                      {t('list.exportExcel')}
+                    </>
+                  ),
+                  onClick: handleExport,
+                },
+                {
+                  id: 'import-projects',
+                  label: (
+                    <>
+                      <Upload className="size-4" />
+                      {t('common.import')}
+                    </>
+                  ),
+                  hidden: !isDirector,
+                  onClick: () => setImportOpen(true),
+                },
+              ]}
+            />
           }
         />
       }
@@ -732,6 +766,12 @@ export function ProjectsPage() {
           </div>
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">
+              {t('projects.priority')}:{' '}
+            </span>
+            {getProjectPriorityLabel(t, project.priority, notAvailable)}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">
               {t('common.budget')}:{' '}
             </span>
             {formatLocalizedBudget(
@@ -772,6 +812,12 @@ export function ProjectsPage() {
       }}
       footer={
         <>
+          {isDirector ? (
+            <ProjectImportDialog
+              open={importOpen}
+              onOpenChange={setImportOpen}
+            />
+          ) : null}
           {canManageProposals ? (
             <ProjectFormDialog
               open={isCreateDialogOpen}
@@ -829,6 +875,7 @@ export function ProjectsPage() {
             <TableHead>{t('common.title')}</TableHead>
             {isDirector ? <TableHead>{t('common.factory')}</TableHead> : null}
             <TableHead>{t('common.status')}</TableHead>
+            <TableHead>{t('projects.priority')}</TableHead>
             <TableHead>{t('common.budget')}</TableHead>
             <TableHead>{t('projects.budgetUsed')}</TableHead>
             <TableHead>{t('projects.fundingStatus')}</TableHead>
@@ -874,6 +921,9 @@ export function ProjectsPage() {
               ) : null}
               <TableCell>
                 <ProjectStatusBadge status={project.status} />
+              </TableCell>
+              <TableCell>
+                {getProjectPriorityLabel(t, project.priority, notAvailable)}
               </TableCell>
               <TableCell>
                 {formatLocalizedBudget(

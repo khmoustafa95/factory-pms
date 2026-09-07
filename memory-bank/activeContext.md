@@ -2,7 +2,21 @@
 
 ## Current focus
 
-Factory Excel import (director): template download matching `factories` writable columns (`code`, `name`, `location`, `is_active`); upsert by `code`; reject the whole file on corrupt/mismatched structure or row errors.
+Project manager assignment moved from proposal submit to after approval. Execution cannot start without `assigned_pm_id`. Factory manager assigns (or reassigns) via `reassign_project_pm`. Proposal form no longer includes a PM field.
+
+Projects Excel import (company director only) plus announcement fields remain in place. Manual browser smoke of PM-after-approval is left to the user if a live session is already open.
+
+WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
+
+Projects list search: PostgREST `or()` cannot parse dotted embed columns (`factories.name`). Search now matches project title/description/code plus factory ids from a separate factories query.
+
+Budget change-request review: director-only approve/reject was failing on `review_project_change` because a `CASE` of string literals inferred `text` instead of `change_request_status`. Fixed locally via `20260907120000_fix_review_project_change_status_cast.sql`.
+
+On-prem production runbook: `docs/on-prem-production.md` (Arabic). Official hosting on a **Windows PC that also runs other office work** — not Ubuntu Server; data stays on-prem; remote sites wait for VPN.
+
+Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user stories vs PRD US-01–US-06, plus post-approval finance/lifecycle stories.
+
+**All project finance is post-approval:** proposal screens have no funding or operations CRUD; those belong on the Finance tab after `approved`.
 
 WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
 
@@ -18,6 +32,8 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-07] PM assignment after approval: removed PM from proposal form/submit schema/payload. `transition_project_status` no longer requires PM to propose; start execution does. `reassign_project_pm` limited to approved/in_progress/paused; first assign has optional reason. Planning checklist adds Assign PM. Migration `20260907210000_pm_after_approval.sql` applied locally. `npm run verify` passed.
+- [2026-09-07] Projects Excel import + announcement fields: migration `20260907200000_project_announcement_fields.sql` (enum + 5 columns + director SELECT/INSERT/UPDATE all statuses including drafts). Form/detail/list/approve/export i18n. Director-only Import on Projects (`factory_code`+`code` upsert, status omitted so inserts stay `draft`). `npm run verify` passed; migration applied with `supabase db push --local`. User will smoke-test in the browser.
 - [2026-09-07] Factory Excel import: Import on Factories asks to download `factories-template.xlsx` (exceljs, dynamic import); CSV also accepted. Strict header set `code,name,location,is_active`; upsert on `code`; all-or-nothing reject. Browser: director Import dialog, template download advanced to dropzone, bad CSV rejected, valid CSV previewed `1 added / 1 updated`. `npm run verify` passed.
 - [2026-09-07] WBS role handoff: FM owns phases (`can_manage_project_phases`); assigned PM owns tasks including `approved`; trigger keeps task status `todo` until start; `phases_ready` inbox event. Planning checklist on overview; Start dialog always available to FM with readiness reasons + empty-task warning. Kanban `canExecuteTasks` only after `in_progress`. Migration `20260907140000_wbs_role_handoff.sql` applied locally (`supabase db push --local`). `npm run verify` passed.
 - [2026-09-07] Projects list search (`Tes`) failed with PostgREST `PGRST100` / `failed to parse logic tree` at `factories.name` inside `.or()`. `or()` treats `factories` as a column and then expects an operator, not `.name`. Search now uses project `title`/`description`/`code` plus `factory_id.in.(…)` from a factories name/code query. Same pattern on escalations (`projects.title`). Quoted ilike values. Native search-cancel hidden so only one clear X. `npm run verify` passed.
@@ -48,11 +64,11 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 1. Follow `docs/on-prem-production.md` on the Windows host: power/Docker caps/firewall, then production secrets (not demo JWT), then LAN users only
 2. Choose VPN (Tailscale vs WireGuard) before creating accounts at unlinked remote sites
-3. Smoke the three demo roles in the browser (FM: approve wait → design phases → start with funding/no-task warning; PM: wait for phases → prepare tasks → Kanban after start; director: approve, confirm close, review change, acknowledge escalation)
+3. Smoke PM-after-approval in the browser (FM: submit proposal without PM → director approve → Assign PM → start blocked until assigned)
 4. Apply `20260906130000_funding_after_approval.sql` (and earlier lifecycle/finance/URL migrations) when a non-dev database is created — on-prem production uses a clean migration apply, not `db reset`
 5. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
 6. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
-7. Optional: reuse `src/lib/import/` for projects/accounts Excel import with the same template + upsert contract
+7. Optional: reuse `src/lib/import/` for accounts Excel import with the same template + upsert contract
 
 ## Open questions
 

@@ -231,6 +231,7 @@ export type ExecutionReadinessReason =
   | 'phase_budget_exceeds_project'
   | 'missing_project_budget'
   | 'missing_project_schedule'
+  | 'missing_assigned_pm'
 
 export interface ExecutionReadiness {
   ready: boolean
@@ -248,6 +249,7 @@ export function getExecutionReadiness(
     | 'proposed_duration_unit'
     | 'actual_start_date'
     | 'actual_end_date'
+    | 'assigned_pm_id'
   >,
   phases: Array<
     Pick<
@@ -260,6 +262,10 @@ export function getExecutionReadiness(
 
   if (project.status !== 'approved') {
     reasons.push('not_approved')
+  }
+
+  if (!project.assigned_pm_id) {
+    reasons.push('missing_assigned_pm')
   }
 
   if (project.budget == null || Number(project.budget) <= 0) {

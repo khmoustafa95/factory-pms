@@ -793,9 +793,12 @@ export type Database = {
         Row: {
           actual_end_date: string | null
           actual_start_date: string | null
+          announcement_date: string | null
+          announcing_entity: string | null
           approved_at: string | null
           approved_by: string | null
           assigned_pm_id: string | null
+          board_opinion: string | null
           budget: number | null
           code: string
           completion_requested_at: string | null
@@ -805,8 +808,10 @@ export type Database = {
           description: string | null
           factory_id: string
           id: string
+          priority: Database['public']['Enums']['project_priority'] | null
           progress_percent: number
           proposed_by: string | null
+          research_opinion: string | null
           proposed_duration_unit:
             Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value: number | null
@@ -820,9 +825,12 @@ export type Database = {
         Insert: {
           actual_end_date?: string | null
           actual_start_date?: string | null
+          announcement_date?: string | null
+          announcing_entity?: string | null
           approved_at?: string | null
           approved_by?: string | null
           assigned_pm_id?: string | null
+          board_opinion?: string | null
           budget?: number | null
           code: string
           completion_requested_at?: string | null
@@ -832,8 +840,10 @@ export type Database = {
           description?: string | null
           factory_id: string
           id?: string
+          priority?: Database['public']['Enums']['project_priority'] | null
           progress_percent?: number
           proposed_by?: string | null
+          research_opinion?: string | null
           proposed_duration_unit?:
             Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value?: number | null
@@ -847,9 +857,12 @@ export type Database = {
         Update: {
           actual_end_date?: string | null
           actual_start_date?: string | null
+          announcement_date?: string | null
+          announcing_entity?: string | null
           approved_at?: string | null
           approved_by?: string | null
           assigned_pm_id?: string | null
+          board_opinion?: string | null
           budget?: number | null
           code?: string
           completion_requested_at?: string | null
@@ -859,8 +872,10 @@ export type Database = {
           description?: string | null
           factory_id?: string
           id?: string
+          priority?: Database['public']['Enums']['project_priority'] | null
           progress_percent?: number
           proposed_by?: string | null
+          research_opinion?: string | null
           proposed_duration_unit?:
             Database['public']['Enums']['duration_unit'] | null
           proposed_duration_value?: number | null
@@ -1487,6 +1502,7 @@ export type Database = {
       funding_source_type: 'internal' | 'loan' | 'grant' | 'partner' | 'other'
       phase_status: 'pending' | 'in_progress' | 'completed'
       procurement_status: 'planned' | 'ordered' | 'delivered' | 'cancelled'
+      project_priority: 'high' | 'medium' | 'low'
       project_status:
         | 'draft'
         | 'proposed'
@@ -1641,6 +1657,7 @@ export const Constants = {
       funding_source_type: ['internal', 'loan', 'grant', 'partner', 'other'],
       phase_status: ['pending', 'in_progress', 'completed'],
       procurement_status: ['planned', 'ordered', 'delivered', 'cancelled'],
+      project_priority: ['high', 'medium', 'low'],
       project_status: [
         'draft',
         'proposed',
@@ -1658,6 +1675,7 @@ export const Constants = {
 
 export type UserRole = Database['public']['Enums']['user_role']
 export type ProjectStatus = Database['public']['Enums']['project_status']
+export type ProjectPriority = Database['public']['Enums']['project_priority']
 export type PhaseStatus = Database['public']['Enums']['phase_status']
 export type DurationUnit = Database['public']['Enums']['duration_unit']
 export type TaskStatus = Database['public']['Enums']['task_status']

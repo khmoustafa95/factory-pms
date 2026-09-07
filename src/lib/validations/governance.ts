@@ -52,10 +52,15 @@ export function createChangeRequestSchema(t: ValidationTranslator) {
     })
 }
 
-export function createReassignPmSchema(t: ValidationTranslator) {
+export function createReassignPmSchema(
+  t: ValidationTranslator,
+  requireReason = true,
+) {
   return z.object({
     assigned_pm_id: z.string().uuid(t('validation.assignedPmRequired')),
-    reason: z.string().trim().min(3, t('validation.reassignReasonMin')),
+    reason: requireReason
+      ? z.string().trim().min(3, t('validation.reassignReasonMin'))
+      : z.string().trim(),
   })
 }
 

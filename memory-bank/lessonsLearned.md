@@ -4,9 +4,10 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-09-07 — Director catalog import of projects requires expanding table RLS beyond “non-draft”. `can_access_project` already allowed directors, but table SELECT was still non-draft-only, and INSERT was factory-manager-only — upsert would 403 or hide the new row.
 - 2026-09-07 — `exceljs` Node entry hangs or times out under Vitest/jsdom (`writeBuffer` / streams). Keep factory import unit tests on `string[][]` + CSV; alias Vite to `exceljs/dist/exceljs.min.js` for the SPA. Do not round-trip xlsx in unit tests.
 
-- 2026-09-07 — Letting the assigned PM own both phases and tasks after approval created a waiting loop: FM could not start until PM planned phases, and PM could not prepare tasks until start. Splitting design (FM phases) from preparation (PM tasks in `approved`) keeps one status and a visible three-step checklist.
+- 2026-09-07 — Assigning a PM on proposal submit blocked drafting before a manager existed and mixed staffing with scope review. Move first assign to `reassign_project_pm` after `approved`; keep start-execution blocked until `assigned_pm_id` is set (UI readiness + RPC).
 
 - 2026-09-07 — PostgREST `or()` does not accept dotted embed paths (`factories.name.ilike.%x%`). The parser treats `factories` as the column and then expects an operator (`eq`, `ilike`, …), so `.name` fails with `PGRST100` / `failed to parse logic tree`. Search related rows first and filter the parent with `factory_id.in.(…)` / `project_id.in.(…)`.
 

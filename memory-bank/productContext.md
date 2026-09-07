@@ -33,7 +33,7 @@ Factories and leadership rely on weekly/monthly reports. Problems surface late. 
 ## Key user stories
 
 - **US-01** — Director sees all factories + auto progress
-- **US-02** — Factory Manager submits proposal (+ supporting files, assigned PM) → `proposed`
+- **US-02** — Factory Manager submits proposal (+ supporting files) → `proposed`; assigned PM is required after approval before execution starts
 - **US-03** — Company Director discusses with Factory Manager via comments, then approve/reject with reason
 - **US-04** — Factory Manager phases with weights summing to 100%
 - **US-05** — Tasks with statuses; blocked requires reason; Realtime

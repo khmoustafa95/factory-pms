@@ -17,6 +17,7 @@ describe('execution readiness', () => {
     proposed_duration_unit: 'day' as const,
     actual_start_date: null,
     actual_end_date: null,
+    assigned_pm_id: 'pm1',
   }
 
   it('requires phases totaling 100% weight and budget', () => {
@@ -46,6 +47,28 @@ describe('execution readiness', () => {
       },
     ])
     expect(ready.ready).toBe(true)
+  })
+
+  it('is not ready without an assigned project manager', () => {
+    const notReady = getExecutionReadiness(
+      { ...baseProject, assigned_pm_id: null },
+      [
+        {
+          start_date: '2026-01-01',
+          end_date: '2026-02-15',
+          weight_percent: 60,
+          expected_budget: 600,
+        },
+        {
+          start_date: '2026-02-16',
+          end_date: '2026-03-31',
+          weight_percent: 40,
+          expected_budget: 400,
+        },
+      ],
+    )
+    expect(notReady.ready).toBe(false)
+    expect(notReady.reasons).toContain('missing_assigned_pm')
   })
 
   it('allows only factory manager of the same factory to start', () => {

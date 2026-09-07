@@ -1,8 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
-import { useWatch } from 'react-hook-form'
-import { AccountFormDialog } from '@/components/accounts/AccountFormDialog'
-import { GeneratedPasswordDialog } from '@/components/accounts/GeneratedPasswordDialog'
+import { useWatch, type Resolver } from 'react-hook-form'
 import { DatePickerField } from '@/components/DatePicker'
 import { DiscardChangesDialog } from '@/components/DiscardChangesDialog'
 import { FormFieldError } from '@/components/FormFieldError'
@@ -28,27 +26,24 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/contexts/LocaleContext'
-import { useCreateAccount } from '@/hooks/useAccounts'
 import { useFormDialog } from '@/hooks/useFormDialog'
 import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
-import { useFactoryProjectManagers } from '@/hooks/useProjects'
 import { getPhaseDurationDays } from '@/lib/duration'
 import {
   formatNullableSelectValue,
   NULL_SELECT_VALUE,
   parseNullableSelectValue,
 } from '@/lib/form-utils'
-import { matchMutationErrorKey, toastMutationError } from '@/lib/mutation-error'
+import { matchMutationErrorKey } from '@/lib/mutation-error'
 import {
   createDraftProjectSchema,
   createSubmitProjectSchema,
+  PROJECT_PRIORITIES,
   type ProjectFormValues,
 } from '@/lib/validations/project'
-import type { AccountDialogFormValues } from '@/lib/validations/account'
 import type { Project } from '@/types/database'
-import { toast } from 'sonner'
 
 export interface ProjectFormSubmitPayload {
   values: ProjectFormValues
@@ -67,8 +62,6 @@ interface ProjectFormDialogProps {
   isSubmitting: boolean
 }
 
-const ADD_PM_VALUE = '__add_project_manager__'
-
 const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
   code: '',
   title: '',
@@ -77,14 +70,17 @@ const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
   currency: 'USD',
   proposed_start_date: '',
   proposed_end_date: '',
-  assigned_pm_id: null,
+  announcement_date: '',
+  announcing_entity: '',
+  priority: '',
+  research_opinion: '',
+  board_opinion: '',
 }
 
 export function ProjectFormDialog({
   open,
   onOpenChange,
   project,
-  factoryId,
   allowSubmitProposal = true,
   onSaveDraft,
   onSubmitProposal,
@@ -92,22 +88,14 @@ export function ProjectFormDialog({
 }: ProjectFormDialogProps) {
   const { t } = useTranslation()
   const { data: currencies = [] } = useActiveCurrencies()
-  const { data: projectManagers = [], refetch: refetchManagers } =
-    useFactoryProjectManagers(factoryId)
-  const createAccount = useCreateAccount()
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
-  const [addPmOpen, setAddPmOpen] = useState(false)
-  const [passwordReveal, setPasswordReveal] = useState<{
-    email?: string
-    password: string
-  } | null>(null)
 
   const draftSchema = useValidationSchema(createDraftProjectSchema)
   const submitSchema = useValidationSchema(createSubmitProjectSchema)
 
-  const { form, isDirty } = useFormDialog({
+  const { form, isDirty } = useFormDialog<ProjectFormValues>({
     open,
-    resolver: zodResolver(draftSchema),
+    resolver: zodResolver(draftSchema) as Resolver<ProjectFormValues>,
     defaultValues: PROJECT_FORM_DEFAULTS,
     getValues: () => ({
       code: project?.code ?? '',
@@ -117,7 +105,11 @@ export function ProjectFormDialog({
       currency: project?.currency ?? 'USD',
       proposed_start_date: project?.proposed_start_date ?? '',
       proposed_end_date: project?.proposed_end_date ?? '',
-      assigned_pm_id: project?.assigned_pm_id ?? null,
+      announcement_date: project?.announcement_date ?? '',
+      announcing_entity: project?.announcing_entity ?? '',
+      priority: project?.priority ?? '',
+      research_opinion: project?.research_opinion ?? '',
+      board_opinion: project?.board_opinion ?? '',
     }),
     resetDependencies: [project],
   })
@@ -136,9 +128,9 @@ export function ProjectFormDialog({
     control: form.control,
     name: 'currency',
   })
-  const selectedPmId = useWatch({
+  const selectedPriority = useWatch({
     control: form.control,
-    name: 'assigned_pm_id',
+    name: 'priority',
   })
   const startDate = useWatch({
     control: form.control,
@@ -172,7 +164,11 @@ export function ProjectFormDialog({
         field === 'currency' ||
         field === 'proposed_start_date' ||
         field === 'proposed_end_date' ||
-        field === 'assigned_pm_id'
+        field === 'announcement_date' ||
+        field === 'announcing_entity' ||
+        field === 'priority' ||
+        field === 'research_opinion' ||
+        field === 'board_opinion'
       ) {
         form.setError(field, { message: issue.message })
       }
@@ -205,7 +201,11 @@ export function ProjectFormDialog({
           currency: values.currency || 'USD',
           proposed_start_date: values.proposed_start_date ?? '',
           proposed_end_date: values.proposed_end_date ?? '',
-          assigned_pm_id: values.assigned_pm_id ?? null,
+          announcement_date: values.announcement_date ?? '',
+          announcing_entity: values.announcing_entity ?? '',
+          priority: values.priority ?? '',
+          research_opinion: values.research_opinion ?? '',
+          board_opinion: values.board_opinion ?? '',
         },
         files: pendingFiles,
       })
@@ -237,34 +237,17 @@ export function ProjectFormDialog({
           currency: parsed.data.currency,
           proposed_start_date: parsed.data.proposed_start_date,
           proposed_end_date: parsed.data.proposed_end_date,
-          assigned_pm_id: parsed.data.assigned_pm_id,
+          announcement_date: parsed.data.announcement_date ?? '',
+          announcing_entity: parsed.data.announcing_entity ?? '',
+          priority: parsed.data.priority ?? '',
+          research_opinion: parsed.data.research_opinion ?? '',
+          board_opinion: parsed.data.board_opinion ?? '',
         },
         files: pendingFiles,
       })
       closeDialog()
     } catch (error) {
       applyCodeConflictError(error)
-    }
-  }
-
-  const handleCreatePm = async (accountValues: AccountDialogFormValues) => {
-    try {
-      const result = await createAccount.mutateAsync({
-        ...accountValues,
-        role: 'project_manager',
-        factory_id: factoryId ?? accountValues.factory_id,
-      })
-      await refetchManagers()
-      form.setValue('assigned_pm_id', result.user_id, { shouldDirty: true })
-      toast.success(t('accounts.created'))
-      setPasswordReveal({
-        email: result.email ?? accountValues.email,
-        password: result.password,
-      })
-      setAddPmOpen(false)
-    } catch (error) {
-      toastMutationError(error, t('accounts.createFailed'), t)
-      throw error
     }
   }
 
@@ -402,18 +385,48 @@ export function ProjectFormDialog({
                 </p>
               )}
 
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="project-announcement-date">
+                    {t('projects.announcementDate')}
+                  </Label>
+                  <DatePickerField
+                    id="project-announcement-date"
+                    control={form.control}
+                    name="announcement_date"
+                    allowClear
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.announcement_date}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project-announcing-entity">
+                    {t('projects.announcingEntity')}
+                  </Label>
+                  <Input
+                    id="project-announcing-entity"
+                    {...form.register('announcing_entity')}
+                  />
+                  <FormFieldError
+                    error={form.formState.errors.announcing_entity}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label>{t('projects.assignedPm')}</Label>
+                <Label>{t('projects.priority')}</Label>
                 <Select
-                  value={formatNullableSelectValue(selectedPmId)}
+                  value={formatNullableSelectValue(selectedPriority || null)}
                   onValueChange={(value) => {
-                    if (value === ADD_PM_VALUE) {
-                      setAddPmOpen(true)
-                      return
-                    }
+                    const next = parseNullableSelectValue(value)
                     form.setValue(
-                      'assigned_pm_id',
-                      parseNullableSelectValue(value),
+                      'priority',
+                      next === 'high' || next === 'medium' || next === 'low'
+                        ? next
+                        : '',
+                      { shouldDirty: true },
                     )
                   }}
                 >
@@ -424,24 +437,40 @@ export function ProjectFormDialog({
                     <SelectItem value={NULL_SELECT_VALUE}>
                       {t('common.unassigned')}
                     </SelectItem>
-                    {projectManagers.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.id}>
-                        {manager.full_name}
+                    {PROJECT_PRIORITIES.map((priority) => (
+                      <SelectItem key={priority} value={priority}>
+                        {t(`projects.priorityLabels.${priority}`)}
                       </SelectItem>
                     ))}
-                    {factoryId ? (
-                      <SelectItem value={ADD_PM_VALUE}>
-                        {t('projects.addProjectManager')}
-                      </SelectItem>
-                    ) : null}
                   </SelectContent>
                 </Select>
-                <FormFieldError error={form.formState.errors.assigned_pm_id} />
-                {allowSubmitProposal ? (
-                  <p className="text-xs text-muted-foreground">
-                    {t('projects.pmRequiredToSubmit')}
-                  </p>
-                ) : null}
+                <FormFieldError error={form.formState.errors.priority} />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project-research-opinion">
+                  {t('projects.researchOpinion')}
+                </Label>
+                <Textarea
+                  id="project-research-opinion"
+                  rows={3}
+                  {...form.register('research_opinion')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.research_opinion}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project-board-opinion">
+                  {t('projects.boardOpinion')}
+                </Label>
+                <Textarea
+                  id="project-board-opinion"
+                  rows={3}
+                  {...form.register('board_opinion')}
+                />
+                <FormFieldError error={form.formState.errors.board_opinion} />
               </div>
 
               {allowSubmitProposal ? (
@@ -499,28 +528,6 @@ export function ProjectFormDialog({
         open={discardOpen}
         onConfirm={confirmDiscard}
         onCancel={cancelDiscard}
-      />
-
-      <AccountFormDialog
-        open={addPmOpen}
-        onOpenChange={setAddPmOpen}
-        account={null}
-        allowedRoles={['project_manager']}
-        lockFactoryId={factoryId}
-        onCreate={handleCreatePm}
-        onUpdate={async () => undefined}
-        isSubmitting={createAccount.isPending}
-      />
-
-      <GeneratedPasswordDialog
-        open={passwordReveal !== null}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) {
-            setPasswordReveal(null)
-          }
-        }}
-        email={passwordReveal?.email}
-        password={passwordReveal?.password ?? null}
       />
     </>
   )

@@ -2,6 +2,9 @@
 
 Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
+- 2026-09-07 — Project manager is assigned after approval, not on proposal submit. `transition_project_status` no longer requires `assigned_pm_id` for draft/rejected → `proposed`; start (`approved` → `in_progress`) does. First assign uses `reassign_project_pm` without a reason; reassignment still needs ≥3 characters. Proposal form omits `assigned_pm_id` so the freeze/reassign RPC stays the only write path after approval.
+
+- 2026-09-07 — Company directors need table `SELECT`/`INSERT`/`UPDATE` on **all** project statuses (including `draft`) for catalog upsert. Previously directors could not insert and could not see/update drafts, so an imported draft would vanish or the upsert would fail even with a unique `(factory_id, code)`.
 - 2026-09-07 — Factory Excel **import** uses real `.xlsx` templates via dynamically imported `exceljs` (browser `dist/exceljs.min.js`) because the header contract must match Postgres column names and Arabic Excel users often save native workbooks. List **export** stays UTF-8 BOM CSV. Upsert key is `factories.code`; files that fail structure or row validation are rejected with no DB write.
 - 2026-09-07 — Official on-prem hosting targets a **shared Windows PC** (Docker Desktop/WSL2 + reverse proxy), not Ubuntu Server, because the machine has other daily tasks. Production is still a separate Docker data dir and JWT secrets from `supabase start` demo keys; remote sites stay off until VPN; no cloud data store; later server migration keeps the same DNS name and volumes.
 - 2026-09-06 — All finance writes (funding, procurement, staff, overhead) start after approval. Proposal detail is budget/timeline/PM/files/discussion only; incoming funding is recorded by director/FM on the Finance tab once the contract exists.

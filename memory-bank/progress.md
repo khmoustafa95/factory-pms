@@ -2,6 +2,8 @@
 
 ## Done
 
+- [x] PM assignment after approval (not on proposal submit); start execution requires assigned PM
+- [x] Projects Excel import (director-only; upsert by `factory_code`+`code`) + announcement/priority/opinion fields
 - [x] Factory Excel import (template + upsert by `code` + reject mismatched files)
 - [x] WBS role handoff: factory manager designs phases; assigned PM prepares tasks in `approved`; Kanban execution after start
 - [x] Projects list search — PostgREST `or()` no longer uses `factories.name`/`factories.code`
@@ -71,7 +73,7 @@
 - [ ] Optional `supabase:seed:demo` rich workflow seed
 - [ ] Client error reporting (Sentry) behind env
 - [ ] Further split `ProjectDetailPage` / `ProjectsPage`; paged `get_dashboard_projects`
-- [ ] Orientation-lite / custom project fields / Excel import for other entities (factories import is done; list export remains CSV)
+- [ ] Orientation-lite / custom project fields / Excel import for other entities (factories + projects import are done; list export remains CSV)
 
 ## Blockers / issues
 
@@ -79,6 +81,20 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-07 (PM assigned after approval)
+
+- Proposal create/submit no longer collects or requires `assigned_pm_id`.
+- Factory manager assigns (first time) or reassigns the PM after `approved` via `reassign_project_pm`; first assign skips the reason field.
+- `transition_project_status` blocks `approved` → `in_progress` without a PM. UI readiness, planning checklist, and start dialog match.
+- Migration `20260907210000_pm_after_approval.sql` applied locally. `npm run verify` passed.
+
+### 2026-09-07 (Projects Excel import + announcement fields)
+
+- New columns: `announcement_date`, `announcing_entity`, `priority` (`project_priority`: high/medium/low), `research_opinion`, `board_opinion` (not contract-frozen).
+- Director RLS: SELECT/INSERT/UPDATE all project statuses so catalog upsert can create drafts and update existing rows.
+- Projects page Import (director only): `.xlsx`/`.csv`, strict English headers, match on existing factory `code` + project `code`, cap 500 rows, all-or-nothing reject.
+- Form, detail header/proposal summary, list priority column, CSV export, and approve dialog show the new fields. ar/en `projects.import.*`.
 
 ### 2026-09-07 (Factory Excel import)
 

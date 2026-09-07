@@ -465,16 +465,21 @@ export const ar = {
     planning: {
       title: 'تسليم التخطيط',
       description:
-        'مدير المصنع يصمّم المراحل. مدير المشروع المسند يعدّ المهام. ثم يبدأ مدير المصنع التنفيذ.',
+        'بعد الاعتماد، مدير المصنع يسند مدير مشروع ويصمّم المراحل. مدير المشروع المسند يعدّ المهام. ثم يبدأ مدير المصنع التنفيذ.',
+      stepPm: 'إسناد مدير المشروع',
       stepPhases: 'تصميم المراحل',
       stepTasks: 'إعداد المهام',
       stepStart: 'بدء التنفيذ',
       done: 'مكتمل',
       waitingFm: 'بانتظار مدير المصنع',
       waitingPm: 'بانتظار مدير المشروع',
+      waitingPmAssign: 'بانتظار إسناد مدير مشروع',
+      pmHintFm: 'أسند مدير مشروع من هذا المصنع قبل بدء التنفيذ.',
       phasesHintFm: 'قسّم الميزانية والجدول المعتمدين إلى مراحل.',
       tasksHintPm: 'أضف مهاماً تحت كل مرحلة قبل بدء العمل.',
-      startHintFm: 'ابدأ عندما تكون خطة المراحل جاهزة. غياب المهام تحذير فقط.',
+      startHintFm:
+        'ابدأ عندما يُسند مدير مشروع وتكون خطة المراحل جاهزة. غياب المهام تحذير فقط.',
+      ctaAssignPm: 'إسناد مدير المشروع',
       ctaAddPhase: 'إضافة مراحل',
       ctaAddTask: 'إعداد المهام',
       ctaStart: 'بدء التنفيذ',
@@ -521,19 +526,24 @@ export const ar = {
     },
     reassignPm: {
       action: 'إعادة إسناد مدير المشروع',
+      assignAction: 'إسناد مدير المشروع',
       title: 'إعادة إسناد مدير المشروع',
+      assignTitle: 'إسناد مدير المشروع',
       description:
         'يمكن لمدير المصنع إعادة إسناد مدير المشروع بعد الاعتماد. يبقى العقد مجمّداً.',
+      assignDescription:
+        'أسند مدير مشروع من هذا المصنع. لا يمكن بدء التنفيذ قبل الإسناد.',
       reason: 'السبب',
       submit: 'إعادة الإسناد',
+      assignSubmit: 'إسناد',
       updated: 'تم إعادة إسناد مدير المشروع',
-      failed: 'تعذر إعادة إسناد مدير المشروع',
+      assigned: 'تم إسناد مدير المشروع',
+      failed: 'تعذر إسناد مدير المشروع',
     },
     pauseProject: 'إيقاف المشروع مؤقتاً',
     pauseReason: 'سبب الإيقاف المؤقت',
     pauseDescription:
       'أضف سبباً واضحاً لإيقاف التنفيذ حتى يتمكن الفريق من الاستئناف مع سياق كامل.',
-    pmRequiredToSubmit: 'عيّن مدير مشروع قبل إرسال المقترح',
     openProposal: 'فتح',
     reviewProposal: 'مراجعة',
     editProposal: 'تعديل مقترح المشروع',
@@ -542,7 +552,7 @@ export const ar = {
     formDescription:
       'تحديد النطاق والميزانية والجدول الزمني والملفات الداعمة لمراجعة المدير العام.',
     editDetailsDescription:
-      'حدّث عنوان المشروع والوصف والميزانية والتواريخ ومدير المشروع المعيّن.',
+      'حدّث عنوان المشروع والوصف والميزانية والتواريخ.',
     currency: 'العملة',
     proposedDuration: 'المدة المقدّرة',
     durationUnit: 'الوحدة',
@@ -564,9 +574,16 @@ export const ar = {
     proposedEndDate: 'تاريخ الانتهاء المقترح',
     derivedDuration: 'المدة: {{days}} يوم',
     datesHint: 'حدد تاريخي البدء والانتهاء لحساب المدة تلقائياً.',
-    addProjectManager: 'إضافة مدير مشروع جديد',
-    pmCreatedWithPassword:
-      'تم إنشاء حساب مدير المشروع. كلمة المرور المؤقتة: {{password}}',
+    announcementDate: 'تاريخ الطرح',
+    announcingEntity: 'الجهة الطارحة',
+    priority: 'الأولوية',
+    priorityLabels: {
+      high: 'عالية',
+      medium: 'متوسطة',
+      low: 'منخفضة',
+    },
+    researchOpinion: 'رأي البحث العلمي',
+    boardOpinion: 'رأي مجلس الإدارة',
     executionNotReady: {
       not_approved: 'يجب اعتماد المشروع قبل بدء التنفيذ.',
       no_phases: 'أضف مرحلة واحدة على الأقل قبل بدء التنفيذ.',
@@ -579,6 +596,7 @@ export const ar = {
         'ميزانية إحدى المراحل تتجاوز ميزانية المشروع.',
       missing_project_budget: 'حدد ميزانية المشروع قبل بدء التنفيذ.',
       missing_project_schedule: 'حدد الجدول الزمني للمشروع قبل بدء التنفيذ.',
+      missing_assigned_pm: 'أسند مدير مشروع قبل بدء التنفيذ.',
     },
     rpcErrors: {
       wbsNotReady:
@@ -607,6 +625,7 @@ export const ar = {
       reassignNotFactoryManager:
         'يمكن فقط لمدير المصنع إعادة إسناد مدير المشروع.',
       reassignCompleted: 'لا يمكن إعادة إسناد مدير المشروع بعد الإكمال.',
+      reassignWrongStatus: 'أسند مدير المشروع فقط بعد اعتماد المشروع.',
       reassignInvalidPm:
         'يجب أن يكون مدير المشروع المعيّن مديراً نشطاً في هذا المصنع.',
       acknowledgeNotAllowed: 'ليست لديك صلاحية الاطلاع على هذا التصعيد.',
@@ -644,6 +663,50 @@ export const ar = {
         'نوع الملف أو حجمه غير مسموح (PDF أو Office أو CSV أو صور أو نص — بحد أقصى 10 ميغابايت)',
       dropHint: 'أسقط الملفات هنا أو انقر للاختيار',
       dropActive: 'أفلت الملفات لإرفاقها',
+    },
+    import: {
+      title: 'استيراد المشاريع',
+      promptDescription:
+        'هل تريد تنزيل نموذج Excel أولاً؟ أسماء الأعمدة يجب أن تطابق: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+      fileDescription:
+        'ارفع ملف .xlsx أو .csv مطابق لنموذج المشاريع. الزوج الموجود factory_code + code يُحدَّث، والزوج الجديد يُضاف كمسودة.',
+      downloadTemplate: 'تحميل النموذج',
+      continueWithoutTemplate: 'متابعة بدون تحميل',
+      templateDownloaded: 'تم تنزيل النموذج',
+      templateFailed: 'تعذر تنزيل النموذج',
+      dropzoneIdle: 'اسحب ملف Excel أو CSV هنا، أو اضغط للاختيار',
+      dropzoneActive: 'أفلت الملف هنا',
+      invalidFile:
+        'تعذر قراءة الملف. تأكد أنه غير تالف وأنه بصيغة Excel أو CSV صالحة.',
+      unsupportedType: 'صيغة الملف غير مدعومة. استخدم .xlsx أو .csv.',
+      emptyFile: 'الملف فارغ.',
+      headerMismatch:
+        'هيكل الجدول غير مطابق. الصف الأول يجب أن يحتوي بالضبط على: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+      noDataRows: 'لا توجد صفوف بيانات للاستيراد.',
+      tooManyRows: 'الملف يتجاوز الحد الأقصى {{max}} صفاً.',
+      duplicatePair:
+        'رمز المصنع {{factory}} ورمز المشروع {{code}} مكرران داخل الملف.',
+      unknownFactory: 'رمز المصنع {{code}} غير معروف.',
+      invalidPriority: 'يجب أن تكون priority هي high أو medium أو low.',
+      rowError: 'الصف {{row}}: {{message}}',
+      errorsTitle: 'رُفض الاستيراد',
+      previewInsert: 'ستُضاف {{count}} مشاريع.',
+      previewUpdate:
+        'سيُحدَّث {{count}} مشاريع (حسب factory_code + code).',
+      previewTotal: 'سيُستورد {{count}} مشاريع.',
+      confirm: 'تأكيد الاستيراد',
+      success: 'اكتمل الاستيراد: أُضيف {{inserted}} وتحديث {{updated}}',
+      failed: 'تعذر استيراد المشاريع',
+      chooseAnotherFile: 'اختيار ملف آخر',
+      instructionsTitle: 'instructions',
+      instructionsColumns:
+        'الأعمدة: factory_code و code و title مطلوبة. باقي الأعمدة اختيارية. التواريخ بصيغة YYYY-MM-DD. لا تُدرج id أو status أو التقدم أو مدير المشروع.',
+      instructionsUpsert:
+        'تُطابق الصفوف المشاريع الموجودة حسب factory_code + code. الصف الموجود يُحدَّث دون تغيير الحالة. الصف الجديد يُضاف كمسودة.',
+      instructionsPriority:
+        'priority يقبل high/medium/low أو عالية/متوسطة/منخفضة. اتركه فارغاً إن لم تُحدد أولوية.',
+      instructionsExample:
+        'مثال: DMS | PRJ-001 | ترقية التبريد | … | 150000 | USD | 2026-04-01 | 2026-09-30 | 2026-03-01 | وزارة الصناعة | high | |',
     },
   },
   projectFinance: {
@@ -1220,6 +1283,8 @@ export const ar = {
     headcountMin: 'يجب أن يكون العدد 1 على الأقل',
     endDateBeforeStart:
       'يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء أو مساوياً له',
+    invalidDate: 'أدخل تاريخاً صالحاً بصيغة YYYY-MM-DD',
+    invalidPriority: 'يجب أن تكون الأولوية عالية أو متوسطة أو منخفضة',
   },
   a11y: {
     skipToContent: 'تخطي إلى المحتوى الرئيسي',

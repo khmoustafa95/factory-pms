@@ -1,6 +1,19 @@
 import { z } from 'zod'
+import { parseDateOnly } from '@/lib/date-only'
 import { getPhaseDurationDays } from '@/lib/duration'
+import type { ProjectPriority } from '@/types/database'
 import type { ValidationTranslator } from '@/lib/validations/types'
+
+export const PROJECT_PRIORITIES: ProjectPriority[] = ['high', 'medium', 'low']
+
+function parseFormPriority(value: string): ProjectPriority | null {
+  for (const priority of PROJECT_PRIORITIES) {
+    if (priority === value) {
+      return priority
+    }
+  }
+  return null
+}
 
 const codeSchema = (t: ValidationTranslator) =>
   z
@@ -9,6 +22,32 @@ const codeSchema = (t: ValidationTranslator) =>
     .min(2, t('validation.codeMin'))
     .max(32, t('validation.projectCodeMax'))
     .regex(/^[A-Z0-9_-]+$/, t('validation.codeFormat'))
+
+const announcementFields = () => ({
+  announcement_date: z.string().trim(),
+  announcing_entity: z.string().trim(),
+  priority: z.string(),
+  research_opinion: z.string().trim(),
+  board_opinion: z.string().trim(),
+})
+
+function refineAnnouncementDate(
+  values: { announcement_date?: string },
+  ctx: z.RefinementCtx,
+  t: ValidationTranslator,
+) {
+  const raw = values.announcement_date?.trim() ?? ''
+  if (raw.length === 0) {
+    return
+  }
+  if (!parseDateOnly(raw)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: t('validation.invalidDate'),
+      path: ['announcement_date'],
+    })
+  }
+}
 
 export function createDraftProjectSchema(t: ValidationTranslator) {
   return z
@@ -20,7 +59,7 @@ export function createDraftProjectSchema(t: ValidationTranslator) {
       currency: z.string().trim().min(3).max(3).default('USD'),
       proposed_start_date: z.string().trim().optional().or(z.literal('')),
       proposed_end_date: z.string().trim().optional().or(z.literal('')),
-      assigned_pm_id: z.string().uuid().nullable(),
+      ...announcementFields(),
     })
     .superRefine((values, ctx) => {
       if (values.code && values.code.length > 0) {
@@ -66,6 +105,8 @@ export function createDraftProjectSchema(t: ValidationTranslator) {
           path: ['proposed_end_date'],
         })
       }
+
+      refineAnnouncementDate(values, ctx, t)
     })
 }
 
@@ -85,7 +126,7 @@ export function createSubmitProjectSchema(t: ValidationTranslator) {
         .string()
         .trim()
         .min(1, t('validation.endDateRequired')),
-      assigned_pm_id: z.string().uuid(t('validation.assignedPmRequired')),
+      ...announcementFields(),
     })
     .superRefine((values, ctx) => {
       const parsed = Number(values.budget)
@@ -104,6 +145,8 @@ export function createSubmitProjectSchema(t: ValidationTranslator) {
           path: ['proposed_end_date'],
         })
       }
+
+      refineAnnouncementDate(values, ctx, t)
     })
 }
 
@@ -115,7 +158,11 @@ export type ProjectFormValues = {
   currency: string
   proposed_start_date: string
   proposed_end_date: string
-  assigned_pm_id: string | null
+  announcement_date: string
+  announcing_entity: string
+  priority: string
+  research_opinion: string
+  board_opinion: string
 }
 
 export function generateDraftProjectCode(): string {
@@ -129,6 +176,7 @@ export function toProjectPayload(values: ProjectFormValues) {
   const end = values.proposed_end_date?.trim() || null
   const durationDays = start && end ? getPhaseDurationDays(start, end) : null
   const code = values.code.trim().toUpperCase() || generateDraftProjectCode()
+  const priority = parseFormPriority(values.priority)
 
   return {
     code,
@@ -140,6 +188,10 @@ export function toProjectPayload(values: ProjectFormValues) {
     proposed_end_date: end,
     proposed_duration_value: durationDays,
     proposed_duration_unit: durationDays != null ? ('day' as const) : null,
-    assigned_pm_id: values.assigned_pm_id,
+    announcement_date: values.announcement_date.trim() || null,
+    announcing_entity: values.announcing_entity.trim() || null,
+    priority,
+    research_opinion: values.research_opinion.trim() || null,
+    board_opinion: values.board_opinion.trim() || null,
   }
 }

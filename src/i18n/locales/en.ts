@@ -471,17 +471,22 @@ export const en = {
     planning: {
       title: 'Planning handoff',
       description:
-        'The factory manager designs phases. The assigned project manager prepares tasks. Then the factory manager starts execution.',
+        'After approval, the factory manager assigns a project manager and designs phases. The assigned PM prepares tasks. Then the factory manager starts execution.',
+      stepPm: 'Assign project manager',
       stepPhases: 'Design phases',
       stepTasks: 'Prepare tasks',
       stepStart: 'Start execution',
       done: 'Done',
       waitingFm: 'Waiting for the factory manager',
       waitingPm: 'Waiting for the project manager',
+      waitingPmAssign: 'Waiting for a project manager to be assigned',
+      pmHintFm:
+        'Assign a project manager from this factory before starting execution.',
       phasesHintFm: 'Split the approved budget and schedule into phases.',
       tasksHintPm: 'Add tasks under each phase before work begins.',
       startHintFm:
-        'Start when the phase plan is ready. Missing tasks are a warning only.',
+        'Start when a project manager is assigned and the phase plan is ready. Missing tasks are a warning only.',
+      ctaAssignPm: 'Assign PM',
       ctaAddPhase: 'Add phases',
       ctaAddTask: 'Prepare tasks',
       ctaStart: 'Start execution',
@@ -530,20 +535,24 @@ export const en = {
     },
     reassignPm: {
       action: 'Reassign PM',
+      assignAction: 'Assign PM',
       title: 'Reassign project manager',
+      assignTitle: 'Assign project manager',
       description:
         'Factory managers can reassign the PM after approval. The contract stays frozen.',
+      assignDescription:
+        'Assign a project manager from this factory. Execution cannot start until one is assigned.',
       reason: 'Reason',
       submit: 'Reassign',
+      assignSubmit: 'Assign',
       updated: 'Project manager reassigned',
-      failed: 'Unable to reassign project manager',
+      assigned: 'Project manager assigned',
+      failed: 'Unable to assign project manager',
     },
     pauseProject: 'Pause project',
     pauseReason: 'Pause reason',
     pauseDescription:
       'Provide a clear reason to pause execution so the team can resume with context.',
-    pmRequiredToSubmit:
-      'Assign a project manager before submitting the proposal',
     openProposal: 'Open',
     reviewProposal: 'Review',
     editProposal: 'Edit project proposal',
@@ -552,7 +561,7 @@ export const en = {
     formDescription:
       'Capture scope, budget, timeline, and supporting files for company director review.',
     editDetailsDescription:
-      'Update project title, description, budget, dates, and assigned project manager.',
+      'Update project title, description, budget, and dates.',
     currency: 'Currency',
     proposedDuration: 'Estimated duration',
     durationUnit: 'Unit',
@@ -576,9 +585,16 @@ export const en = {
     derivedDuration: 'Duration: {{days}} days',
     datesHint:
       'Select start and end dates to calculate the duration automatically.',
-    addProjectManager: 'Add new project manager',
-    pmCreatedWithPassword:
-      'Project manager account created. Temporary password: {{password}}',
+    announcementDate: 'Announcement date',
+    announcingEntity: 'Announcing entity',
+    priority: 'Priority',
+    priorityLabels: {
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
+    },
+    researchOpinion: 'Research opinion',
+    boardOpinion: 'Board opinion',
     executionNotReady: {
       not_approved: 'The project must be approved before starting execution.',
       no_phases: 'Add at least one phase before starting execution.',
@@ -593,6 +609,8 @@ export const en = {
         'Set the project budget before starting execution.',
       missing_project_schedule:
         'Set the project schedule before starting execution.',
+      missing_assigned_pm:
+        'Assign a project manager before starting execution.',
     },
     rpcErrors: {
       wbsNotReady:
@@ -631,6 +649,8 @@ export const en = {
         'Only the factory manager can reassign the project manager.',
       reassignCompleted:
         'The project manager cannot be reassigned on a completed project.',
+      reassignWrongStatus:
+        'Assign a project manager only after the project is approved.',
       reassignInvalidPm:
         'Assigned PM must be an active project manager in this factory.',
       acknowledgeNotAllowed:
@@ -670,6 +690,50 @@ export const en = {
         'File type or size is not allowed (PDF, Office, CSV, images, or text — max 10 MB)',
       dropHint: 'Drop files here or click to browse',
       dropActive: 'Drop files to attach them',
+    },
+    import: {
+      title: 'Import projects',
+      promptDescription:
+        'Do you want to download the Excel template first? Column names must match: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+      fileDescription:
+        'Upload an .xlsx or .csv file that matches the projects template. Existing factory_code + code pairs will be updated; new pairs will be added as drafts.',
+      downloadTemplate: 'Download template',
+      continueWithoutTemplate: 'Continue without downloading',
+      templateDownloaded: 'Template downloaded',
+      templateFailed: 'Unable to download the template',
+      dropzoneIdle: 'Drop an Excel or CSV file here, or click to choose',
+      dropzoneActive: 'Drop the file here',
+      invalidFile:
+        'The file could not be read. Make sure it is not corrupted and is a valid Excel or CSV file.',
+      unsupportedType: 'Unsupported file type. Use .xlsx or .csv.',
+      emptyFile: 'The file is empty.',
+      headerMismatch:
+        'The spreadsheet structure does not match. The first row must contain exactly: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+      noDataRows: 'The file has no data rows to import.',
+      tooManyRows: 'The file exceeds the maximum of {{max}} rows.',
+      duplicatePair:
+        'Factory code {{factory}} and project code {{code}} are duplicated in the file.',
+      unknownFactory: 'Unknown factory code {{code}}.',
+      invalidPriority: 'priority must be high, medium, or low.',
+      rowError: 'Row {{row}}: {{message}}',
+      errorsTitle: 'Import rejected',
+      previewInsert: '{{count}} will be added.',
+      previewUpdate:
+        '{{count}} will be updated (matched by factory_code + code).',
+      previewTotal: '{{count}} projects will be imported.',
+      confirm: 'Confirm import',
+      success: 'Import complete: {{inserted}} added, {{updated}} updated',
+      failed: 'Unable to import projects',
+      chooseAnotherFile: 'Choose another file',
+      instructionsTitle: 'instructions',
+      instructionsColumns:
+        'Columns: factory_code and code and title are required. Other columns are optional. Dates use YYYY-MM-DD. Do not include id, status, progress, or assigned PM.',
+      instructionsUpsert:
+        'Rows match existing projects by factory_code + code. Existing rows are updated without changing status. New rows are added as drafts.',
+      instructionsPriority:
+        'priority accepts high/medium/low or عالية/متوسطة/منخفضة. Leave blank for unassigned.',
+      instructionsExample:
+        'Example: DMS | PRJ-001 | Cooling upgrade | … | 150000 | USD | 2026-04-01 | 2026-09-30 | 2026-03-01 | Ministry of Industry | high | |',
     },
   },
   projectFinance: {
@@ -1256,6 +1320,8 @@ export const en = {
     roleTitleRequired: 'Role / title is required',
     headcountMin: 'Headcount must be at least 1',
     endDateBeforeStart: 'End date must be on or after start date',
+    invalidDate: 'Enter a valid date in YYYY-MM-DD format',
+    invalidPriority: 'Priority must be high, medium, or low',
   },
   a11y: {
     skipToContent: 'Skip to main content',

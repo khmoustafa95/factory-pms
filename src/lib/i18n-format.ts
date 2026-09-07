@@ -3,6 +3,7 @@ import { ar, enUS } from 'date-fns/locale'
 import type { Locale } from '@/i18n/types'
 import type {
   PhaseStatus,
+  ProjectPriority,
   ProjectStatus,
   TaskStatus,
   UserRole,
@@ -68,6 +69,18 @@ export function getProjectStatusLabel(
   status: ProjectStatus,
 ): string {
   return t(`projectStatus.${status}`)
+}
+
+export function getProjectPriorityLabel(
+  t: TranslateFn,
+  priority: ProjectPriority | null | undefined,
+  fallback = '—',
+): string {
+  if (!priority) {
+    return fallback
+  }
+
+  return t(`projects.priorityLabels.${priority}`)
 }
 
 export function getTaskStatusLabel(t: TranslateFn, status: TaskStatus): string {

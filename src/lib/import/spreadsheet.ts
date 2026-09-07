@@ -1,4 +1,5 @@
 import type { CellValue, Workbook } from 'exceljs'
+import { formatDateOnly } from '@/lib/date-only'
 
 export type SpreadsheetKind = 'xlsx' | 'csv'
 
@@ -129,7 +130,7 @@ function cellToString(value: CellValue): string {
   }
 
   if (value instanceof Date) {
-    return value.toISOString()
+    return formatDateOnly(value)
   }
 
   if (typeof value === 'object') {
@@ -148,11 +149,12 @@ function cellToString(value: CellValue): string {
 }
 
 function pickDataSheet(workbook: Workbook) {
-  const factories = workbook.worksheets.find(
-    (sheet) => sheet.name.trim().toLowerCase() === 'factories',
-  )
-  if (factories) {
-    return factories
+  const preferred = workbook.worksheets.find((sheet) => {
+    const name = sheet.name.trim().toLowerCase()
+    return name === 'factories' || name === 'projects'
+  })
+  if (preferred) {
+    return preferred
   }
 
   return workbook.worksheets.find(

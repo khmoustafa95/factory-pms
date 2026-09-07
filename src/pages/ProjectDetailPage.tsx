@@ -80,7 +80,7 @@ import {
   useUpdateTask,
   type TaskListItem,
 } from '@/hooks/useTasks'
-import { formatLocalizedBudget } from '@/lib/i18n-format'
+import { formatLocalizedBudget, formatLocalizedDate, getProjectPriorityLabel } from '@/lib/i18n-format'
 import { todayDateOnly } from '@/lib/date-only'
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { getProjectScheduleBounds } from '@/lib/duration'
@@ -485,7 +485,11 @@ export function ProjectDetailPage() {
         pmId: values.assigned_pm_id,
         reason: values.reason,
       })
-      toast.success(t('projects.reassignPm.updated'))
+      toast.success(
+        project.assigned_pm_id
+          ? t('projects.reassignPm.updated')
+          : t('projects.reassignPm.assigned'),
+      )
     } catch (submitError) {
       toastMutationError(submitError, t('projects.reassignPm.failed'), t)
       throw submitError
@@ -711,7 +715,9 @@ export function ProjectDetailPage() {
                   },
                   {
                     id: 'reassign-pm',
-                    label: t('projects.reassignPm.action'),
+                    label: project.assigned_pm_id
+                      ? t('projects.reassignPm.action')
+                      : t('projects.reassignPm.assignAction'),
                     hidden: !canReassignPm,
                     onClick: () => setReassignDialogOpen(true),
                   },
@@ -797,6 +803,34 @@ export function ProjectDetailPage() {
                       })}
                     </span>
                   ) : null}
+                  {project.announcement_date ? (
+                    <span>
+                      {t('projects.announcementDate')}:{' '}
+                      {formatLocalizedDate(project.announcement_date, locale)}
+                    </span>
+                  ) : null}
+                  {project.announcing_entity ? (
+                    <span>
+                      {t('projects.announcingEntity')}:{' '}
+                      {project.announcing_entity}
+                    </span>
+                  ) : null}
+                  {project.priority ? (
+                    <span>
+                      {t('projects.priority')}:{' '}
+                      {getProjectPriorityLabel(t, project.priority)}
+                    </span>
+                  ) : null}
+                  {project.research_opinion ? (
+                    <span>
+                      {t('projects.researchOpinion')}: {project.research_opinion}
+                    </span>
+                  ) : null}
+                  {project.board_opinion ? (
+                    <span>
+                      {t('projects.boardOpinion')}: {project.board_opinion}
+                    </span>
+                  ) : null}
                 </span>
               </span>
             }
@@ -831,6 +865,54 @@ export function ProjectDetailPage() {
                 </span>
                 <span className="font-medium">
                   {formatProjectSchedule(project, locale, t, notAvailable)}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.announcementDate')}
+                </span>
+                <span className="font-medium">
+                  {formatLocalizedDate(
+                    project.announcement_date,
+                    locale,
+                    notAvailable,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.announcingEntity')}
+                </span>
+                <span className="font-medium">
+                  {project.announcing_entity || notAvailable}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.priority')}
+                </span>
+                <span className="font-medium">
+                  {getProjectPriorityLabel(
+                    t,
+                    project.priority,
+                    notAvailable,
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.researchOpinion')}
+                </span>
+                <span className="font-medium whitespace-pre-wrap text-end">
+                  {project.research_opinion || notAvailable}
+                </span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-muted-foreground">
+                  {t('projects.boardOpinion')}
+                </span>
+                <span className="font-medium whitespace-pre-wrap text-end">
+                  {project.board_opinion || notAvailable}
                 </span>
               </div>
               <div className="flex justify-between gap-4">
@@ -919,11 +1001,18 @@ export function ProjectDetailPage() {
             <TabsContent value="overview" className="mt-4 space-y-4">
               {project.status === 'approved' ? (
                 <ProjectPlanningChecklist
-                  phasesReady={Boolean(executionReadiness?.ready)}
+                  pmAssigned={Boolean(project.assigned_pm_id)}
+                  phasesReady={Boolean(
+                    executionReadiness?.reasons.every(
+                      (reason) => reason === 'missing_assigned_pm',
+                    ),
+                  )}
                   tasksPrepared={tasks.length > 0}
+                  canAssignPm={canReassignPm}
                   canManagePhases={canPhases}
                   canManageTasks={canTasks}
                   canStart={canStart}
+                  onAssignPm={() => setReassignDialogOpen(true)}
                   onGoToWbs={() => setActiveTab('wbs')}
                   onStart={() => setStartDialogOpen(true)}
                 />

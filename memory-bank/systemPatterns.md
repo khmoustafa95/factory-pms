@@ -42,7 +42,7 @@ Hierarchy: `factories` → `projects` → `phases` → `tasks` (+ `comments`, at
 - **Progress:** project% = Σ (phase.weight/100 × Σ (task.weight/100 × task.progress)); recalculated by DB trigger.
 - **Field metrics:** actual duration/cost roll up from tasks; schedule/financial deviation computed in `src/lib/phase-metrics.ts`; derived field health on progress overview.
 - **Dashboard:** `get_dashboard_stats`, `get_dashboard_insights`, `get_dashboard_projects` RPCs (`security invoker`); SPA filters explore rows client-side after RPC.
-- **Lifecycle governance:** factory manager writes phases; assigned PM writes tasks (planning in `approved`, execution after start). Factory manager or director pause/resume; factory manager requests completion, director confirms. After approval, budget/dates/code freeze except `request_project_change` / `review_project_change`. Funding write = director + FM after approval. Procurement/staff/overhead write = assigned PM + FM after approval. Escalations are blocked tasks with `escalation_status` + `acknowledge_task_escalation`.
+- **Lifecycle governance:** factory manager assigns the PM after approval (required before start) and writes phases; assigned PM writes tasks (planning in `approved`, execution after start). Factory manager or director pause/resume; factory manager requests completion, director confirms. After approval, budget/dates/code freeze except `request_project_change` / `review_project_change`. Funding write = director + FM after approval. Procurement/staff/overhead write = assigned PM + FM after approval. Escalations are blocked tasks with `escalation_status` + `acknowledge_task_escalation`.
 
 ## Conventions
 
