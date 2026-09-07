@@ -1,9 +1,12 @@
-import { Plus } from 'lucide-react'
+import { useState } from 'react'
+import { Plus, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { ActiveStatusBadge } from '@/components/ActiveStatusBadge'
 import { FactoryFormDialog } from '@/components/factories/FactoryFormDialog'
+import { FactoryImportDialog } from '@/components/factories/FactoryImportDialog'
 import { ListToolbar } from '@/components/ListToolbar'
 import { PageHeader } from '@/components/PageHeader'
+import { PageHeaderActions } from '@/components/PageHeaderActions'
 import { PaginatedListPage } from '@/components/PaginatedListPage'
 import { Button } from '@/components/ui/button'
 import {
@@ -46,6 +49,7 @@ export function FactoriesPage() {
     openCreate,
     openEdit,
   } = useEditDialog<Factory>()
+  const [importOpen, setImportOpen] = useState(false)
   const notAvailable = t('common.notAvailable')
 
   const handleSubmit = async (
@@ -72,10 +76,30 @@ export function FactoriesPage() {
           title={t('factories.title')}
           description={t('factories.description')}
           actions={
-            <Button onClick={openCreate}>
-              <Plus className="size-4" />
-              {t('common.addFactory')}
-            </Button>
+            <PageHeaderActions
+              primary={{
+                id: 'add-factory',
+                label: (
+                  <>
+                    <Plus className="size-4" />
+                    {t('common.addFactory')}
+                  </>
+                ),
+                onClick: openCreate,
+              }}
+              secondary={[
+                {
+                  id: 'import-factories',
+                  label: (
+                    <>
+                      <Upload className="size-4" />
+                      {t('common.import')}
+                    </>
+                  ),
+                  onClick: () => setImportOpen(true),
+                },
+              ]}
+            />
           }
         />
       }
@@ -141,13 +165,16 @@ export function FactoriesPage() {
         isRetrying: isFetching,
       }}
       footer={
-        <FactoryFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          factory={editingFactory}
-          onSubmit={handleSubmit}
-          isSubmitting={createFactory.isPending || updateFactory.isPending}
-        />
+        <>
+          <FactoryFormDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            factory={editingFactory}
+            onSubmit={handleSubmit}
+            isSubmitting={createFactory.isPending || updateFactory.isPending}
+          />
+          <FactoryImportDialog open={importOpen} onOpenChange={setImportOpen} />
+        </>
       }
     >
       <Table>

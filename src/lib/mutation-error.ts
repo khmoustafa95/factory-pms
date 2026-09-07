@@ -41,6 +41,10 @@ const DB_CONSTRAINT_MATCHERS: ErrorMatcher[] = [
     pattern: /projects_factory_code_uidx|\(factory_id,\s*code\)/i,
     key: 'validation.projectCodeTaken',
   },
+  {
+    pattern: /factories_code_key/i,
+    key: 'factories.import.codeTaken',
+  },
 ]
 
 /** Maps raw Postgres RAISE EXCEPTION text from transition_project_status to i18n keys. */

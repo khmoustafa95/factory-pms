@@ -11,7 +11,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(rootDir, './src'),
+      exceljs: path.resolve(rootDir, 'node_modules/exceljs/dist/exceljs.min.js'),
     },
+  },
+  optimizeDeps: {
+    include: ['exceljs'],
   },
   test: {
     environment: 'jsdom',

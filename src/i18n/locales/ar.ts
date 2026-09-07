@@ -56,6 +56,7 @@ export const ar = {
     reject: 'رفض',
     escalate: 'تنبيه حرج',
     addFactory: 'إضافة مصنع',
+    import: 'استيراد',
     addAccount: 'إضافة حساب',
     addPhase: 'إضافة مرحلة',
     addTask: 'إضافة مهمة',
@@ -992,6 +993,47 @@ export const ar = {
     newFactory: 'مصنع جديد',
     formDescription: 'تجمّع المصانع المشاريع وتعيينات المديرين.',
     activeFactory: 'مصنع نشط',
+    import: {
+      title: 'استيراد المصانع',
+      promptDescription:
+        'هل تريد تحميل نموذج Excel أولاً؟ يجب أن تطابق أسماء الأعمدة جدول المصانع: code, name, location, is_active.',
+      fileDescription:
+        'ارفع ملف .xlsx أو .csv مطابق لجدول المصانع. الرمز الموجود يُحدَّث، والرمز الجديد يُضاف.',
+      downloadTemplate: 'تحميل النموذج',
+      continueWithoutTemplate: 'متابعة بدون تحميل',
+      templateDownloaded: 'تم تنزيل النموذج',
+      templateFailed: 'تعذر تنزيل النموذج',
+      dropzoneIdle: 'اسحب ملف Excel أو CSV هنا، أو اضغط للاختيار',
+      dropzoneActive: 'أفلت الملف هنا',
+      invalidFile:
+        'تعذر قراءة الملف. تأكد أنه غير تالف وأنه بصيغة Excel أو CSV صالحة.',
+      unsupportedType: 'صيغة الملف غير مدعومة. استخدم .xlsx أو .csv.',
+      emptyFile: 'الملف فارغ.',
+      headerMismatch:
+        'هيكل الجدول غير مطابق. الصف الأول يجب أن يحتوي بالضبط على: code, name, location, is_active.',
+      noDataRows: 'لا توجد صفوف بيانات للاستيراد.',
+      tooManyRows: 'الملف يتجاوز الحد الأقصى {{max}} صفاً.',
+      duplicateCode: 'رمز المصنع {{code}} مكرر داخل الملف.',
+      invalidActive: 'يجب أن تكون قيمة is_active هي TRUE أو FALSE.',
+      rowError: 'الصف {{row}}: {{message}}',
+      errorsTitle: 'رُفض الاستيراد',
+      previewInsert: 'ستُضاف {{count}} مصانع.',
+      previewUpdate: 'سيُحدَّث {{count}} مصانع (حسب الرمز).',
+      previewTotal: 'سيُستورد {{count}} مصانع.',
+      confirm: 'تأكيد الاستيراد',
+      success: 'اكتمل الاستيراد: أُضيف {{inserted}} وتحديث {{updated}}',
+      failed: 'تعذر استيراد المصانع',
+      chooseAnotherFile: 'اختيار ملف آخر',
+      codeTaken: 'رمز المصنع مستخدم مسبقاً.',
+      instructionsTitle: 'instructions',
+      instructionsColumns:
+        'الأعمدة: code (مطلوب)، name (مطلوب)، location (اختياري)، is_active (اختياري، الافتراضي TRUE).',
+      instructionsUpsert:
+        'إذا كان الرمز موجوداً يُحدَّث المصنع، وإلا يُضاف. لا تغيّر صف العناوين.',
+      instructionsActive:
+        'is_active يقبل TRUE/FALSE أو 1/0 أو yes/no أو نعم/لا.',
+      instructionsExample: 'مثال: DMS | مصنع دمشق | دمشق، سوريا | TRUE',
+    },
   },
   accounts: {
     title: 'الحسابات',

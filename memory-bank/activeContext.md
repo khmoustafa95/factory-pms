@@ -2,6 +2,8 @@
 
 ## Current focus
 
+Factory Excel import (director): template download matching `factories` writable columns (`code`, `name`, `location`, `is_active`); upsert by `code`; reject the whole file on corrupt/mismatched structure or row errors.
+
 WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
 
 Projects list search: PostgREST `or()` cannot parse dotted embed columns (`factories.name`). Search now matches project title/description/code plus factory ids from a separate factories query.
@@ -16,6 +18,7 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-07] Factory Excel import: Import on Factories asks to download `factories-template.xlsx` (exceljs, dynamic import); CSV also accepted. Strict header set `code,name,location,is_active`; upsert on `code`; all-or-nothing reject. Browser: director Import dialog, template download advanced to dropzone, bad CSV rejected, valid CSV previewed `1 added / 1 updated`. `npm run verify` passed.
 - [2026-09-07] WBS role handoff: FM owns phases (`can_manage_project_phases`); assigned PM owns tasks including `approved`; trigger keeps task status `todo` until start; `phases_ready` inbox event. Planning checklist on overview; Start dialog always available to FM with readiness reasons + empty-task warning. Kanban `canExecuteTasks` only after `in_progress`. Migration `20260907140000_wbs_role_handoff.sql` applied locally (`supabase db push --local`). `npm run verify` passed.
 - [2026-09-07] Projects list search (`Tes`) failed with PostgREST `PGRST100` / `failed to parse logic tree` at `factories.name` inside `.or()`. `or()` treats `factories` as a column and then expects an operator, not `.name`. Search now uses project `title`/`description`/`code` plus `factory_id.in.(…)` from a factories name/code query. Same pattern on escalations (`projects.title`). Quoted ilike values. Native search-cancel hidden so only one clear X. `npm run verify` passed.
 - [2026-09-07] Director approve/reject of a pending budget (or schedule) change request failed with `column "status" is of type change_request_status but expression is of type text`. Root cause: `CASE WHEN p_approve THEN 'approved' ELSE 'rejected' END` in `review_project_change` infers `text`. Cast the CASE to `change_request_status`. Migration `20260907120000_fix_review_project_change_status_cast.sql` applied with `supabase db push --local`. Flow is otherwise as designed: FM/assigned PM request after approval → in-app notify all company directors → director reviews on project overview (no dashboard KPI queue).
@@ -49,6 +52,7 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 4. Apply `20260906130000_funding_after_approval.sql` (and earlier lifecycle/finance/URL migrations) when a non-dev database is created — on-prem production uses a clean migration apply, not `db reset`
 5. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
 6. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
+7. Optional: reuse `src/lib/import/` for projects/accounts Excel import with the same template + upsert contract
 
 ## Open questions
 

@@ -58,4 +58,24 @@ describe('toastMutationError', () => {
       'هذا الرمز مستخدم مسبقاً في هذا المصنع. اختر رمزاً مختلفاً.',
     )
   })
+
+  it('localizes a duplicate factory code unique violation', () => {
+    const t = vi.fn((key: string) =>
+      key === 'factories.import.codeTaken' ? 'رمز المصنع مستخدم مسبقاً.' : key,
+    )
+
+    toastMutationError(
+      {
+        code: '23505',
+        message:
+          'duplicate key value violates unique constraint "factories_code_key"',
+        details: 'Key (code)=(DMS) already exists.',
+      },
+      'Fallback',
+      t,
+    )
+
+    expect(t).toHaveBeenCalledWith('factories.import.codeTaken')
+    expect(toast.error).toHaveBeenCalledWith('رمز المصنع مستخدم مسبقاً.')
+  })
 })

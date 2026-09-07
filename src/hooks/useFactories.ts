@@ -4,13 +4,15 @@ import { buildIlikePattern, fetchPaginatedList } from '@/lib/list-query'
 import type { FactoriesPageParams } from '@/lib/list-query-params'
 import { applyActiveStatusFilter } from '@/lib/list-filters'
 import { queryKeys } from '@/lib/query-keys'
+import type { FactoryWritePayload } from '@/lib/import/factories-import'
 import type { Factory } from '@/types/database'
 import type { FactoryFormValues } from '@/lib/validations/factory'
 import { toFactoryPayload } from '@/lib/validations/factory'
 
-export function useFactories() {
+export function useFactories(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.factories,
+    enabled: options?.enabled ?? true,
     queryFn: async (): Promise<Factory[]> => {
       const supabase = getSupabase()
       const { data, error } = await supabase
@@ -98,6 +100,29 @@ export function useUpdateFactory() {
         .eq('id', id)
         .select('*')
         .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['factories'] })
+    },
+  })
+}
+
+export function useUpsertFactories() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payloads: FactoryWritePayload[]) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase
+        .from('factories')
+        .upsert(payloads, { onConflict: 'code' })
+        .select('code')
 
       if (error) {
         throw error

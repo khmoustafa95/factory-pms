@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Factory Excel import (template + upsert by `code` + reject mismatched files)
 - [x] WBS role handoff: factory manager designs phases; assigned PM prepares tasks in `approved`; Kanban execution after start
 - [x] Projects list search — PostgREST `or()` no longer uses `factories.name`/`factories.code`
 - [x] `review_project_change` enum cast — director can approve/reject pending change requests
@@ -70,7 +71,7 @@
 - [ ] Optional `supabase:seed:demo` rich workflow seed
 - [ ] Client error reporting (Sentry) behind env
 - [ ] Further split `ProjectDetailPage` / `ProjectsPage`; paged `get_dashboard_projects`
-- [ ] Orientation-lite / custom project fields / Excel **import** wizard (optional TaskFlow ports; export is done)
+- [ ] Orientation-lite / custom project fields / Excel import for other entities (factories import is done; list export remains CSV)
 
 ## Blockers / issues
 
@@ -78,6 +79,12 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-07 (Factory Excel import)
+
+- Factories page Import asks to download an `.xlsx` template whose headers are the table columns `code`, `name`, `location`, `is_active`.
+- Existing `code` updates; new `code` inserts (`upsert` on conflict). Corrupt files or extra/missing columns reject the whole operation.
+- CSV also accepted. `exceljs` is loaded only when downloading or reading `.xlsx`.
 
 ### 2026-09-07 (WBS role handoff)
 

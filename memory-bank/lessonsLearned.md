@@ -4,6 +4,8 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-09-07 — `exceljs` Node entry hangs or times out under Vitest/jsdom (`writeBuffer` / streams). Keep factory import unit tests on `string[][]` + CSV; alias Vite to `exceljs/dist/exceljs.min.js` for the SPA. Do not round-trip xlsx in unit tests.
+
 - 2026-09-07 — Letting the assigned PM own both phases and tasks after approval created a waiting loop: FM could not start until PM planned phases, and PM could not prepare tasks until start. Splitting design (FM phases) from preparation (PM tasks in `approved`) keeps one status and a visible three-step checklist.
 
 - 2026-09-07 — PostgREST `or()` does not accept dotted embed paths (`factories.name.ilike.%x%`). The parser treats `factories` as the column and then expects an operator (`eq`, `ilike`, …), so `.name` fails with `PGRST100` / `failed to parse logic tree`. Search related rows first and filter the parent with `factory_id.in.(…)` / `project_id.in.(…)`.

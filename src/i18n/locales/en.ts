@@ -56,6 +56,7 @@ export const en = {
     reject: 'Reject',
     escalate: 'Critical alert',
     addFactory: 'Add factory',
+    import: 'Import',
     addAccount: 'Add account',
     addPhase: 'Add phase',
     addTask: 'Add task',
@@ -1025,6 +1026,48 @@ export const en = {
     newFactory: 'New factory',
     formDescription: 'Factories group projects and manager assignments.',
     activeFactory: 'Active factory',
+    import: {
+      title: 'Import factories',
+      promptDescription:
+        'Do you want to download the Excel template first? Column names must match the factories table: code, name, location, is_active.',
+      fileDescription:
+        'Upload an .xlsx or .csv file that matches the factories table. Existing factory codes will be updated; new codes will be added.',
+      downloadTemplate: 'Download template',
+      continueWithoutTemplate: 'Continue without downloading',
+      templateDownloaded: 'Template downloaded',
+      templateFailed: 'Unable to download the template',
+      dropzoneIdle: 'Drop an Excel or CSV file here, or click to choose',
+      dropzoneActive: 'Drop the file here',
+      invalidFile:
+        'The file could not be read. Make sure it is not corrupted and is a valid Excel or CSV file.',
+      unsupportedType: 'Unsupported file type. Use .xlsx or .csv.',
+      emptyFile: 'The file is empty.',
+      headerMismatch:
+        'The spreadsheet structure does not match. The first row must contain exactly: code, name, location, is_active.',
+      noDataRows: 'The file has no data rows to import.',
+      tooManyRows: 'The file exceeds the maximum of {{max}} rows.',
+      duplicateCode: 'Factory code {{code}} is duplicated in the file.',
+      invalidActive: 'is_active must be TRUE or FALSE.',
+      rowError: 'Row {{row}}: {{message}}',
+      errorsTitle: 'Import rejected',
+      previewInsert: '{{count}} will be added.',
+      previewUpdate: '{{count}} will be updated (matched by code).',
+      previewTotal: '{{count}} factories will be imported.',
+      confirm: 'Confirm import',
+      success: 'Import complete: {{inserted}} added, {{updated}} updated',
+      failed: 'Unable to import factories',
+      chooseAnotherFile: 'Choose another file',
+      codeTaken: 'This factory code already exists.',
+      instructionsTitle: 'instructions',
+      instructionsColumns:
+        'Columns: code (required), name (required), location (optional), is_active (optional, default TRUE).',
+      instructionsUpsert:
+        'If a code already exists the factory is updated; otherwise it is added. Do not change the header row.',
+      instructionsActive:
+        'is_active accepts TRUE/FALSE, 1/0, yes/no, or نعم/لا.',
+      instructionsExample:
+        'Example: DMS | Damascus plant | Damascus, Syria | TRUE',
+    },
   },
   accounts: {
     title: 'Accounts',

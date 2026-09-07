@@ -2,9 +2,7 @@
 
 Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
-## Entries
-
-- 2026-09-07 — After approval, factory manager designs phases and starts execution; assigned PM prepares tasks (status stays `todo`) then executes on Kanban. Avoids a new project status: `approved` is the planning stage. Start still requires phase readiness; empty tasks are a warning like underfunding.
+- 2026-09-07 — Factory Excel **import** uses real `.xlsx` templates via dynamically imported `exceljs` (browser `dist/exceljs.min.js`) because the header contract must match Postgres column names and Arabic Excel users often save native workbooks. List **export** stays UTF-8 BOM CSV. Upsert key is `factories.code`; files that fail structure or row validation are rejected with no DB write.
 - 2026-09-07 — Official on-prem hosting targets a **shared Windows PC** (Docker Desktop/WSL2 + reverse proxy), not Ubuntu Server, because the machine has other daily tasks. Production is still a separate Docker data dir and JWT secrets from `supabase start` demo keys; remote sites stay off until VPN; no cloud data store; later server migration keeps the same DNS name and volumes.
 - 2026-09-06 — All finance writes (funding, procurement, staff, overhead) start after approval. Proposal detail is budget/timeline/PM/files/discussion only; incoming funding is recorded by director/FM on the Finance tab once the contract exists.
 - 2026-09-02 — Least-privilege lifecycle: assigned PM writes phases/tasks; factory manager (same factory) or director pause/resume; factory manager requests completion and director confirms (director may complete directly). After approval, budget/dates/code freeze except via `request_project_change` + director `review_project_change` (GUC bypass). PM reassignment is an immediate factory-manager RPC with notifications, not a director-reviewed change. `completion_requested` is timestamp columns so existing status dashboards stay valid.
