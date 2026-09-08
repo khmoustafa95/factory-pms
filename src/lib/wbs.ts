@@ -273,7 +273,12 @@ export function getExecutionReadiness(
   }
 
   const schedule = getProjectScheduleBounds(project)
-  if (!schedule.start || !schedule.end) {
+  if (
+    !project.proposed_start_date ||
+    !project.proposed_end_date ||
+    !schedule.start ||
+    !schedule.end
+  ) {
     reasons.push('missing_project_schedule')
   }
 

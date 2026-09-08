@@ -2,7 +2,7 @@
 
 Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
-- 2026-09-07 — Project manager is assigned after approval, not on proposal submit. `transition_project_status` no longer requires `assigned_pm_id` for draft/rejected → `proposed`; start (`approved` → `in_progress`) does. First assign uses `reassign_project_pm` without a reason; reassignment still needs ≥3 characters. Proposal form omits `assigned_pm_id` so the freeze/reassign RPC stays the only write path after approval.
+- 2026-09-08 — Proposal contract is duration in months; calendar start/end are planned after approval. Rationale: directors review effort length, not a speculative calendar; FM locks dates when ready to design phases. `project_duration_days` prefers fixed dates when present so phase windows match the calendar.
 
 - 2026-09-07 — Company directors need table `SELECT`/`INSERT`/`UPDATE` on **all** project statuses (including `draft`) for catalog upsert. Previously directors could not insert and could not see/update drafts, so an imported draft would vanish or the upsert would fail even with a unique `(factory_id, code)`.
 - 2026-09-07 — Factory Excel **import** uses real `.xlsx` templates via dynamically imported `exceljs` (browser `dist/exceljs.min.js`) because the header contract must match Postgres column names and Arabic Excel users often save native workbooks. List **export** stays UTF-8 BOM CSV. Upsert key is `factories.code`; files that fail structure or row validation are rejected with no DB write.

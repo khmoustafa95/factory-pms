@@ -12,26 +12,32 @@ import { cn } from '@/lib/utils'
 
 interface ProjectPlanningChecklistProps {
   pmAssigned: boolean
+  scheduleSet: boolean
   phasesReady: boolean
   tasksPrepared: boolean
   canAssignPm: boolean
+  canSetSchedule: boolean
   canManagePhases: boolean
   canManageTasks: boolean
   canStart: boolean
   onAssignPm: () => void
+  onSetSchedule: () => void
   onGoToWbs: () => void
   onStart: () => void
 }
 
 export function ProjectPlanningChecklist({
   pmAssigned,
+  scheduleSet,
   phasesReady,
   tasksPrepared,
   canAssignPm,
+  canSetSchedule,
   canManagePhases,
   canManageTasks,
   canStart,
   onAssignPm,
+  onSetSchedule,
   onGoToWbs,
   onStart,
 }: ProjectPlanningChecklistProps) {
@@ -56,16 +62,35 @@ export function ProjectPlanningChecklist({
           : null,
     },
     {
+      id: 'schedule',
+      done: scheduleSet,
+      title: t('projects.planning.stepSchedule'),
+      hint: scheduleSet
+        ? t('projects.planning.done')
+        : canSetSchedule
+          ? t('projects.planning.scheduleHintFm')
+          : t('projects.planning.waitingFm'),
+      action:
+        !scheduleSet && canSetSchedule
+          ? {
+              label: t('projects.planning.ctaSetSchedule'),
+              onClick: onSetSchedule,
+            }
+          : null,
+    },
+    {
       id: 'phases',
       done: phasesReady,
       title: t('projects.planning.stepPhases'),
-      hint: phasesReady
-        ? t('projects.planning.done')
-        : canManagePhases
-          ? t('projects.planning.phasesHintFm')
-          : t('projects.planning.waitingFm'),
+      hint: !scheduleSet
+        ? t('projects.planning.waitingSchedule')
+        : phasesReady
+          ? t('projects.planning.done')
+          : canManagePhases
+            ? t('projects.planning.phasesHintFm')
+            : t('projects.planning.waitingFm'),
       action:
-        !phasesReady && canManagePhases
+        scheduleSet && !phasesReady && canManagePhases
           ? {
               label: t('projects.planning.ctaAddPhase'),
               onClick: onGoToWbs,
@@ -78,15 +103,21 @@ export function ProjectPlanningChecklist({
       title: t('projects.planning.stepTasks'),
       hint: !pmAssigned
         ? t('projects.planning.waitingPmAssign')
-        : !phasesReady
-          ? t('projects.planning.waitingFm')
-          : tasksPrepared
-            ? t('projects.planning.done')
-            : canManageTasks
-              ? t('projects.planning.tasksHintPm')
-              : t('projects.planning.waitingPm'),
+        : !scheduleSet
+          ? t('projects.planning.waitingSchedule')
+          : !phasesReady
+            ? t('projects.planning.waitingFm')
+            : tasksPrepared
+              ? t('projects.planning.done')
+              : canManageTasks
+                ? t('projects.planning.tasksHintPm')
+                : t('projects.planning.waitingPm'),
       action:
-        pmAssigned && phasesReady && !tasksPrepared && canManageTasks
+        pmAssigned &&
+        scheduleSet &&
+        phasesReady &&
+        !tasksPrepared &&
+        canManageTasks
           ? {
               label: t('projects.planning.ctaAddTask'),
               onClick: onGoToWbs,
@@ -98,7 +129,7 @@ export function ProjectPlanningChecklist({
       done: false,
       title: t('projects.planning.stepStart'),
       hint:
-        pmAssigned && phasesReady
+        pmAssigned && scheduleSet && phasesReady
           ? canStart
             ? t('projects.planning.startHintFm')
             : t('projects.planning.waitingFm')

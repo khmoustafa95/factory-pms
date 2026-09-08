@@ -56,6 +56,15 @@ export interface ProjectScheduleBounds {
 export function getProjectDurationDays(
   project: ProjectScheduleInput,
 ): number | null {
+  if (project.proposed_start_date && project.proposed_end_date) {
+    return (
+      differenceInCalendarDays(
+        parseISO(project.proposed_end_date),
+        parseISO(project.proposed_start_date),
+      ) + 1
+    )
+  }
+
   if (
     project.proposed_duration_value != null &&
     project.proposed_duration_unit
@@ -63,15 +72,6 @@ export function getProjectDurationDays(
     return durationToDays(
       project.proposed_duration_value,
       project.proposed_duration_unit,
-    )
-  }
-
-  if (project.proposed_start_date && project.proposed_end_date) {
-    return (
-      differenceInCalendarDays(
-        parseISO(project.proposed_end_date),
-        parseISO(project.proposed_start_date),
-      ) + 1
     )
   }
 

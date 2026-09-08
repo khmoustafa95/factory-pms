@@ -30,7 +30,6 @@ import { useFormDialog } from '@/hooks/useFormDialog'
 import { useFormDialogClose } from '@/hooks/useFormDialogClose'
 import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { useActiveCurrencies } from '@/hooks/useCurrencies'
-import { getPhaseDurationDays } from '@/lib/duration'
 import {
   formatNullableSelectValue,
   NULL_SELECT_VALUE,
@@ -40,6 +39,7 @@ import { matchMutationErrorKey } from '@/lib/mutation-error'
 import {
   createDraftProjectSchema,
   createSubmitProjectSchema,
+  durationMonthsFromProject,
   PROJECT_PRIORITIES,
   type ProjectFormValues,
 } from '@/lib/validations/project'
@@ -68,8 +68,7 @@ const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
   description: '',
   budget: '',
   currency: 'USD',
-  proposed_start_date: '',
-  proposed_end_date: '',
+  proposed_duration_months: '',
   announcement_date: '',
   announcing_entity: '',
   priority: '',
@@ -103,8 +102,9 @@ export function ProjectFormDialog({
       description: project?.description ?? '',
       budget: project?.budget != null ? String(project.budget) : '',
       currency: project?.currency ?? 'USD',
-      proposed_start_date: project?.proposed_start_date ?? '',
-      proposed_end_date: project?.proposed_end_date ?? '',
+      proposed_duration_months: project
+        ? durationMonthsFromProject(project)
+        : '',
       announcement_date: project?.announcement_date ?? '',
       announcing_entity: project?.announcing_entity ?? '',
       priority: project?.priority ?? '',
@@ -132,19 +132,6 @@ export function ProjectFormDialog({
     control: form.control,
     name: 'priority',
   })
-  const startDate = useWatch({
-    control: form.control,
-    name: 'proposed_start_date',
-  })
-  const endDate = useWatch({
-    control: form.control,
-    name: 'proposed_end_date',
-  })
-
-  const derivedDurationDays =
-    startDate && endDate && endDate >= startDate
-      ? getPhaseDurationDays(startDate, endDate)
-      : null
 
   const closeDialog = () => {
     setPendingFiles([])
@@ -162,8 +149,7 @@ export function ProjectFormDialog({
         field === 'description' ||
         field === 'budget' ||
         field === 'currency' ||
-        field === 'proposed_start_date' ||
-        field === 'proposed_end_date' ||
+        field === 'proposed_duration_months' ||
         field === 'announcement_date' ||
         field === 'announcing_entity' ||
         field === 'priority' ||
@@ -199,8 +185,7 @@ export function ProjectFormDialog({
           description: values.description ?? '',
           budget: values.budget ?? '',
           currency: values.currency || 'USD',
-          proposed_start_date: values.proposed_start_date ?? '',
-          proposed_end_date: values.proposed_end_date ?? '',
+          proposed_duration_months: values.proposed_duration_months ?? '',
           announcement_date: values.announcement_date ?? '',
           announcing_entity: values.announcing_entity ?? '',
           priority: values.priority ?? '',
@@ -235,8 +220,7 @@ export function ProjectFormDialog({
           description: parsed.data.description,
           budget: parsed.data.budget,
           currency: parsed.data.currency,
-          proposed_start_date: parsed.data.proposed_start_date,
-          proposed_end_date: parsed.data.proposed_end_date,
+          proposed_duration_months: parsed.data.proposed_duration_months,
           announcement_date: parsed.data.announcement_date ?? '',
           announcing_entity: parsed.data.announcing_entity ?? '',
           priority: parsed.data.priority ?? '',
@@ -343,47 +327,25 @@ export function ProjectFormDialog({
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="project-start">
-                    {t('projects.proposedStartDate')}
-                  </Label>
-                  <DatePickerField
-                    id="project-start"
-                    control={form.control}
-                    name="proposed_start_date"
-                    allowClear
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.proposed_start_date}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="project-end">
-                    {t('projects.proposedEndDate')}
-                  </Label>
-                  <DatePickerField
-                    id="project-end"
-                    control={form.control}
-                    name="proposed_end_date"
-                    allowClear
-                  />
-                  <FormFieldError
-                    error={form.formState.errors.proposed_end_date}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="project-duration-months">
+                  {t('projects.proposedDurationMonths')}
+                </Label>
+                <Input
+                  id="project-duration-months"
+                  type="number"
+                  min="1"
+                  step="1"
+                  inputMode="numeric"
+                  {...form.register('proposed_duration_months')}
+                />
+                <FormFieldError
+                  error={form.formState.errors.proposed_duration_months}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('projects.durationMonthsHint')}
+                </p>
               </div>
-
-              {derivedDurationDays != null ? (
-                <p className="text-xs text-muted-foreground">
-                  {t('projects.derivedDuration', { days: derivedDurationDays })}
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  {t('projects.datesHint')}
-                </p>
-              )}
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">

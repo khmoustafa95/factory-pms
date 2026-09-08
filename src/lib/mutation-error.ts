@@ -66,6 +66,18 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
     key: 'projects.rpcErrors.tasksNotDone',
   },
   {
+    pattern: /project duration is required before submitting proposal/i,
+    key: 'validation.durationRequired',
+  },
+  {
+    pattern: /project schedule is required before starting execution/i,
+    key: 'projects.executionNotReady.missing_project_schedule',
+  },
+  {
+    pattern: /project schedule is required before adding phases/i,
+    key: 'projects.executionNotReady.missing_project_schedule',
+  },
+  {
     pattern: /assigned pm is required before starting execution/i,
     key: 'projects.executionNotReady.missing_assigned_pm',
   },

@@ -465,8 +465,9 @@ export const ar = {
     planning: {
       title: 'تسليم التخطيط',
       description:
-        'بعد الاعتماد، مدير المصنع يسند مدير مشروع ويصمّم المراحل. مدير المشروع المسند يعدّ المهام. ثم يبدأ مدير المصنع التنفيذ.',
+        'بعد الاعتماد، مدير المصنع يسند مدير مشروع ويحدد الجدول الزمني ويصمّم المراحل. مدير المشروع المسند يعدّ المهام. ثم يبدأ مدير المصنع التنفيذ.',
       stepPm: 'إسناد مدير المشروع',
+      stepSchedule: 'تحديد جدول المشروع',
       stepPhases: 'تصميم المراحل',
       stepTasks: 'إعداد المهام',
       stepStart: 'بدء التنفيذ',
@@ -474,12 +475,16 @@ export const ar = {
       waitingFm: 'بانتظار مدير المصنع',
       waitingPm: 'بانتظار مدير المشروع',
       waitingPmAssign: 'بانتظار إسناد مدير مشروع',
+      waitingSchedule: 'بانتظار تحديد جدول المشروع',
       pmHintFm: 'أسند مدير مشروع من هذا المصنع قبل بدء التنفيذ.',
+      scheduleHintFm:
+        'حدد تاريخي البدء والانتهاء وفق المدة المعتمدة بالأشهر.',
       phasesHintFm: 'قسّم الميزانية والجدول المعتمدين إلى مراحل.',
       tasksHintPm: 'أضف مهاماً تحت كل مرحلة قبل بدء العمل.',
       startHintFm:
         'ابدأ عندما يُسند مدير مشروع وتكون خطة المراحل جاهزة. غياب المهام تحذير فقط.',
       ctaAssignPm: 'إسناد مدير المشروع',
+      ctaSetSchedule: 'تحديد الجدول',
       ctaAddPhase: 'إضافة مراحل',
       ctaAddTask: 'إعداد المهام',
       ctaStart: 'بدء التنفيذ',
@@ -552,12 +557,28 @@ export const ar = {
     formDescription:
       'تحديد النطاق والميزانية والجدول الزمني والملفات الداعمة لمراجعة المدير العام.',
     editDetailsDescription:
-      'حدّث عنوان المشروع والوصف والميزانية والتواريخ.',
+      'حدّث عنوان المشروع والوصف والميزانية والمدة.',
     currency: 'العملة',
     proposedDuration: 'المدة المقدّرة',
+    proposedDurationMonths: 'المدة (بالأشهر)',
+    durationMonthsHint:
+      'أدخل مدة المشروع بالأشهر. يُحدَّد تاريخا البدء والانتهاء بعد الاعتماد.',
     durationUnit: 'الوحدة',
     durationHint: 'يُحسب تاريخ البداية والنهاية تلقائياً عند بدء التنفيذ.',
     assignedPm: 'مدير المشروع المعيّن',
+    scheduleDialog: {
+      action: 'تحديد الجدول',
+      editAction: 'تعديل الجدول',
+      title: 'تحديد جدول المشروع',
+      description:
+        'اختر تاريخي البدء والانتهاء بعد الاعتماد. يجب أن تقع المراحل ضمن هذه الفترة.',
+      contractDuration: 'المدة المعتمدة',
+      suggestedEnd: 'تاريخ الانتهاء المقترح من المدة: {{date}}',
+      useSuggested: 'استخدم التاريخ المقترح',
+      submit: 'حفظ الجدول',
+      updated: 'تم حفظ جدول المشروع',
+      failed: 'تعذر حفظ جدول المشروع',
+    },
     rejectProposal: 'رفض المقترح',
     rejectionReason: 'سبب الرفض',
     rejectDescription:
@@ -667,7 +688,7 @@ export const ar = {
     import: {
       title: 'استيراد المشاريع',
       promptDescription:
-        'هل تريد تنزيل نموذج Excel أولاً؟ أسماء الأعمدة يجب أن تطابق: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+        'هل تريد تنزيل نموذج Excel أولاً؟ أسماء الأعمدة يجب أن تطابق: factory_code, code, title, description, budget, currency, proposed_duration_months, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
       fileDescription:
         'ارفع ملف .xlsx أو .csv مطابق لنموذج المشاريع. الزوج الموجود factory_code + code يُحدَّث، والزوج الجديد يُضاف كمسودة.',
       downloadTemplate: 'تحميل النموذج',
@@ -681,7 +702,7 @@ export const ar = {
       unsupportedType: 'صيغة الملف غير مدعومة. استخدم .xlsx أو .csv.',
       emptyFile: 'الملف فارغ.',
       headerMismatch:
-        'هيكل الجدول غير مطابق. الصف الأول يجب أن يحتوي بالضبط على: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+        'هيكل الجدول غير مطابق. الصف الأول يجب أن يحتوي بالضبط على: factory_code, code, title, description, budget, currency, proposed_duration_months, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
       noDataRows: 'لا توجد صفوف بيانات للاستيراد.',
       tooManyRows: 'الملف يتجاوز الحد الأقصى {{max}} صفاً.',
       duplicatePair:
@@ -700,13 +721,13 @@ export const ar = {
       chooseAnotherFile: 'اختيار ملف آخر',
       instructionsTitle: 'instructions',
       instructionsColumns:
-        'الأعمدة: factory_code و code و title مطلوبة. باقي الأعمدة اختيارية. التواريخ بصيغة YYYY-MM-DD. لا تُدرج id أو status أو التقدم أو مدير المشروع.',
+        'الأعمدة: factory_code و code و title مطلوبة. باقي الأعمدة اختيارية. proposed_duration_months عدد صحيح. التواريخ بصيغة YYYY-MM-DD. لا تُدرج id أو status أو التقدم أو تواريخ الجدول أو مدير المشروع.',
       instructionsUpsert:
         'تُطابق الصفوف المشاريع الموجودة حسب factory_code + code. الصف الموجود يُحدَّث دون تغيير الحالة. الصف الجديد يُضاف كمسودة.',
       instructionsPriority:
         'priority يقبل high/medium/low أو عالية/متوسطة/منخفضة. اتركه فارغاً إن لم تُحدد أولوية.',
       instructionsExample:
-        'مثال: DMS | PRJ-001 | ترقية التبريد | … | 150000 | USD | 2026-04-01 | 2026-09-30 | 2026-03-01 | وزارة الصناعة | high | |',
+        'مثال: DMS | PRJ-001 | ترقية التبريد | … | 150000 | USD | 6 | 2026-03-01 | وزارة الصناعة | high | |',
     },
   },
   projectFinance: {

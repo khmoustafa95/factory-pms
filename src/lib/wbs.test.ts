@@ -71,6 +71,34 @@ describe('execution readiness', () => {
     expect(notReady.reasons).toContain('missing_assigned_pm')
   })
 
+  it('is not ready without calendar start and end dates', () => {
+    const notReady = getExecutionReadiness(
+      {
+        ...baseProject,
+        proposed_start_date: null,
+        proposed_end_date: null,
+        proposed_duration_value: 3,
+        proposed_duration_unit: 'month',
+      },
+      [
+        {
+          start_date: '2026-01-01',
+          end_date: '2026-02-15',
+          weight_percent: 60,
+          expected_budget: 600,
+        },
+        {
+          start_date: '2026-02-16',
+          end_date: '2026-03-31',
+          weight_percent: 40,
+          expected_budget: 400,
+        },
+      ],
+    )
+    expect(notReady.ready).toBe(false)
+    expect(notReady.reasons).toContain('missing_project_schedule')
+  })
+
   it('allows only factory manager of the same factory to start', () => {
     expect(
       canStartExecution(

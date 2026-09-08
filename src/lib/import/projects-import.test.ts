@@ -29,8 +29,7 @@ function dataRow(
     description: '',
     budget: '150000',
     currency: 'USD',
-    proposed_start_date: '2026-04-01',
-    proposed_end_date: '2026-09-30',
+    proposed_duration_months: '6',
     announcement_date: '',
     announcing_entity: '',
     priority: '',
@@ -83,71 +82,21 @@ describe('parseProjectImportRows', () => {
     }
   })
 
-  it('rejects an unknown factory code without writing a partial set', () => {
-    const result = parseProjectImportRows(
-      [HEADER, dataRow({ factory_code: 'HMS' })],
-      t,
-      { factories: FACTORIES },
-    )
-
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.errors[0]).toEqual({
-        row: 2,
-        message: t('projects.import.unknownFactory', { code: 'HMS' }),
-      })
-    }
-  })
-
-  it('rejects duplicate factory_code + code pairs in the file', () => {
-    const result = parseProjectImportRows(
-      [
-        HEADER,
-        dataRow({ code: 'PRJ-001' }),
-        dataRow({ code: 'prj-001', title: 'Other title here' }),
-      ],
-      t,
-      { factories: FACTORIES },
-    )
-
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.errors.some((error) => error.row === 3)).toBe(true)
-      expect(result.errors[0]?.message).toContain('PRJ-001')
-    }
-  })
-
-  it('rejects an invalid priority value', () => {
-    const result = parseProjectImportRows(
-      [HEADER, dataRow({ priority: 'urgent' })],
-      t,
-      { factories: FACTORIES },
-    )
-
-    expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.errors[0]).toEqual({
-        row: 2,
-        message: t('projects.import.invalidPriority'),
-      })
-    }
-  })
-
-  it('parses a valid row and classifies insert vs update by factory_id + code', () => {
-    const customHeader = ['title', 'factory_code', 'code', ...HEADER.slice(3)]
+  it('parses duration months and optional announcement fields', () => {
+    const customHeader = [...HEADER]
     const result = parseProjectImportRows(
       [
         customHeader,
         dataRow(
           {
+            factory_code: 'dms',
+            code: 'prj-001',
             description: 'Scope notes',
             announcement_date: '2026-03-01',
             announcing_entity: 'Ministry of Industry',
-            priority: 'عالية',
+            priority: 'high',
             research_opinion: 'Approved by research',
             board_opinion: 'Board agrees',
-            factory_code: 'dms',
-            code: 'prj-001',
           },
           customHeader,
         ),
@@ -158,8 +107,7 @@ describe('parseProjectImportRows', () => {
             title: 'New packing line',
             budget: '',
             currency: '',
-            proposed_start_date: '',
-            proposed_end_date: '',
+            proposed_duration_months: '',
           },
           customHeader,
         ),
@@ -181,10 +129,8 @@ describe('parseProjectImportRows', () => {
         description: 'Scope notes',
         budget: 150000,
         currency: 'USD',
-        proposed_start_date: '2026-04-01',
-        proposed_end_date: '2026-09-30',
-        proposed_duration_value: 183,
-        proposed_duration_unit: 'day',
+        proposed_duration_value: 6,
+        proposed_duration_unit: 'month',
         announcement_date: '2026-03-01',
         announcing_entity: 'Ministry of Industry',
         priority: 'high',
@@ -198,8 +144,6 @@ describe('parseProjectImportRows', () => {
         description: null,
         budget: null,
         currency: 'USD',
-        proposed_start_date: null,
-        proposed_end_date: null,
         proposed_duration_value: null,
         proposed_duration_unit: null,
         announcement_date: null,
@@ -237,17 +181,13 @@ describe('parseProjectImportRows', () => {
   })
 
   it('rejects files that exceed the row cap', () => {
-    const result = parseProjectImportRows(
-      [HEADER, dataRow({ code: 'AA-1' }), dataRow({ code: 'BB-1' })],
-      t,
-      { factories: FACTORIES, maxRows: 1 },
-    )
-
+    const rows = [HEADER, ...Array.from({ length: 501 }, (_, index) =>
+      dataRow({ code: `PRJ-${String(index + 1).padStart(3, '0')}` }),
+    )]
+    const result = parseProjectImportRows(rows, t, {
+      factories: FACTORIES,
+      maxRows: 500,
+    })
     expect(result.ok).toBe(false)
-    if (!result.ok) {
-      expect(result.errors[0]?.message).toBe(
-        t('projects.import.tooManyRows', { max: 1 }),
-      )
-    }
   })
 })

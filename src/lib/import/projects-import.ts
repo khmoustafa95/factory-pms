@@ -1,5 +1,4 @@
 import { parseDateOnly } from '@/lib/date-only'
-import { getPhaseDurationDays } from '@/lib/duration'
 import {
   downloadXlsxTemplate,
   type SpreadsheetTemplateCopy,
@@ -14,8 +13,7 @@ export const PROJECT_IMPORT_COLUMNS = [
   'description',
   'budget',
   'currency',
-  'proposed_start_date',
-  'proposed_end_date',
+  'proposed_duration_months',
   'announcement_date',
   'announcing_entity',
   'priority',
@@ -32,10 +30,8 @@ export type ProjectWritePayload = {
   description: string | null
   budget: number | null
   currency: string
-  proposed_start_date: string | null
-  proposed_end_date: string | null
   proposed_duration_value: number | null
-  proposed_duration_unit: 'day' | null
+  proposed_duration_unit: 'month' | null
   announcement_date: string | null
   announcing_entity: string | null
   priority: ProjectPriority | null
@@ -307,37 +303,26 @@ export function parseProjectImportRows(
       })
     }
 
-    const start = parseOptionalDate(
-      cellAt(row, indexes, 'proposed_start_date'),
-      t,
-    )
-    const end = parseOptionalDate(cellAt(row, indexes, 'proposed_end_date'), t)
     const announcement = parseOptionalDate(
       cellAt(row, indexes, 'announcement_date'),
       t,
     )
 
-    if (!start.ok) {
-      errors.push({ row: spreadsheetRow, message: start.message })
-    }
-    if (!end.ok) {
-      errors.push({ row: spreadsheetRow, message: end.message })
-    }
-    if (!announcement.ok) {
-      errors.push({ row: spreadsheetRow, message: announcement.message })
+    const durationRaw = cellAt(row, indexes, 'proposed_duration_months').trim()
+    let durationMonths: number | null = null
+    if (durationRaw.length > 0) {
+      if (!/^\d+$/.test(durationRaw) || Number(durationRaw) < 1) {
+        errors.push({
+          row: spreadsheetRow,
+          message: t('validation.durationMin'),
+        })
+      } else {
+        durationMonths = Number(durationRaw)
+      }
     }
 
-    if (
-      start.ok &&
-      end.ok &&
-      start.value &&
-      end.value &&
-      end.value < start.value
-    ) {
-      errors.push({
-        row: spreadsheetRow,
-        message: t('validation.endAfterStart'),
-      })
+    if (!announcement.ok) {
+      errors.push({ row: spreadsheetRow, message: announcement.message })
     }
 
     const factoryId = factoryCodeValid
@@ -368,19 +353,9 @@ export function parseProjectImportRows(
       continue
     }
 
-    if (
-      !start.ok ||
-      !end.ok ||
-      !announcement.ok ||
-      priorityValue === undefined
-    ) {
+    if (!announcement.ok || priorityValue === undefined) {
       continue
     }
-
-    const durationDays =
-      start.value && end.value
-        ? getPhaseDurationDays(start.value, end.value)
-        : null
 
     payloads.push({
       factory_id: factoryId,
@@ -389,10 +364,8 @@ export function parseProjectImportRows(
       description,
       budget,
       currency,
-      proposed_start_date: start.value,
-      proposed_end_date: end.value,
-      proposed_duration_value: durationDays,
-      proposed_duration_unit: durationDays != null ? 'day' : null,
+      proposed_duration_value: durationMonths,
+      proposed_duration_unit: durationMonths != null ? 'month' : null,
       announcement_date: announcement.value,
       announcing_entity: announcingEntity,
       priority: priorityValue,

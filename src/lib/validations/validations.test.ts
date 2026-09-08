@@ -36,7 +36,7 @@ describe('localized validation schemas', () => {
     }
   })
 
-  it('validates project schedule in Arabic', () => {
+  it('requires duration months on submit', () => {
     const t = createTranslator(ar)
     const result = createSubmitProjectSchema(t).safeParse({
       code: 'PRJ-001',
@@ -44,8 +44,7 @@ describe('localized validation schemas', () => {
       description: 'وصف تجريبي طويل بما فيه الكفاية',
       budget: '1000',
       currency: 'USD',
-      proposed_start_date: '2024-01-10',
-      proposed_end_date: '2024-01-01',
+      proposed_duration_months: '',
       announcement_date: '',
       announcing_entity: '',
       priority: '',
@@ -55,13 +54,13 @@ describe('localized validation schemas', () => {
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe(
-        'يجب أن يكون تاريخ الانتهاء في أو بعد تاريخ البدء',
+      expect(result.error.issues.some((issue) => issue.path[0] === 'proposed_duration_months')).toBe(
+        true,
       )
     }
   })
 
-  it('requires a valid project code, description, and budget on submit, not a PM', () => {
+  it('requires a valid project code, description, budget, and duration on submit', () => {
     const t = createTranslator(en)
     const incomplete = createSubmitProjectSchema(t).safeParse({
       code: 'x',
@@ -69,8 +68,7 @@ describe('localized validation schemas', () => {
       description: 'hi',
       budget: '',
       currency: 'USD',
-      proposed_start_date: '2024-01-01',
-      proposed_end_date: '2024-01-10',
+      proposed_duration_months: '',
       announcement_date: '',
       announcing_entity: '',
       priority: '',
@@ -84,7 +82,7 @@ describe('localized validation schemas', () => {
       expect(messages).toContain('Code must be at least 2 characters')
       expect(messages).toContain('Description must be at least 3 characters')
       expect(messages).toContain('Budget is required')
-      expect(messages).not.toContain('Assigned project manager is required')
+      expect(messages).toContain('Duration is required')
     }
 
     const complete = createSubmitProjectSchema(t).safeParse({
@@ -93,8 +91,7 @@ describe('localized validation schemas', () => {
       description: 'A valid description',
       budget: '1000',
       currency: 'USD',
-      proposed_start_date: '2024-01-01',
-      proposed_end_date: '2024-01-10',
+      proposed_duration_months: '6',
       announcement_date: '',
       announcing_entity: '',
       priority: '',

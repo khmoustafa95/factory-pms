@@ -26,6 +26,7 @@ import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectPlanningChecklist } from '@/components/projects/ProjectPlanningChecklist'
 import { ProjectReassignPmDialog } from '@/components/projects/ProjectReassignPmDialog'
+import { ProjectScheduleDialog } from '@/components/projects/ProjectScheduleDialog'
 import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ProjectWbsTab } from '@/components/projects/ProjectWbsTab'
@@ -60,6 +61,7 @@ import {
   usePauseProjectExecution,
   useRejectProject,
   useResumeProjectExecution,
+  useSetProjectSchedule,
   useStartProjectExecution,
   useUpdateProject,
 } from '@/hooks/useProjects'
@@ -110,6 +112,7 @@ import {
 import { isFactoryManager } from '@/lib/roles'
 import type { ChangeRequestFormValues } from '@/lib/validations/governance'
 import type { ReassignPmFormValues } from '@/lib/validations/governance'
+import type { ProjectScheduleFormValues } from '@/lib/validations/project'
 import type {
   ProjectPauseValues,
   ProjectRejectValues,
@@ -219,6 +222,7 @@ export function ProjectDetailPage() {
   const updateTask = useUpdateTask(projectId)
   const deleteTask = useDeleteTask(projectId)
   const updateProject = useUpdateProject()
+  const setProjectSchedule = useSetProjectSchedule()
   const approveProject = useApproveProject()
   const rejectProject = useRejectProject()
   const startProjectExecution = useStartProjectExecution()
@@ -250,6 +254,7 @@ export function ProjectDetailPage() {
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false)
   const [changeDialogOpen, setChangeDialogOpen] = useState(false)
   const [reassignDialogOpen, setReassignDialogOpen] = useState(false)
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
   const { close, handleConfirm, state: confirmState } = useConfirmAction()
   const [activeTab, setActiveTab] = useProjectDetailTab(showFinance)
   const { data: proposalAttachments = [] } = useProjectAttachments(
@@ -307,6 +312,24 @@ export function ProjectDetailPage() {
     project !== undefined &&
     canEditProjectDetails(project.status)
   const canReassignPm = project ? canReassignProjectPm(project, profile) : false
+  const scheduleSet = Boolean(
+    project?.proposed_start_date && project?.proposed_end_date,
+  )
+  const canSetSchedule = Boolean(
+    canPhases && project?.status === 'approved',
+  )
+  const phasesReady = Boolean(
+    scheduleSet &&
+      !(executionReadiness?.reasons.some(
+        (reason) =>
+          reason === 'no_phases' ||
+          reason === 'weights_incomplete' ||
+          reason === 'budgets_incomplete' ||
+          reason === 'missing_dates' ||
+          reason === 'dates_outside_project' ||
+          reason === 'phase_budget_exceeds_project',
+      ) ?? false),
+  )
   const canRequestChange =
     project !== undefined &&
     canRequestProjectChange(project.status) &&
@@ -492,6 +515,24 @@ export function ProjectDetailPage() {
       )
     } catch (submitError) {
       toastMutationError(submitError, t('projects.reassignPm.failed'), t)
+      throw submitError
+    }
+  }
+
+  const handleSetSchedule = async (values: ProjectScheduleFormValues) => {
+    if (!project) {
+      return
+    }
+
+    try {
+      await setProjectSchedule.mutateAsync({
+        id: project.id,
+        startDate: values.proposed_start_date,
+        endDate: values.proposed_end_date,
+      })
+      toast.success(t('projects.scheduleDialog.updated'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.scheduleDialog.failed'), t)
       throw submitError
     }
   }
@@ -712,6 +753,14 @@ export function ProjectDetailPage() {
                     label: t('common.edit'),
                     hidden: !canEditDetails,
                     onClick: () => setProjectDialogOpen(true),
+                  },
+                  {
+                    id: 'set-schedule',
+                    label: scheduleSet
+                      ? t('projects.scheduleDialog.editAction')
+                      : t('projects.scheduleDialog.action'),
+                    hidden: !canSetSchedule,
+                    onClick: () => setScheduleDialogOpen(true),
                   },
                   {
                     id: 'reassign-pm',
@@ -1002,17 +1051,16 @@ export function ProjectDetailPage() {
               {project.status === 'approved' ? (
                 <ProjectPlanningChecklist
                   pmAssigned={Boolean(project.assigned_pm_id)}
-                  phasesReady={Boolean(
-                    executionReadiness?.reasons.every(
-                      (reason) => reason === 'missing_assigned_pm',
-                    ),
-                  )}
+                  scheduleSet={scheduleSet}
+                  phasesReady={phasesReady}
                   tasksPrepared={tasks.length > 0}
                   canAssignPm={canReassignPm}
+                  canSetSchedule={canSetSchedule}
                   canManagePhases={canPhases}
                   canManageTasks={canTasks}
                   canStart={canStart}
                   onAssignPm={() => setReassignDialogOpen(true)}
+                  onSetSchedule={() => setScheduleDialogOpen(true)}
                   onGoToWbs={() => setActiveTab('wbs')}
                   onStart={() => setStartDialogOpen(true)}
                 />
@@ -1170,6 +1218,22 @@ export function ProjectDetailPage() {
           currentEnd={project.proposed_end_date}
           onSubmit={handleChangeRequest}
           isSubmitting={requestChange.isPending}
+        />
+      ) : null}
+
+      {canSetSchedule && project ? (
+        <ProjectScheduleDialog
+          open={scheduleDialogOpen}
+          onOpenChange={setScheduleDialogOpen}
+          durationMonths={
+            project.proposed_duration_unit === 'month'
+              ? project.proposed_duration_value
+              : null
+          }
+          currentStart={project.proposed_start_date}
+          currentEnd={project.proposed_end_date}
+          onSubmit={handleSetSchedule}
+          isSubmitting={setProjectSchedule.isPending}
         />
       ) : null}
 

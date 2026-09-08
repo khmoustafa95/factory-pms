@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { parseDateOnly } from '@/lib/date-only'
-import { getPhaseDurationDays } from '@/lib/duration'
+import { addDays, format, parseISO } from 'date-fns'
+import { durationToDays } from '@/lib/duration'
 import type { ProjectPriority } from '@/types/database'
 import type { ValidationTranslator } from '@/lib/validations/types'
 
@@ -49,6 +50,33 @@ function refineAnnouncementDate(
   }
 }
 
+function refineOptionalDurationMonths(
+  values: { proposed_duration_months?: string },
+  ctx: z.RefinementCtx,
+  t: ValidationTranslator,
+) {
+  const raw = values.proposed_duration_months?.trim() ?? ''
+  if (raw.length === 0) {
+    return
+  }
+  if (!/^\d+$/.test(raw)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: t('validation.durationInteger'),
+      path: ['proposed_duration_months'],
+    })
+    return
+  }
+  const parsed = Number(raw)
+  if (parsed < 1) {
+    ctx.addIssue({
+      code: 'custom',
+      message: t('validation.durationMin'),
+      path: ['proposed_duration_months'],
+    })
+  }
+}
+
 export function createDraftProjectSchema(t: ValidationTranslator) {
   return z
     .object({
@@ -57,8 +85,7 @@ export function createDraftProjectSchema(t: ValidationTranslator) {
       description: z.string().trim().optional().or(z.literal('')),
       budget: z.string().trim().optional().or(z.literal('')),
       currency: z.string().trim().min(3).max(3).default('USD'),
-      proposed_start_date: z.string().trim().optional().or(z.literal('')),
-      proposed_end_date: z.string().trim().optional().or(z.literal('')),
+      proposed_duration_months: z.string().trim().optional().or(z.literal('')),
       ...announcementFields(),
     })
     .superRefine((values, ctx) => {
@@ -94,18 +121,7 @@ export function createDraftProjectSchema(t: ValidationTranslator) {
         }
       }
 
-      if (
-        values.proposed_start_date &&
-        values.proposed_end_date &&
-        values.proposed_end_date < values.proposed_start_date
-      ) {
-        ctx.addIssue({
-          code: 'custom',
-          message: t('validation.endAfterStart'),
-          path: ['proposed_end_date'],
-        })
-      }
-
+      refineOptionalDurationMonths(values, ctx, t)
       refineAnnouncementDate(values, ctx, t)
     })
 }
@@ -118,6 +134,43 @@ export function createSubmitProjectSchema(t: ValidationTranslator) {
       description: z.string().trim().min(3, t('validation.descriptionMin')),
       budget: z.string().trim().min(1, t('validation.budgetRequired')),
       currency: z.string().trim().min(3).max(3),
+      proposed_duration_months: z
+        .string()
+        .trim()
+        .min(1, t('validation.durationRequired')),
+      ...announcementFields(),
+    })
+    .superRefine((values, ctx) => {
+      const budget = Number(values.budget)
+      if (Number.isNaN(budget) || budget <= 0) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.budgetPositive'),
+          path: ['budget'],
+        })
+      }
+
+      if (!/^\d+$/.test(values.proposed_duration_months)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.durationInteger'),
+          path: ['proposed_duration_months'],
+        })
+      } else if (Number(values.proposed_duration_months) < 1) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.durationMin'),
+          path: ['proposed_duration_months'],
+        })
+      }
+
+      refineAnnouncementDate(values, ctx, t)
+    })
+}
+
+export function createProjectScheduleSchema(t: ValidationTranslator) {
+  return z
+    .object({
       proposed_start_date: z
         .string()
         .trim()
@@ -126,18 +179,22 @@ export function createSubmitProjectSchema(t: ValidationTranslator) {
         .string()
         .trim()
         .min(1, t('validation.endDateRequired')),
-      ...announcementFields(),
     })
     .superRefine((values, ctx) => {
-      const parsed = Number(values.budget)
-      if (Number.isNaN(parsed) || parsed <= 0) {
+      if (!parseDateOnly(values.proposed_start_date)) {
         ctx.addIssue({
           code: 'custom',
-          message: t('validation.budgetPositive'),
-          path: ['budget'],
+          message: t('validation.invalidDate'),
+          path: ['proposed_start_date'],
         })
       }
-
+      if (!parseDateOnly(values.proposed_end_date)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('validation.invalidDate'),
+          path: ['proposed_end_date'],
+        })
+      }
       if (values.proposed_end_date < values.proposed_start_date) {
         ctx.addIssue({
           code: 'custom',
@@ -145,8 +202,6 @@ export function createSubmitProjectSchema(t: ValidationTranslator) {
           path: ['proposed_end_date'],
         })
       }
-
-      refineAnnouncementDate(values, ctx, t)
     })
 }
 
@@ -156,8 +211,7 @@ export type ProjectFormValues = {
   description: string
   budget: string
   currency: string
-  proposed_start_date: string
-  proposed_end_date: string
+  proposed_duration_months: string
   announcement_date: string
   announcing_entity: string
   priority: string
@@ -165,16 +219,57 @@ export type ProjectFormValues = {
   board_opinion: string
 }
 
+export type ProjectScheduleFormValues = z.infer<
+  ReturnType<typeof createProjectScheduleSchema>
+>
+
 export function generateDraftProjectCode(): string {
   const stamp = Date.now().toString(36).toUpperCase()
   return `DRAFT-${stamp}`
 }
 
+export function durationMonthsFromProject(project: {
+  proposed_duration_value: number | null
+  proposed_duration_unit: string | null
+  proposed_start_date?: string | null
+  proposed_end_date?: string | null
+}): string {
+  if (
+    project.proposed_duration_value != null &&
+    project.proposed_duration_unit === 'month'
+  ) {
+    return String(project.proposed_duration_value)
+  }
+
+  if (
+    project.proposed_duration_value != null &&
+    project.proposed_duration_unit
+  ) {
+    const days = durationToDays(
+      project.proposed_duration_value,
+      project.proposed_duration_unit as 'day' | 'week' | 'month',
+    )
+    return String(Math.max(1, Math.round(days / 30)))
+  }
+
+  return ''
+}
+
+export function endDateFromStartAndMonths(
+  startDate: string,
+  months: number,
+): string {
+  const days = durationToDays(months, 'month')
+  return format(addDays(parseISO(startDate), days - 1), 'yyyy-MM-dd')
+}
+
 export function toProjectPayload(values: ProjectFormValues) {
   const budget = values.budget?.trim() ? Number(values.budget.trim()) : null
-  const start = values.proposed_start_date?.trim() || null
-  const end = values.proposed_end_date?.trim() || null
-  const durationDays = start && end ? getPhaseDurationDays(start, end) : null
+  const durationRaw = values.proposed_duration_months?.trim() ?? ''
+  const durationMonths =
+    durationRaw.length > 0 && /^\d+$/.test(durationRaw)
+      ? Number(durationRaw)
+      : null
   const code = values.code.trim().toUpperCase() || generateDraftProjectCode()
   const priority = parseFormPriority(values.priority)
 
@@ -184,10 +279,8 @@ export function toProjectPayload(values: ProjectFormValues) {
     description: values.description?.trim() ? values.description.trim() : null,
     budget,
     currency: (values.currency || 'USD').toUpperCase(),
-    proposed_start_date: start,
-    proposed_end_date: end,
-    proposed_duration_value: durationDays,
-    proposed_duration_unit: durationDays != null ? ('day' as const) : null,
+    proposed_duration_value: durationMonths,
+    proposed_duration_unit: durationMonths != null ? ('month' as const) : null,
     announcement_date: values.announcement_date.trim() || null,
     announcing_entity: values.announcing_entity.trim() || null,
     priority,

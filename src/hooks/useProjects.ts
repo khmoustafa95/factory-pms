@@ -343,6 +343,46 @@ export function useUpdateProject() {
   })
 }
 
+export function useSetProjectSchedule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      startDate,
+      endDate,
+    }: {
+      id: string
+      startDate: string
+      endDate: string
+    }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          proposed_start_date: startDate,
+          proposed_end_date: endDate,
+        })
+        .eq('id', id)
+        .eq('status', 'approved')
+        .select('*')
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
+    },
+  })
+}
+
 export function useSubmitProject() {
   const queryClient = useQueryClient()
 

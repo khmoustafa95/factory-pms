@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { formatLocalizedBudget, formatLocalizedDate, getProjectPriorityLabel } from '@/lib/i18n-format'
+import { formatDurationLabel } from '@/lib/duration'
 import type { Project } from '@/types/database'
 
 interface ProjectApproveDialogProps {
@@ -73,6 +74,16 @@ export function ProjectApproveDialog({
                 {t('common.timeline')}:{' '}
                 {formatLocalizedDate(project.proposed_start_date, locale)} →{' '}
                 {formatLocalizedDate(project.proposed_end_date, locale)}
+              </p>
+            ) : project.proposed_duration_value != null &&
+              project.proposed_duration_unit ? (
+              <p className="text-muted-foreground">
+                {t('projects.proposedDuration')}:{' '}
+                {formatDurationLabel(
+                  t,
+                  project.proposed_duration_value,
+                  project.proposed_duration_unit,
+                )}
               </p>
             ) : null}
             {project.announcing_entity ? (

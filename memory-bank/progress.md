@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Proposal duration in months; calendar start/end after approval before phases/start
 - [x] PM assignment after approval (not on proposal submit); start execution requires assigned PM
 - [x] Projects Excel import (director-only; upsert by `factory_code`+`code`) + announcement/priority/opinion fields
 - [x] Factory Excel import (template + upsert by `code` + reject mismatched files)
@@ -81,6 +82,12 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-08 (Duration months; schedule after approval)
+
+- Proposal form/import capture `proposed_duration_months` (stored as `proposed_duration_value` + unit `month`); no start/end on submit.
+- After approval, FM sets calendar via `ProjectScheduleDialog` / planning checklist; dates editable only while `approved`, then frozen.
+- Start execution and phase inserts require a calendar window. Migration `20260908120000_duration_months_after_approval.sql` applied locally. `npm run verify` passed.
 
 ### 2026-09-07 (PM assigned after approval)
 

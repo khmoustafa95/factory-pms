@@ -471,8 +471,9 @@ export const en = {
     planning: {
       title: 'Planning handoff',
       description:
-        'After approval, the factory manager assigns a project manager and designs phases. The assigned PM prepares tasks. Then the factory manager starts execution.',
+        'After approval, the factory manager assigns a project manager, sets the calendar, and designs phases. The assigned PM prepares tasks. Then the factory manager starts execution.',
       stepPm: 'Assign project manager',
+      stepSchedule: 'Set project schedule',
       stepPhases: 'Design phases',
       stepTasks: 'Prepare tasks',
       stepStart: 'Start execution',
@@ -480,13 +481,17 @@ export const en = {
       waitingFm: 'Waiting for the factory manager',
       waitingPm: 'Waiting for the project manager',
       waitingPmAssign: 'Waiting for a project manager to be assigned',
+      waitingSchedule: 'Waiting for the project schedule',
       pmHintFm:
         'Assign a project manager from this factory before starting execution.',
+      scheduleHintFm:
+        'Set start and end dates using the approved duration in months.',
       phasesHintFm: 'Split the approved budget and schedule into phases.',
       tasksHintPm: 'Add tasks under each phase before work begins.',
       startHintFm:
         'Start when a project manager is assigned and the phase plan is ready. Missing tasks are a warning only.',
       ctaAssignPm: 'Assign PM',
+      ctaSetSchedule: 'Set schedule',
       ctaAddPhase: 'Add phases',
       ctaAddTask: 'Prepare tasks',
       ctaStart: 'Start execution',
@@ -561,13 +566,29 @@ export const en = {
     formDescription:
       'Capture scope, budget, timeline, and supporting files for company director review.',
     editDetailsDescription:
-      'Update project title, description, budget, and dates.',
+      'Update project title, description, budget, and duration.',
     currency: 'Currency',
     proposedDuration: 'Estimated duration',
+    proposedDurationMonths: 'Duration (months)',
+    durationMonthsHint:
+      'Enter the project length in months. Start and end dates are set after approval.',
     durationUnit: 'Unit',
     durationHint:
       'Start and end dates are calculated automatically when execution begins.',
     assignedPm: 'Assigned project manager',
+    scheduleDialog: {
+      action: 'Set schedule',
+      editAction: 'Edit schedule',
+      title: 'Set project schedule',
+      description:
+        'Choose calendar start and end dates after approval. Phases must fit inside this window.',
+      contractDuration: 'Approved duration',
+      suggestedEnd: 'Suggested end from duration: {{date}}',
+      useSuggested: 'Use suggested end',
+      submit: 'Save schedule',
+      updated: 'Project schedule saved',
+      failed: 'Unable to save project schedule',
+    },
     rejectProposal: 'Reject proposal',
     rejectionReason: 'Rejection reason',
     rejectDescription:
@@ -694,7 +715,7 @@ export const en = {
     import: {
       title: 'Import projects',
       promptDescription:
-        'Do you want to download the Excel template first? Column names must match: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+        'Do you want to download the Excel template first? Column names must match: factory_code, code, title, description, budget, currency, proposed_duration_months, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
       fileDescription:
         'Upload an .xlsx or .csv file that matches the projects template. Existing factory_code + code pairs will be updated; new pairs will be added as drafts.',
       downloadTemplate: 'Download template',
@@ -708,7 +729,7 @@ export const en = {
       unsupportedType: 'Unsupported file type. Use .xlsx or .csv.',
       emptyFile: 'The file is empty.',
       headerMismatch:
-        'The spreadsheet structure does not match. The first row must contain exactly: factory_code, code, title, description, budget, currency, proposed_start_date, proposed_end_date, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
+        'The spreadsheet structure does not match. The first row must contain exactly: factory_code, code, title, description, budget, currency, proposed_duration_months, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
       noDataRows: 'The file has no data rows to import.',
       tooManyRows: 'The file exceeds the maximum of {{max}} rows.',
       duplicatePair:
@@ -727,13 +748,13 @@ export const en = {
       chooseAnotherFile: 'Choose another file',
       instructionsTitle: 'instructions',
       instructionsColumns:
-        'Columns: factory_code and code and title are required. Other columns are optional. Dates use YYYY-MM-DD. Do not include id, status, progress, or assigned PM.',
+        'Columns: factory_code and code and title are required. Other columns are optional. proposed_duration_months is an integer. Dates use YYYY-MM-DD. Do not include id, status, progress, schedule dates, or assigned PM.',
       instructionsUpsert:
         'Rows match existing projects by factory_code + code. Existing rows are updated without changing status. New rows are added as drafts.',
       instructionsPriority:
         'priority accepts high/medium/low or عالية/متوسطة/منخفضة. Leave blank for unassigned.',
       instructionsExample:
-        'Example: DMS | PRJ-001 | Cooling upgrade | … | 150000 | USD | 2026-04-01 | 2026-09-30 | 2026-03-01 | Ministry of Industry | high | |',
+        'Example: DMS | PRJ-001 | Cooling upgrade | … | 150000 | USD | 6 | 2026-03-01 | Ministry of Industry | high | |',
     },
   },
   projectFinance: {
