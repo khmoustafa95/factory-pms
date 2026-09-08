@@ -23,6 +23,7 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-08] Dropped leftover check `projects_proposed_requires_pm` (blocked consultation → proposed without PM). Migration `20260908130200_drop_proposed_requires_pm.sql` applied locally.
 - [2026-09-08] Director project import inserts as `consultation` (with `proposed_by`), not `draft`; updates still leave status unchanged. ar/en import copy updated. `npm run verify` passed.
 - [2026-09-08] Consultation status: enum + `transition_project_status` (`draft|rejected` → `consultation` → `proposed` → approve/reject). FM form drops research/board opinions. Director `ProjectConsultationDialog` on list/detail. Notifications `project_consultation`. Migrations `20260908130000` / `20260908130100` applied locally. `npm run verify` passed.
 - [2026-09-08] Proposal duration in months; calendar dates after approval: form/import use `proposed_duration_months` → `proposed_duration_value`/`month`. Submit RPC requires duration, not dates. While `approved`, FM can set start/end (contract freeze allows date edits only in approved). Start + phase inserts require calendar window. Checklist step + `ProjectScheduleDialog`. Migration `20260908120000_duration_months_after_approval.sql` applied locally. `npm run verify` passed.

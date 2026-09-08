@@ -68,7 +68,7 @@ insert into auth.users (
     extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"factory_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
-    '{"full_name":"فاطمة الحربي"}'::jsonb,
+    '{"full_name":"مصطفى الحربي"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -83,7 +83,7 @@ insert into auth.users (
     extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"factory_manager","factory_id":"f2222222-2222-4222-8222-222222222222"}'::jsonb,
-    '{"full_name":"يوسف الغامدي"}'::jsonb,
+    '{"full_name":"يوسف الابراهيم"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -98,7 +98,7 @@ insert into auth.users (
     extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
-    '{"full_name":"أحمد المطيري"}'::jsonb,
+    '{"full_name":"أحمد المحمد"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -113,7 +113,7 @@ insert into auth.users (
     extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f1111111-1111-4111-8111-111111111111"}'::jsonb,
-    '{"full_name":"سارة القحطاني"}'::jsonb,
+    '{"full_name":"احمد العمر"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
@@ -128,7 +128,7 @@ insert into auth.users (
     extensions.crypt('demo123456', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"],"role":"project_manager","factory_id":"f2222222-2222-4222-8222-222222222222"}'::jsonb,
-    '{"full_name":"خالد الدوسري"}'::jsonb,
+    '{"full_name":"خالد العلي"}'::jsonb,
     now(),
     now(),
     '', '', '', ''
