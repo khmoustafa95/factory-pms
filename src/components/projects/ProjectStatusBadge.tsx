@@ -8,6 +8,7 @@ const STATUS_VARIANTS: Record<
   'default' | 'secondary' | 'destructive' | 'outline'
 > = {
   draft: 'secondary',
+  consultation: 'outline',
   proposed: 'outline',
   approved: 'default',
   rejected: 'destructive',

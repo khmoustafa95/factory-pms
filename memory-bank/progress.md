@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Consultation status between draft and proposed (director opinions required before propose)
 - [x] Proposal duration in months; calendar start/end after approval before phases/start
 - [x] PM assignment after approval (not on proposal submit); start execution requires assigned PM
 - [x] Projects Excel import (director-only; upsert by `factory_code`+`code`) + announcement/priority/opinion fields
@@ -82,6 +83,14 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-08 (Consultation between draft and proposed)
+
+- Added `consultation` to `project_status`; FM submit targets consultation; director completes consultation → proposed after research/board opinions (min 3 chars).
+- Migrations `20260908130000_consultation_status_enum.sql` + `20260908130100_consultation_transitions.sql` (notifications `project_consultation` / proposed-to-FMs).
+- SPA: status helpers/hooks/badge/filters/i18n; removed opinions from FM form; `ProjectConsultationDialog` on list + detail.
+- Director Excel import inserts new projects as `consultation` (not draft) so they appear for director review; existing rows still update without status change.
+- `npm run verify` passed; migrations applied with `supabase db push --local`.
 
 ### 2026-09-08 (Duration months; schedule after approval)
 

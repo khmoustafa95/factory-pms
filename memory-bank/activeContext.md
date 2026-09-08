@@ -2,23 +2,12 @@
 
 ## Current focus
 
+Director project import creates rows in **`consultation`** (not draft) so directors can see and complete opinions immediately. Existing matched rows still update without changing status. Factory managers submit drafts into consultation as before.
+
+Consultation sits between draft and proposed: factory managers submit into `consultation`; company directors record research/board opinions and complete consultation → `proposed`; approve/reject remain on `proposed` only.
+
 Proposal duration is entered in **months** at submit time. Calendar start/end dates are set after approval (factory manager) before phases and start execution. PM assignment remains after approval.
 
-Project manager assignment moved from proposal submit to after approval. Execution cannot start without `assigned_pm_id`. Factory manager assigns (or reassigns) via `reassign_project_pm`. Proposal form no longer includes a PM field.
-
-Projects Excel import (company director only) plus announcement fields remain in place. Manual browser smoke of PM-after-approval is left to the user if a live session is already open.
-
-WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
-
-Projects list search: PostgREST `or()` cannot parse dotted embed columns (`factories.name`). Search now matches project title/description/code plus factory ids from a separate factories query.
-
-Budget change-request review: director-only approve/reject was failing on `review_project_change` because a `CASE` of string literals inferred `text` instead of `change_request_status`. Fixed locally via `20260907120000_fix_review_project_change_status_cast.sql`.
-
-On-prem production runbook: `docs/on-prem-production.md` (Arabic). Official hosting on a **Windows PC that also runs other office work** — not Ubuntu Server; data stays on-prem; remote sites wait for VPN.
-
-Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user stories vs PRD US-01–US-06, plus post-approval finance/lifecycle stories.
-
-**All project finance is post-approval:** proposal screens have no funding or operations CRUD; those belong on the Finance tab after `approved`.
 
 WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
 
@@ -34,6 +23,8 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-08] Director project import inserts as `consultation` (with `proposed_by`), not `draft`; updates still leave status unchanged. ar/en import copy updated. `npm run verify` passed.
+- [2026-09-08] Consultation status: enum + `transition_project_status` (`draft|rejected` → `consultation` → `proposed` → approve/reject). FM form drops research/board opinions. Director `ProjectConsultationDialog` on list/detail. Notifications `project_consultation`. Migrations `20260908130000` / `20260908130100` applied locally. `npm run verify` passed.
 - [2026-09-08] Proposal duration in months; calendar dates after approval: form/import use `proposed_duration_months` → `proposed_duration_value`/`month`. Submit RPC requires duration, not dates. While `approved`, FM can set start/end (contract freeze allows date edits only in approved). Start + phase inserts require calendar window. Checklist step + `ProjectScheduleDialog`. Migration `20260908120000_duration_months_after_approval.sql` applied locally. `npm run verify` passed.
 - [2026-09-07] PM assignment after approval: removed PM from proposal form/submit schema/payload. `transition_project_status` no longer requires PM to propose; start execution does. `reassign_project_pm` limited to approved/in_progress/paused; first assign has optional reason. Planning checklist adds Assign PM. Migration `20260907210000_pm_after_approval.sql` applied locally. `npm run verify` passed.
 - [2026-09-07] Projects Excel import + announcement fields: migration `20260907200000_project_announcement_fields.sql` (enum + 5 columns + director SELECT/INSERT/UPDATE all statuses including drafts). Form/detail/list/approve/export i18n. Director-only Import on Projects (`factory_code`+`code` upsert, status omitted so inserts stay `draft`). `npm run verify` passed; migration applied with `supabase db push --local`. User will smoke-test in the browser.
@@ -65,10 +56,10 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Next steps (concrete)
 
-1. Follow `docs/on-prem-production.md` on the Windows host: power/Docker caps/firewall, then production secrets (not demo JWT), then LAN users only
-2. Choose VPN (Tailscale vs WireGuard) before creating accounts at unlinked remote sites
-3. Smoke duration + schedule: FM submit with months only → director approve → Set schedule → phases → start
-4. Apply `20260906130000_funding_after_approval.sql` (and earlier lifecycle/finance/URL migrations) when a non-dev database is created — on-prem production uses a clean migration apply, not `db reset`
+1. Smoke consultation flow: FM submit → director opinions + complete → proposed → approve/reject
+2. Follow `docs/on-prem-production.md` on the Windows host: power/Docker caps/firewall, then production secrets (not demo JWT), then LAN users only
+3. Choose VPN (Tailscale vs WireGuard) before creating accounts at unlinked remote sites
+4. Apply consultation + duration + PM-after-approval migrations when a non-dev database is created — on-prem production uses a clean migration apply, not `db reset`
 5. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
 6. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
 7. Optional: reuse `src/lib/import/` for accounts Excel import with the same template + upsert contract

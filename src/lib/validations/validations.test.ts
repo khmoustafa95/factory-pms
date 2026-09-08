@@ -48,8 +48,6 @@ describe('localized validation schemas', () => {
       announcement_date: '',
       announcing_entity: '',
       priority: '',
-      research_opinion: '',
-      board_opinion: '',
     })
 
     expect(result.success).toBe(false)
@@ -72,8 +70,6 @@ describe('localized validation schemas', () => {
       announcement_date: '',
       announcing_entity: '',
       priority: '',
-      research_opinion: '',
-      board_opinion: '',
     })
 
     expect(incomplete.success).toBe(false)
@@ -95,8 +91,6 @@ describe('localized validation schemas', () => {
       announcement_date: '',
       announcing_entity: '',
       priority: '',
-      research_opinion: '',
-      board_opinion: '',
     })
     expect(complete.success).toBe(true)
   })

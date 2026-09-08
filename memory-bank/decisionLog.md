@@ -2,6 +2,8 @@
 
 Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
+- 2026-09-08 — Proposal lifecycle inserts `consultation` between draft and proposed. Factory managers still submit (no opinions); company directors record research/board opinions only in consultation, then move to proposed for approve/reject. Explains why drafts were never approvable: directors could read drafts (import RLS) but `canApproveAsDirector` stays `proposed`-only.
+
 - 2026-09-08 — Proposal contract is duration in months; calendar start/end are planned after approval. Rationale: directors review effort length, not a speculative calendar; FM locks dates when ready to design phases. `project_duration_days` prefers fixed dates when present so phase windows match the calendar.
 
 - 2026-09-07 — Company directors need table `SELECT`/`INSERT`/`UPDATE` on **all** project statuses (including `draft`) for catalog upsert. Previously directors could not insert and could not see/update drafts, so an imported draft would vanish or the upsert would fail even with a unique `(factory_id, code)`.

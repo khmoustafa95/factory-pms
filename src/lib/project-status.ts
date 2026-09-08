@@ -7,20 +7,21 @@ export const PROPOSAL_EDITABLE_STATUSES: ProjectStatus[] = ['draft', 'rejected']
 /** Statuses shown in the proposal review UI (pre-WBS). */
 export const PROPOSAL_REVIEW_STATUSES: ProjectStatus[] = [
   'draft',
+  'consultation',
   'proposed',
   'rejected',
 ]
 
-/** Factory managers may rewrite proposal fields before the contract is frozen. */
+/** Factory managers may rewrite proposal fields before consultation/review. */
 export const PROJECT_DETAILS_EDITABLE_STATUSES: ProjectStatus[] = [
   'draft',
-  'proposed',
   'rejected',
 ]
 
 /** Supporting files stay editable until the project is closed. */
 export const PROJECT_ATTACHMENT_EDITABLE_STATUSES: ProjectStatus[] = [
   'draft',
+  'consultation',
   'proposed',
   'approved',
   'rejected',
@@ -54,6 +55,26 @@ export function canApproveAsDirector(
   }
 
   return canReviewProject(project.status)
+}
+
+/** Director may edit research/board opinions while in consultation. */
+export function canEditConsultationOpinions(
+  project: Pick<Project, 'status'>,
+  profile: Pick<Profile, 'role'> | null | undefined,
+): boolean {
+  if (!profile || !isCompanyDirector(profile.role)) {
+    return false
+  }
+
+  return project.status === 'consultation'
+}
+
+/** Director may complete consultation → proposed when opinions are present (UI). */
+export function canCompleteConsultation(
+  project: Pick<Project, 'status'>,
+  profile: Pick<Profile, 'role'> | null | undefined,
+): boolean {
+  return canEditConsultationOpinions(project, profile)
 }
 
 /**

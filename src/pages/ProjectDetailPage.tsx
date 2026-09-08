@@ -17,6 +17,7 @@ import { ProjectAttachmentsPanel } from '@/components/projects/ProjectAttachment
 import { ProjectChangeRequestDialog } from '@/components/projects/ProjectChangeRequestDialog'
 import { ProjectChangeRequestsPanel } from '@/components/projects/ProjectChangeRequestsPanel'
 import { ProjectCompleteDialog } from '@/components/projects/ProjectCompleteDialog'
+import { ProjectConsultationDialog } from '@/components/projects/ProjectConsultationDialog'
 import { ProjectFinancePanel } from '@/components/projects/ProjectFinancePanel'
 import {
   ProjectFormDialog,
@@ -56,6 +57,7 @@ import {
 } from '@/hooks/usePhases'
 import {
   useApproveProject,
+  useCompleteConsultation,
   useCompleteProjectExecution,
   useFactoryProjectManagers,
   usePauseProjectExecution,
@@ -63,6 +65,7 @@ import {
   useResumeProjectExecution,
   useSetProjectSchedule,
   useStartProjectExecution,
+  useUpdateConsultationOpinions,
   useUpdateProject,
 } from '@/hooks/useProjects'
 import {
@@ -103,6 +106,7 @@ import {
 import {
   canApproveAsDirector,
   canCommentOnProject,
+  canCompleteConsultation,
   canDiscussProposal,
   canEditProjectDetails,
   canManageProjectAttachments,
@@ -112,6 +116,7 @@ import {
 import { isFactoryManager } from '@/lib/roles'
 import type { ChangeRequestFormValues } from '@/lib/validations/governance'
 import type { ReassignPmFormValues } from '@/lib/validations/governance'
+import type { ConsultationOpinionsFormValues } from '@/lib/validations/project'
 import type { ProjectScheduleFormValues } from '@/lib/validations/project'
 import type {
   ProjectPauseValues,
@@ -225,6 +230,8 @@ export function ProjectDetailPage() {
   const setProjectSchedule = useSetProjectSchedule()
   const approveProject = useApproveProject()
   const rejectProject = useRejectProject()
+  const updateConsultationOpinions = useUpdateConsultationOpinions()
+  const completeConsultation = useCompleteConsultation()
   const startProjectExecution = useStartProjectExecution()
   const pauseProjectExecution = usePauseProjectExecution()
   const resumeProjectExecution = useResumeProjectExecution()
@@ -250,6 +257,7 @@ export function ProjectDetailPage() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
   const [approveDialogOpen, setApproveDialogOpen] = useState(false)
+  const [consultationDialogOpen, setConsultationDialogOpen] = useState(false)
   const [startDialogOpen, setStartDialogOpen] = useState(false)
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false)
   const [changeDialogOpen, setChangeDialogOpen] = useState(false)
@@ -337,6 +345,9 @@ export function ProjectDetailPage() {
   const canReviewAsDirector = project
     ? canApproveAsDirector(project, profile)
     : false
+  const canConsultAsDirector = project
+    ? canCompleteConsultation(project, profile)
+    : false
   const canCommentOnProposal = canDiscussProposal(profile)
   const canCommentOnExecution = project
     ? canCommentOnProject(project.status, profile)
@@ -349,6 +360,8 @@ export function ProjectDetailPage() {
     tasks.length > 0 && tasks.every((task) => task.status === 'done')
   const notAvailable = t('common.notAvailable')
   const isReviewing = approveProject.isPending || rejectProject.isPending
+  const isConsulting =
+    updateConsultationOpinions.isPending || completeConsultation.isPending
   const isStartingExecution = startProjectExecution.isPending
   const isPausingExecution = pauseProjectExecution.isPending
   const isResumingExecution = resumeProjectExecution.isPending
@@ -397,6 +410,51 @@ export function ProjectDetailPage() {
       toast.success(t('projects.proposalRejected'))
     } catch (submitError) {
       toastMutationError(submitError, t('projects.rejectFailed'), t)
+      throw submitError
+    }
+  }
+
+  const handleSaveConsultation = async (
+    values: ConsultationOpinionsFormValues,
+  ) => {
+    if (!project) {
+      return
+    }
+
+    try {
+      await updateConsultationOpinions.mutateAsync({
+        id: project.id,
+        researchOpinion: values.research_opinion,
+        boardOpinion: values.board_opinion,
+      })
+      toast.success(t('projects.consultationSaved'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.consultationSaveFailed'), t)
+      throw submitError
+    }
+  }
+
+  const handleCompleteConsultation = async (
+    values: ConsultationOpinionsFormValues,
+  ) => {
+    if (!project) {
+      return
+    }
+
+    try {
+      await updateConsultationOpinions.mutateAsync({
+        id: project.id,
+        researchOpinion: values.research_opinion,
+        boardOpinion: values.board_opinion,
+      })
+      await completeConsultation.mutateAsync({ id: project.id })
+      toast.success(t('projects.consultationCompleted'))
+    } catch (submitError) {
+      toastMutationError(
+        submitError,
+        t('projects.consultationCompleteFailed'),
+        t,
+      )
       throw submitError
     }
   }
@@ -685,54 +743,61 @@ export function ProjectDetailPage() {
             actions={
               <PageHeaderActions
                 primary={
-                  canReviewAsDirector
+                  canConsultAsDirector
                     ? {
-                        id: 'approve',
-                        label: (
-                          <>
-                            <Check className="size-4" />
-                            {t('common.approve')}
-                          </>
-                        ),
-                        disabled: isReviewing,
-                        onClick: () => setApproveDialogOpen(true),
+                        id: 'consultation',
+                        label: t('projects.consultationDialog.complete'),
+                        disabled: isConsulting,
+                        onClick: () => setConsultationDialogOpen(true),
                       }
-                    : canStart && project.status === 'approved'
+                    : canReviewAsDirector
                       ? {
-                          id: 'start',
-                          label: t('common.startExecution'),
-                          disabled: isStartingExecution,
-                          onClick: () => setStartDialogOpen(true),
+                          id: 'approve',
+                          label: (
+                            <>
+                              <Check className="size-4" />
+                              {t('common.approve')}
+                            </>
+                          ),
+                          disabled: isReviewing,
+                          onClick: () => setApproveDialogOpen(true),
                         }
-                      : (canConfirmClose || canRequestClose) &&
-                          (project.status === 'in_progress' ||
-                            project.status === 'paused') &&
-                          !(
-                            canGovern &&
-                            project.status === 'paused' &&
-                            !canConfirmClose
-                          )
+                      : canStart && project.status === 'approved'
                         ? {
-                            id: 'complete',
-                            label: canConfirmClose
-                              ? t('common.completeExecution')
-                              : t('projects.completeDialog.requestAction'),
-                            disabled:
-                              isCompletingExecution ||
-                              Boolean(
-                                !canConfirmClose &&
-                                project.completion_requested_at,
-                              ),
-                            onClick: () => setCompleteDialogOpen(true),
+                            id: 'start',
+                            label: t('common.startExecution'),
+                            disabled: isStartingExecution,
+                            onClick: () => setStartDialogOpen(true),
                           }
-                        : canGovern && project.status === 'paused'
+                        : (canConfirmClose || canRequestClose) &&
+                            (project.status === 'in_progress' ||
+                              project.status === 'paused') &&
+                            !(
+                              canGovern &&
+                              project.status === 'paused' &&
+                              !canConfirmClose
+                            )
                           ? {
-                              id: 'resume',
-                              label: t('common.resumeExecution'),
-                              disabled: isResumingExecution,
-                              onClick: () => void handleResumeExecution(),
+                              id: 'complete',
+                              label: canConfirmClose
+                                ? t('common.completeExecution')
+                                : t('projects.completeDialog.requestAction'),
+                              disabled:
+                                isCompletingExecution ||
+                                Boolean(
+                                  !canConfirmClose &&
+                                  project.completion_requested_at,
+                                ),
+                              onClick: () => setCompleteDialogOpen(true),
                             }
-                          : null
+                          : canGovern && project.status === 'paused'
+                            ? {
+                                id: 'resume',
+                                label: t('common.resumeExecution'),
+                                disabled: isResumingExecution,
+                                onClick: () => void handleResumeExecution(),
+                              }
+                            : null
                 }
                 secondary={[
                   {
@@ -820,6 +885,11 @@ export function ProjectDetailPage() {
               <span className="flex flex-col gap-2">
                 {project.description ? (
                   <span>{project.description}</span>
+                ) : null}
+                {project.status === 'consultation' ? (
+                  <span className="text-sm text-muted-foreground">
+                    {t('projects.awaitingConsultation')}
+                  </span>
                 ) : null}
                 {project.status === 'proposed' ? (
                   <span className="text-sm text-muted-foreground">
@@ -1165,6 +1235,21 @@ export function ProjectDetailPage() {
           onSaveDraft={handleSaveProjectDetails}
           onSubmitProposal={handleSaveProjectDetails}
           isSubmitting={updateProject.isPending}
+        />
+      ) : null}
+
+      {canConsultAsDirector && project ? (
+        <ProjectConsultationDialog
+          open={consultationDialogOpen}
+          onOpenChange={setConsultationDialogOpen}
+          project={project}
+          onSave={handleSaveConsultation}
+          onComplete={handleCompleteConsultation}
+          isSaving={updateConsultationOpinions.isPending}
+          isCompleting={
+            updateConsultationOpinions.isPending ||
+            completeConsultation.isPending
+          }
         />
       ) : null}
 

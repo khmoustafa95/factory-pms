@@ -167,6 +167,10 @@ export const ar = {
     yesterday: 'أمس',
     older: 'سابقاً',
     types: {
+      project_consultation: {
+        title: 'مقترح قيد الاستشارة',
+        body: 'أرسل {{actorName}} «{{projectTitle}}» للاستشارة.',
+      },
       project_proposed: {
         title: 'مقترح جديد',
         body: 'أرسل {{actorName}} «{{projectTitle}}» للمراجعة.',
@@ -248,6 +252,7 @@ export const ar = {
   },
   projectStatus: {
     draft: 'مسودة',
+    consultation: 'استشارة',
     proposed: 'مقترح',
     approved: 'معتمد',
     rejected: 'مرفوض',
@@ -588,6 +593,19 @@ export const ar = {
       'نقاش بين المدير العام ومدير المصنع حول الميزانية والعمالة والجدول الزمني وتفاصيل أخرى قبل الاعتماد.',
     proposalSummary: 'ملخص المقترح',
     awaitingDirectorReview: 'بانتظار مراجعة المدير العام',
+    awaitingConsultation: 'بانتظار رأي البحث العلمي ومجلس الإدارة',
+    openConsultation: 'الاستشارة',
+    consultationSaved: 'تم حفظ آراء الاستشارة',
+    consultationCompleted: 'اكتملت الاستشارة — أصبح المشروع مقترحاً',
+    consultationSaveFailed: 'تعذر حفظ آراء الاستشارة',
+    consultationCompleteFailed: 'تعذر إكمال الاستشارة',
+    consultationDialog: {
+      title: 'إكمال الاستشارة',
+      description:
+        'سجّل رأي البحث العلمي ومجلس الإدارة لـ «{{title}}»، ثم انقل المشروع إلى مقترح للموافقة.',
+      save: 'حفظ الآراء',
+      complete: 'إكمال الاستشارة',
+    },
     discussionParticipantsOnly:
       'يمكن للمدير العام ومدير المصنع فقط المشاركة في هذا النقاش.',
     code: 'رمز المشروع',
@@ -630,6 +648,8 @@ export const ar = {
       resumeNotGovernor:
         'يمكن فقط لمدير المصنع أو مدير الشركة استئناف التنفيذ.',
       completeNotDirector: 'يمكن فقط لمدير الشركة تأكيد إغلاق المشروع.',
+      completeConsultationNotDirector:
+        'يمكن فقط لمدير الشركة إكمال الاستشارة.',
       requestCompleteNotFactoryManager:
         'يمكن فقط لمدير المصنع طلب إغلاق المشروع.',
       requestCompleteWrongStatus:
@@ -690,7 +710,7 @@ export const ar = {
       promptDescription:
         'هل تريد تنزيل نموذج Excel أولاً؟ أسماء الأعمدة يجب أن تطابق: factory_code, code, title, description, budget, currency, proposed_duration_months, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
       fileDescription:
-        'ارفع ملف .xlsx أو .csv مطابق لنموذج المشاريع. الزوج الموجود factory_code + code يُحدَّث، والزوج الجديد يُضاف كمسودة.',
+        'ارفع ملف .xlsx أو .csv مطابق لنموذج المشاريع. الزوج الموجود factory_code + code يُحدَّث، والزوج الجديد يُضاف بحالة استشارة.',
       downloadTemplate: 'تحميل النموذج',
       continueWithoutTemplate: 'متابعة بدون تحميل',
       templateDownloaded: 'تم تنزيل النموذج',
@@ -723,7 +743,7 @@ export const ar = {
       instructionsColumns:
         'الأعمدة: factory_code و code و title مطلوبة. باقي الأعمدة اختيارية. proposed_duration_months عدد صحيح. التواريخ بصيغة YYYY-MM-DD. لا تُدرج id أو status أو التقدم أو تواريخ الجدول أو مدير المشروع.',
       instructionsUpsert:
-        'تُطابق الصفوف المشاريع الموجودة حسب factory_code + code. الصف الموجود يُحدَّث دون تغيير الحالة. الصف الجديد يُضاف كمسودة.',
+        'تُطابق الصفوف المشاريع الموجودة حسب factory_code + code. الصف الموجود يُحدَّث دون تغيير الحالة. الصف الجديد يُضاف بحالة استشارة لآراء المدير.',
       instructionsPriority:
         'priority يقبل high/medium/low أو عالية/متوسطة/منخفضة. اتركه فارغاً إن لم تُحدد أولوية.',
       instructionsExample:
@@ -1281,6 +1301,8 @@ export const ar = {
     projectCodeTaken:
       'هذا الرمز مستخدم مسبقاً في هذا المصنع. اختر رمزاً مختلفاً.',
     rejectionReasonMin: 'يجب أن يكون سبب الرفض 3 أحرف على الأقل',
+    researchOpinionMin: 'يجب أن يكون رأي البحث العلمي 3 أحرف على الأقل',
+    boardOpinionMin: 'يجب أن يكون رأي مجلس الإدارة 3 أحرف على الأقل',
     pauseReasonMin: 'يجب أن يكون سبب الإيقاف المؤقت 3 أحرف على الأقل',
     changeReasonMin: 'يجب أن يكون سبب طلب التغيير 3 أحرف على الأقل',
     reassignReasonMin: 'يجب أن يكون سبب إعادة الإسناد 3 أحرف على الأقل',

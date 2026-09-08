@@ -1,6 +1,7 @@
 import type { NotificationPayload, NotificationType } from '@/types/database'
 
 const KNOWN_TYPES = new Set<NotificationType>([
+  'project_consultation',
   'project_proposed',
   'project_approved',
   'project_rejected',

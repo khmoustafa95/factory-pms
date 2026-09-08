@@ -220,35 +220,58 @@ export function useUpsertProjects() {
         ),
       )
 
-      const { data, error } = await supabase
-        .from('projects')
-        .upsert(payloads, { onConflict: 'factory_id,code' })
-        .select('id, factory_id, code, proposed_by')
+      const toInsert = payloads.filter(
+        (payload) =>
+          !existingKeys.has(
+            `${payload.factory_id}:${payload.code.trim().toUpperCase()}`,
+          ),
+      )
+      const toUpdate = payloads.filter((payload) =>
+        existingKeys.has(
+          `${payload.factory_id}:${payload.code.trim().toUpperCase()}`,
+        ),
+      )
 
-      if (error) {
-        throw error
-      }
+      const results: Array<{
+        id: string
+        factory_id: string
+        code: string
+        proposed_by: string | null
+      }> = []
 
-      const insertIds = (data ?? [])
-        .filter(
-          (row) =>
-            !existingKeys.has(`${row.factory_id}:${row.code.toUpperCase()}`),
-        )
-        .map((row) => row.id)
-
-      if (insertIds.length > 0) {
-        const { error: proposedByError } = await supabase
+      if (toInsert.length > 0) {
+        const { data, error } = await supabase
           .from('projects')
-          .update({ proposed_by: userId })
-          .in('id', insertIds)
-          .is('proposed_by', null)
+          .insert(
+            toInsert.map((payload) => ({
+              ...payload,
+              status: 'consultation' as const,
+              proposed_by: userId,
+            })),
+          )
+          .select('id, factory_id, code, proposed_by')
 
-        if (proposedByError) {
-          throw proposedByError
+        if (error) {
+          throw error
         }
+
+        results.push(...(data ?? []))
       }
 
-      return data
+      if (toUpdate.length > 0) {
+        const { data, error } = await supabase
+          .from('projects')
+          .upsert(toUpdate, { onConflict: 'factory_id,code' })
+          .select('id, factory_id, code, proposed_by')
+
+        if (error) {
+          throw error
+        }
+
+        results.push(...(data ?? []))
+      }
+
+      return results
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
@@ -272,7 +295,7 @@ export function useCreateProject() {
       factoryId: string
       userId: string
       values: ProjectFormValues
-      status: Extract<ProjectStatus, 'draft' | 'proposed'>
+      status: Extract<ProjectStatus, 'draft' | 'consultation'>
     }) => {
       const supabase = getSupabase()
       const { data, error } = await supabase
@@ -281,7 +304,7 @@ export function useCreateProject() {
           factory_id: factoryId,
           ...toProjectPayload(values),
           status,
-          proposed_by: status === 'proposed' ? userId : null,
+          proposed_by: status === 'consultation' ? userId : null,
         })
         .select('*')
         .single()
@@ -391,7 +414,7 @@ export function useSubmitProject() {
       const supabase = getSupabase()
       const { data, error } = await supabase.rpc('transition_project_status', {
         p_project_id: id,
-        p_target_status: 'proposed',
+        p_target_status: 'consultation',
       })
 
       if (error) {
@@ -402,6 +425,75 @@ export function useSubmitProject() {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+    },
+  })
+}
+
+export function useCompleteConsultation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase.rpc('transition_project_status', {
+        p_project_id: id,
+        p_target_status: 'proposed',
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.projectStatusTransitions(data.id),
+      })
+    },
+  })
+}
+
+export function useUpdateConsultationOpinions() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      researchOpinion,
+      boardOpinion,
+    }: {
+      id: string
+      researchOpinion: string
+      boardOpinion: string
+    }) => {
+      const supabase = getSupabase()
+      const { data, error } = await supabase
+        .from('projects')
+        .update({
+          research_opinion: researchOpinion.trim(),
+          board_opinion: boardOpinion.trim(),
+        })
+        .eq('id', id)
+        .eq('status', 'consultation')
+        .select('*')
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return data
+    },
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.projects })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.project(data.id),
+      })
     },
   })
 }

@@ -87,6 +87,18 @@ const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
     key: 'validation.assignedPmRequired',
   },
   {
+    pattern: /research opinion is required before completing consultation/i,
+    key: 'validation.researchOpinionMin',
+  },
+  {
+    pattern: /board opinion is required before completing consultation/i,
+    key: 'validation.boardOpinionMin',
+  },
+  {
+    pattern: /only company director can complete consultation/i,
+    key: 'projects.rpcErrors.completeConsultationNotDirector',
+  },
+  {
     pattern: /rejection reason must be at least 3 characters/i,
     key: 'validation.rejectionReasonMin',
   },

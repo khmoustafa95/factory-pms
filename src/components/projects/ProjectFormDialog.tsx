@@ -72,8 +72,6 @@ const PROJECT_FORM_DEFAULTS: ProjectFormValues = {
   announcement_date: '',
   announcing_entity: '',
   priority: '',
-  research_opinion: '',
-  board_opinion: '',
 }
 
 export function ProjectFormDialog({
@@ -108,8 +106,6 @@ export function ProjectFormDialog({
       announcement_date: project?.announcement_date ?? '',
       announcing_entity: project?.announcing_entity ?? '',
       priority: project?.priority ?? '',
-      research_opinion: project?.research_opinion ?? '',
-      board_opinion: project?.board_opinion ?? '',
     }),
     resetDependencies: [project],
   })
@@ -152,9 +148,7 @@ export function ProjectFormDialog({
         field === 'proposed_duration_months' ||
         field === 'announcement_date' ||
         field === 'announcing_entity' ||
-        field === 'priority' ||
-        field === 'research_opinion' ||
-        field === 'board_opinion'
+        field === 'priority'
       ) {
         form.setError(field, { message: issue.message })
       }
@@ -189,8 +183,6 @@ export function ProjectFormDialog({
           announcement_date: values.announcement_date ?? '',
           announcing_entity: values.announcing_entity ?? '',
           priority: values.priority ?? '',
-          research_opinion: values.research_opinion ?? '',
-          board_opinion: values.board_opinion ?? '',
         },
         files: pendingFiles,
       })
@@ -224,8 +216,6 @@ export function ProjectFormDialog({
           announcement_date: parsed.data.announcement_date ?? '',
           announcing_entity: parsed.data.announcing_entity ?? '',
           priority: parsed.data.priority ?? '',
-          research_opinion: parsed.data.research_opinion ?? '',
-          board_opinion: parsed.data.board_opinion ?? '',
         },
         files: pendingFiles,
       })
@@ -407,32 +397,6 @@ export function ProjectFormDialog({
                   </SelectContent>
                 </Select>
                 <FormFieldError error={form.formState.errors.priority} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="project-research-opinion">
-                  {t('projects.researchOpinion')}
-                </Label>
-                <Textarea
-                  id="project-research-opinion"
-                  rows={3}
-                  {...form.register('research_opinion')}
-                />
-                <FormFieldError
-                  error={form.formState.errors.research_opinion}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="project-board-opinion">
-                  {t('projects.boardOpinion')}
-                </Label>
-                <Textarea
-                  id="project-board-opinion"
-                  rows={3}
-                  {...form.register('board_opinion')}
-                />
-                <FormFieldError error={form.formState.errors.board_opinion} />
               </div>
 
               {allowSubmitProposal ? (

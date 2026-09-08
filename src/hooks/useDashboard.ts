@@ -84,6 +84,7 @@ export type DashboardProjectDetail = {
 
 const PROJECT_STATUSES: ProjectStatus[] = [
   'draft',
+  'consultation',
   'proposed',
   'approved',
   'rejected',

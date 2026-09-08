@@ -8,6 +8,7 @@ import { PageHeaderActions } from '@/components/PageHeaderActions'
 import { Badge } from '@/components/ui/badge'
 import { ProjectFormDialog } from '@/components/projects/ProjectFormDialog'
 import { ProjectImportDialog } from '@/components/projects/ProjectImportDialog'
+import { ProjectConsultationDialog } from '@/components/projects/ProjectConsultationDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
@@ -35,6 +36,7 @@ import { uploadProjectAttachments } from '@/hooks/useProjectAttachments'
 import { queryKeys } from '@/lib/query-keys'
 import {
   useApproveProject,
+  useCompleteConsultation,
   useCompleteProjectExecution,
   useCreateProject,
   usePauseProjectExecution,
@@ -43,6 +45,7 @@ import {
   useResumeProjectExecution,
   useStartProjectExecution,
   useSubmitProject,
+  useUpdateConsultationOpinions,
   useUpdateProject,
   type ProjectListItem,
 } from '@/hooks/useProjects'
@@ -67,6 +70,7 @@ import { deriveFundingStatus } from '@/lib/project-finance'
 import { formatProgress } from '@/lib/progress'
 import {
   canApproveAsDirector,
+  canCompleteConsultation,
   canEditProjectDetails,
   canReviewProject,
   canSubmitProject,
@@ -76,6 +80,7 @@ import type {
   ProjectPauseValues,
   ProjectRejectValues,
 } from '@/lib/validations/approval'
+import type { ConsultationOpinionsFormValues } from '@/lib/validations/project'
 import {
   canConfirmCompletion,
   canGovernExecution,
@@ -94,6 +99,7 @@ import type { Project, ProjectStatus } from '@/types/database'
 
 const PROJECT_STATUS_FILTERS: ProjectStatus[] = [
   'draft',
+  'consultation',
   'proposed',
   'approved',
   'rejected',
@@ -122,6 +128,8 @@ export function ProjectsPage() {
   const submitProject = useSubmitProject()
   const approveProject = useApproveProject()
   const rejectProject = useRejectProject()
+  const updateConsultationOpinions = useUpdateConsultationOpinions()
+  const completeConsultation = useCompleteConsultation()
   const startProjectExecution = useStartProjectExecution()
   const pauseProjectExecution = usePauseProjectExecution()
   const resumeProjectExecution = useResumeProjectExecution()
@@ -130,9 +138,12 @@ export function ProjectsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [consultationDialogOpen, setConsultationDialogOpen] = useState(false)
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [rejectingProject, setRejectingProject] =
+    useState<ProjectListItem | null>(null)
+  const [consultingProject, setConsultingProject] =
     useState<ProjectListItem | null>(null)
   const [pausingProject, setPausingProject] = useState<ProjectListItem | null>(
     null,
@@ -352,7 +363,7 @@ export function ProjectsPage() {
           factoryId,
           userId,
           values,
-          status: 'proposed',
+          status: 'consultation',
         })
         await uploadFilesForProject(created.id, files)
         toast.success(t('projects.proposalSubmitted'))
@@ -396,6 +407,56 @@ export function ProjectsPage() {
   const openReject = (project: ProjectListItem) => {
     setRejectingProject(project)
     setRejectDialogOpen(true)
+  }
+
+  const openConsultation = (project: ProjectListItem) => {
+    setConsultingProject(project)
+    setConsultationDialogOpen(true)
+  }
+
+  const handleSaveConsultation = async (
+    values: ConsultationOpinionsFormValues,
+  ) => {
+    if (!consultingProject) {
+      return
+    }
+
+    try {
+      await updateConsultationOpinions.mutateAsync({
+        id: consultingProject.id,
+        researchOpinion: values.research_opinion,
+        boardOpinion: values.board_opinion,
+      })
+      toast.success(t('projects.consultationSaved'))
+    } catch (submitError) {
+      toastMutationError(submitError, t('projects.consultationSaveFailed'), t)
+      throw submitError
+    }
+  }
+
+  const handleCompleteConsultation = async (
+    values: ConsultationOpinionsFormValues,
+  ) => {
+    if (!consultingProject) {
+      return
+    }
+
+    try {
+      await updateConsultationOpinions.mutateAsync({
+        id: consultingProject.id,
+        researchOpinion: values.research_opinion,
+        boardOpinion: values.board_opinion,
+      })
+      await completeConsultation.mutateAsync({ id: consultingProject.id })
+      toast.success(t('projects.consultationCompleted'))
+    } catch (submitError) {
+      toastMutationError(
+        submitError,
+        t('projects.consultationCompleteFailed'),
+        t,
+      )
+      throw submitError
+    }
   }
 
   const handleReject = async (values: ProjectRejectValues) => {
@@ -486,6 +547,8 @@ export function ProjectsPage() {
     submitProject.isPending
 
   const isReviewing = approveProject.isPending || rejectProject.isPending
+  const isConsulting =
+    updateConsultationOpinions.isPending || completeConsultation.isPending
   const isChangingExecutionState =
     startProjectExecution.isPending ||
     pauseProjectExecution.isPending ||
@@ -496,6 +559,10 @@ export function ProjectsPage() {
   const projectDetailLabel = (status: ProjectStatus) => {
     if (canReviewProject(status)) {
       return t('projects.reviewProposal')
+    }
+
+    if (status === 'consultation') {
+      return t('projects.openConsultation')
     }
 
     if (isProposalReviewStatus(status)) {
@@ -527,6 +594,7 @@ export function ProjectsPage() {
 
   const renderProjectActions = (project: ProjectListItem) => {
     const canReviewAsDirector = canApproveAsDirector(project, profile)
+    const canConsultAsDirector = canCompleteConsultation(project, profile)
     const canGovern = canGovernExecution(project, profile)
     const canStart = canStartExecution(project, profile)
     const canRequestClose = canRequestCompletion(project, profile)
@@ -548,6 +616,15 @@ export function ProjectsPage() {
             {projectDetailLabel(project.status)}
           </Link>
         </Button>
+        {canConsultAsDirector ? (
+          <Button
+            size="sm"
+            onClick={() => openConsultation(project)}
+            disabled={isConsulting}
+          >
+            {t('projects.openConsultation')}
+          </Button>
+        ) : null}
         {canReviewAsDirector ? (
           <>
             <Button
@@ -840,6 +917,25 @@ export function ProjectsPage() {
             onSubmit={handleReject}
             isSubmitting={rejectProject.isPending}
           />
+          {consultingProject ? (
+            <ProjectConsultationDialog
+              open={consultationDialogOpen}
+              onOpenChange={(open) => {
+                setConsultationDialogOpen(open)
+                if (!open) {
+                  setConsultingProject(null)
+                }
+              }}
+              project={consultingProject}
+              onSave={handleSaveConsultation}
+              onComplete={handleCompleteConsultation}
+              isSaving={updateConsultationOpinions.isPending}
+              isCompleting={
+                updateConsultationOpinions.isPending ||
+                completeConsultation.isPending
+              }
+            />
+          ) : null}
           {startingProject ? (
             <ProjectStartExecutionDialog
               open

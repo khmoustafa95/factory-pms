@@ -2,6 +2,7 @@ import type { ProjectStatus, TaskStatus } from '@/types/database'
 
 export const PROJECT_STATUS_FILTERS: ProjectStatus[] = [
   'draft',
+  'consultation',
   'proposed',
   'approved',
   'rejected',

@@ -1505,6 +1505,7 @@ export type Database = {
       project_priority: 'high' | 'medium' | 'low'
       project_status:
         | 'draft'
+        | 'consultation'
         | 'proposed'
         | 'approved'
         | 'rejected'
@@ -1660,6 +1661,7 @@ export const Constants = {
       project_priority: ['high', 'medium', 'low'],
       project_status: [
         'draft',
+        'consultation',
         'proposed',
         'approved',
         'rejected',
@@ -1698,6 +1700,7 @@ export type FieldHealthStatus =
   'on_track' | 'delayed' | 'over_budget' | 'delayed_and_over_budget'
 
 export type NotificationType =
+  | 'project_consultation'
   | 'project_proposed'
   | 'project_approved'
   | 'project_rejected'

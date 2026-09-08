@@ -28,8 +28,6 @@ const announcementFields = () => ({
   announcement_date: z.string().trim(),
   announcing_entity: z.string().trim(),
   priority: z.string(),
-  research_opinion: z.string().trim(),
-  board_opinion: z.string().trim(),
 })
 
 function refineAnnouncementDate(
@@ -205,6 +203,16 @@ export function createProjectScheduleSchema(t: ValidationTranslator) {
     })
 }
 
+export function createConsultationOpinionsSchema(t: ValidationTranslator) {
+  return z.object({
+    research_opinion: z
+      .string()
+      .trim()
+      .min(3, t('validation.researchOpinionMin')),
+    board_opinion: z.string().trim().min(3, t('validation.boardOpinionMin')),
+  })
+}
+
 export type ProjectFormValues = {
   code: string
   title: string
@@ -215,12 +223,14 @@ export type ProjectFormValues = {
   announcement_date: string
   announcing_entity: string
   priority: string
-  research_opinion: string
-  board_opinion: string
 }
 
 export type ProjectScheduleFormValues = z.infer<
   ReturnType<typeof createProjectScheduleSchema>
+>
+
+export type ConsultationOpinionsFormValues = z.infer<
+  ReturnType<typeof createConsultationOpinionsSchema>
 >
 
 export function generateDraftProjectCode(): string {
@@ -284,7 +294,5 @@ export function toProjectPayload(values: ProjectFormValues) {
     announcement_date: values.announcement_date.trim() || null,
     announcing_entity: values.announcing_entity.trim() || null,
     priority,
-    research_opinion: values.research_opinion.trim() || null,
-    board_opinion: values.board_opinion.trim() || null,
   }
 }

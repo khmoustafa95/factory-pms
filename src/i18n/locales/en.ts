@@ -167,6 +167,10 @@ export const en = {
     yesterday: 'Yesterday',
     older: 'Earlier',
     types: {
+      project_consultation: {
+        title: 'Proposal in consultation',
+        body: '{{actorName}} submitted «{{projectTitle}}» for consultation.',
+      },
       project_proposed: {
         title: 'New proposal submitted',
         body: '{{actorName}} submitted «{{projectTitle}}» for review.',
@@ -248,6 +252,7 @@ export const en = {
   },
   projectStatus: {
     draft: 'Draft',
+    consultation: 'Consultation',
     proposed: 'Proposed',
     approved: 'Approved',
     rejected: 'Rejected',
@@ -598,6 +603,19 @@ export const en = {
       'Conversation between the company director and the factory manager about budget, workforce, timeline, and other proposal details before approval.',
     proposalSummary: 'Proposal summary',
     awaitingDirectorReview: 'Awaiting company director review',
+    awaitingConsultation: 'Awaiting research and board opinions',
+    openConsultation: 'Consultation',
+    consultationSaved: 'Consultation opinions saved',
+    consultationCompleted: 'Consultation completed — project is now proposed',
+    consultationSaveFailed: 'Could not save consultation opinions',
+    consultationCompleteFailed: 'Could not complete consultation',
+    consultationDialog: {
+      title: 'Complete consultation',
+      description:
+        'Record research and board opinions for «{{title}}», then move the project to proposed for approval.',
+      save: 'Save opinions',
+      complete: 'Complete consultation',
+    },
     discussionParticipantsOnly:
       'Only the company director and factory manager can post in this discussion.',
     code: 'Project code',
@@ -649,6 +667,8 @@ export const en = {
         'Only the factory manager or company director can resume execution.',
       completeNotDirector:
         'Only the company director can confirm project closure.',
+      completeConsultationNotDirector:
+        'Only the company director can complete consultation.',
       requestCompleteNotFactoryManager:
         'Only the factory manager can request project closure.',
       requestCompleteWrongStatus:
@@ -717,7 +737,7 @@ export const en = {
       promptDescription:
         'Do you want to download the Excel template first? Column names must match: factory_code, code, title, description, budget, currency, proposed_duration_months, announcement_date, announcing_entity, priority, research_opinion, board_opinion.',
       fileDescription:
-        'Upload an .xlsx or .csv file that matches the projects template. Existing factory_code + code pairs will be updated; new pairs will be added as drafts.',
+        'Upload an .xlsx or .csv file that matches the projects template. Existing factory_code + code pairs will be updated; new pairs will be added in consultation.',
       downloadTemplate: 'Download template',
       continueWithoutTemplate: 'Continue without downloading',
       templateDownloaded: 'Template downloaded',
@@ -750,7 +770,7 @@ export const en = {
       instructionsColumns:
         'Columns: factory_code and code and title are required. Other columns are optional. proposed_duration_months is an integer. Dates use YYYY-MM-DD. Do not include id, status, progress, schedule dates, or assigned PM.',
       instructionsUpsert:
-        'Rows match existing projects by factory_code + code. Existing rows are updated without changing status. New rows are added as drafts.',
+        'Rows match existing projects by factory_code + code. Existing rows are updated without changing status. New rows are added in consultation for director opinions.',
       instructionsPriority:
         'priority accepts high/medium/low or عالية/متوسطة/منخفضة. Leave blank for unassigned.',
       instructionsExample:
@@ -1319,6 +1339,8 @@ export const en = {
     projectCodeTaken:
       'This project code is already used in this factory. Choose a different code.',
     rejectionReasonMin: 'Rejection reason must be at least 3 characters',
+    researchOpinionMin: 'Research opinion must be at least 3 characters',
+    boardOpinionMin: 'Board opinion must be at least 3 characters',
     pauseReasonMin: 'Pause reason must be at least 3 characters',
     changeReasonMin: 'Change request reason must be at least 3 characters',
     reassignReasonMin: 'Reassignment reason must be at least 3 characters',
