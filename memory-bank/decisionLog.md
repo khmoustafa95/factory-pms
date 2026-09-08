@@ -2,6 +2,8 @@
 
 Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
+- 2026-09-08 — Project timeline lives inside the WBS tab as a schedule strip + phase-level Gantt (custom CSS, not Bryntum/DHTMLX). Card-based WBS does not justify a full split-pane grid; drag-reschedule stays out of scope. Legacy `?tab=timeline` maps to `wbs`. Projects list omits long descriptions from rows (scan metadata; detail page holds full text; optional title tooltip excerpt).
+
 - 2026-09-08 — Proposal lifecycle inserts `consultation` between draft and proposed. Factory managers still submit (no opinions); company directors record research/board opinions only in consultation, then move to proposed for approve/reject. Explains why drafts were never approvable: directors could read drafts (import RLS) but `canApproveAsDirector` stays `proposed`-only.
 
 - 2026-09-08 — Proposal contract is duration in months; calendar start/end are planned after approval. Rationale: directors review effort length, not a speculative calendar; FM locks dates when ready to design phases. `project_duration_days` prefers fixed dates when present so phase windows match the calendar.

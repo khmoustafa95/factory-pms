@@ -3,7 +3,6 @@ export type ProjectDetailTab =
   | 'finance'
   | 'wbs'
   | 'kanban'
-  | 'timeline'
   | 'activity'
   | 'attachments'
 
@@ -12,24 +11,34 @@ const ALL_TABS: ProjectDetailTab[] = [
   'finance',
   'wbs',
   'kanban',
-  'timeline',
   'activity',
   'attachments',
 ]
+
+/** Legacy URL values that map onto a current tab. */
+const TAB_ALIASES: Record<string, ProjectDetailTab> = {
+  timeline: 'wbs',
+}
 
 export function parseProjectDetailTab(
   value: string | null,
   showFinance: boolean,
 ): ProjectDetailTab {
-  if (!value || !ALL_TABS.includes(value as ProjectDetailTab)) {
+  if (!value) {
     return 'overview'
   }
 
-  if (value === 'finance' && !showFinance) {
+  const resolved = TAB_ALIASES[value] ?? value
+
+  if (!ALL_TABS.includes(resolved as ProjectDetailTab)) {
     return 'overview'
   }
 
-  return value as ProjectDetailTab
+  if (resolved === 'finance' && !showFinance) {
+    return 'overview'
+  }
+
+  return resolved as ProjectDetailTab
 }
 
 export function notificationTabForType(type: string): ProjectDetailTab {

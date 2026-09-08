@@ -1,6 +1,7 @@
 import { Layers, Plus, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { EmptyState, EmptyStateButton } from '@/components/EmptyState'
+import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
 import { ResponsiveTable } from '@/components/ResponsiveTable'
 import { StatusMessage } from '@/components/StatusMessage'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/table'
 import { useTranslation } from '@/contexts/LocaleContext'
 import { useConfirmAction } from '@/hooks/useConfirmAction'
+import type { ProjectDetail } from '@/hooks/useProject'
 import type { TaskListItem } from '@/hooks/useTasks'
 import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
 import { calculatePhaseMetrics } from '@/lib/phase-metrics'
@@ -30,10 +32,12 @@ import { isTaskWeightSumValid, sumTaskWeights } from '@/lib/wbs'
 import type { Phase } from '@/types/database'
 
 interface ProjectWbsTabProps {
+  project: ProjectDetail
   phases: Phase[]
   tasksByPhase: Map<string, TaskListItem[]>
   canManagePhases: boolean
   canManageTasks: boolean
+  canSetSchedule?: boolean
   isPlanning: boolean
   remainingWeight: number
   totalWeight: number
@@ -42,6 +46,7 @@ interface ProjectWbsTabProps {
   totalBudget: number
   budgetValid: boolean
   projectBudget: number | null | undefined
+  onSetSchedule?: () => void
   onCreatePhase: () => void
   onEditPhase: (phase: Phase) => void
   onDeletePhase: (phase: Phase) => void
@@ -51,10 +56,12 @@ interface ProjectWbsTabProps {
 }
 
 export function ProjectWbsTab({
+  project,
   phases,
   tasksByPhase,
   canManagePhases,
   canManageTasks,
+  canSetSchedule = false,
   isPlanning,
   remainingWeight,
   totalWeight,
@@ -63,6 +70,7 @@ export function ProjectWbsTab({
   totalBudget,
   budgetValid,
   projectBudget,
+  onSetSchedule,
   onCreatePhase,
   onEditPhase,
   onDeletePhase,
@@ -118,6 +126,15 @@ export function ProjectWbsTab({
           ) : null}
         </CardHeader>
         <CardContent className="space-y-4">
+          <ProjectTimeline
+            project={project}
+            phases={phases}
+            tasksByPhase={tasksByPhase}
+            canSetSchedule={canSetSchedule}
+            onSetSchedule={onSetSchedule}
+            embedded
+          />
+
           {weightsValid ? (
             <StatusMessage variant="info">
               {t('wbs.weightSummary', { total: totalWeight.toFixed(1) })}

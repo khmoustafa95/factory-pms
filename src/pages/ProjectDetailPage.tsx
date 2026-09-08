@@ -6,7 +6,6 @@ import { CommentThread } from '@/components/comments/CommentThread'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { PageHeaderActions } from '@/components/PageHeaderActions'
 import { ScrollableTabsList } from '@/components/ScrollableTabsList'
-import { ProjectTimeline } from '@/components/gantt/ProjectTimeline'
 import { TaskKanbanBoard } from '@/components/kanban/TaskKanbanBoard'
 import { PageHeader } from '@/components/PageHeader'
 import { QueryState } from '@/components/QueryState'
@@ -1106,9 +1105,6 @@ export function ProjectDetailPage() {
               <TabsTrigger value="kanban">
                 {t('projectDetail.tabs.kanban')}
               </TabsTrigger>
-              <TabsTrigger value="timeline">
-                {t('projectDetail.tabs.timeline')}
-              </TabsTrigger>
               <TabsTrigger value="activity">
                 {t('projectDetail.tabs.activity')}
               </TabsTrigger>
@@ -1169,10 +1165,12 @@ export function ProjectDetailPage() {
 
             <TabsContent value="wbs" className="mt-4">
               <ProjectWbsTab
+                project={project}
                 phases={phases}
                 tasksByPhase={tasksByPhase}
                 canManagePhases={canPhases}
                 canManageTasks={canTasks}
+                canSetSchedule={canSetSchedule}
                 isPlanning={project.status === 'approved'}
                 remainingWeight={remainingWeight}
                 totalWeight={totalWeight}
@@ -1181,6 +1179,7 @@ export function ProjectDetailPage() {
                 totalBudget={totalBudget}
                 budgetValid={budgetValid}
                 projectBudget={project.budget}
+                onSetSchedule={() => setScheduleDialogOpen(true)}
                 onCreatePhase={openCreatePhase}
                 onEditPhase={openEditPhase}
                 onDeletePhase={handleDeletePhase}
@@ -1202,10 +1201,6 @@ export function ProjectDetailPage() {
                 tasks={tasks}
                 canManage={canExecute}
               />
-            </TabsContent>
-
-            <TabsContent value="timeline" className="mt-4">
-              <ProjectTimeline project={project} phases={phases} />
             </TabsContent>
 
             <TabsContent value="activity" className="mt-4">

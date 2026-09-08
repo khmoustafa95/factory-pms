@@ -2,6 +2,8 @@
 
 ## Current focus
 
+WBS and timeline are one project-detail tab: schedule strip + phase Gantt above the existing phase/task cards. Projects list no longer embeds long descriptions in rows (title + optional tooltip excerpt; full text on detail).
+
 Director project import creates rows in **`consultation`** (not draft) so directors can see and complete opinions immediately. Existing matched rows still update without changing status. Factory managers submit drafts into consultation as before.
 
 Consultation sits between draft and proposed: factory managers submit into `consultation`; company directors record research/board opinions and complete consultation → `proposed`; approve/reject remain on `proposed` only.
@@ -23,6 +25,9 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-08] Timeline bars show actual phase progress (`calculatePhaseProgress` from tasks): fill overlay + % label on each bar; tasks passed via `tasksByPhase`. `npm run verify` passed.
+- [2026-09-08] Professional timeline polish: split-pane Gantt (phase labels + track), month ticks/grid, status legend, today pill marker, duration chips on bars. `npm run verify` passed.
+- [2026-09-08] Merged project detail Timeline into WBS tab (`ProjectTimeline` embedded above phase cards). Status-colored phase bars; empty states for missing schedule / empty track; `?tab=timeline` aliases to `wbs`. Projects list drops inline description (title + ~120-char tooltip). `npm run verify` passed.
 - [2026-09-08] Dropped leftover check `projects_proposed_requires_pm` (blocked consultation → proposed without PM). Migration `20260908130200_drop_proposed_requires_pm.sql` applied locally.
 - [2026-09-08] Director project import inserts as `consultation` (with `proposed_by`), not `draft`; updates still leave status unchanged. ar/en import copy updated. `npm run verify` passed.
 - [2026-09-08] Consultation status: enum + `transition_project_status` (`draft|rejected` → `consultation` → `proposed` → approve/reject). FM form drops research/board opinions. Director `ProjectConsultationDialog` on list/detail. Notifications `project_consultation`. Migrations `20260908130000` / `20260908130100` applied locally. `npm run verify` passed.

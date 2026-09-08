@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Merged WBS + timeline tab (phase Gantt above WBS cards); projects list description UX (tooltip, no row bloat)
 - [x] Consultation status between draft and proposed (director opinions required before propose)
 - [x] Proposal duration in months; calendar start/end after approval before phases/start
 - [x] PM assignment after approval (not on proposal submit); start execution requires assigned PM
@@ -83,6 +84,17 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-08 (Timeline visual polish)
+
+- Redesigned embedded Gantt: left phase column + right track, month/day ticks, vertical grid, status legend, today marker with label, bar duration labels.
+- `npm run verify` passed.
+
+### 2026-09-08 (WBS + timeline merge; projects list description)
+
+- Removed separate Timeline tab; `ProjectTimeline` embeds at top of WBS with status-colored phase bars and schedule empty states; `?tab=timeline` → `wbs`.
+- Projects list: no inline description in rows; title tooltip shows ~120-char excerpt; title column uses `max-w` + `whitespace-normal`.
+- `npm run verify` passed.
 
 ### 2026-09-08 (Consultation between draft and proposed)
 

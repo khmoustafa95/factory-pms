@@ -965,92 +965,112 @@ export function ProjectsPage() {
         </>
       }
     >
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('common.title')}</TableHead>
-            {isDirector ? <TableHead>{t('common.factory')}</TableHead> : null}
-            <TableHead>{t('common.status')}</TableHead>
-            <TableHead>{t('projects.priority')}</TableHead>
-            <TableHead>{t('common.budget')}</TableHead>
-            <TableHead>{t('projects.budgetUsed')}</TableHead>
-            <TableHead>{t('projects.fundingStatus')}</TableHead>
-            <TableHead>{t('common.timeline')}</TableHead>
-            {isDirector ? (
-              <TableHead>{t('projects.proposedBy')}</TableHead>
-            ) : null}
-            <TableHead>{t('projects.pm')}</TableHead>
-            <TableHead className="text-end">{t('common.actions')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {projects.map((project) => (
-            <TableRow key={project.id}>
-              <TableCell>
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    <Link
-                      className="hover:underline"
-                      to={buildProjectPath(project)}
-                    >
-                      {project.title}
-                    </Link>
-                  </p>
-                  {project.description ? (
-                    <p className="line-clamp-1 text-sm text-muted-foreground">
-                      {project.description}
-                    </p>
-                  ) : null}
-                  {project.status === 'rejected' && project.rejection_reason ? (
-                    <p className="text-sm text-destructive">
-                      {t('projects.rejectedPrefix')} {project.rejection_reason}
-                    </p>
-                  ) : null}
-                </div>
-              </TableCell>
+      <TooltipProvider delayDuration={200}>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{t('common.title')}</TableHead>
+              {isDirector ? <TableHead>{t('common.factory')}</TableHead> : null}
+              <TableHead>{t('common.status')}</TableHead>
+              <TableHead>{t('projects.priority')}</TableHead>
+              <TableHead>{t('common.budget')}</TableHead>
+              <TableHead>{t('projects.budgetUsed')}</TableHead>
+              <TableHead>{t('projects.fundingStatus')}</TableHead>
+              <TableHead>{t('common.timeline')}</TableHead>
               {isDirector ? (
-                <TableCell>
-                  {project.factories
-                    ? formatFactoryLabel(project.factories)
-                    : notAvailable}
-                </TableCell>
+                <TableHead>{t('projects.proposedBy')}</TableHead>
               ) : null}
-              <TableCell>
-                <ProjectStatusBadge status={project.status} />
-              </TableCell>
-              <TableCell>
-                {getProjectPriorityLabel(t, project.priority, notAvailable)}
-              </TableCell>
-              <TableCell>
-                {formatLocalizedBudget(
-                  project.budget,
-                  project.currency,
-                  locale,
-                  notAvailable,
-                )}
-              </TableCell>
-              <TableCell>{formatBudgetUsed(project)}</TableCell>
-              <TableCell>
-                <Badge variant="outline">{formatFundingStatus(project)}</Badge>
-              </TableCell>
-              <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                {formatProjectSchedule(project, locale, t, notAvailable)}
-              </TableCell>
-              {isDirector ? (
-                <TableCell>
-                  {project.proposer?.full_name ?? notAvailable}
-                </TableCell>
-              ) : null}
-              <TableCell>
-                {project.assigned_pm?.full_name ?? notAvailable}
-              </TableCell>
-              <TableCell className="text-end">
-                {renderProjectActions(project)}
-              </TableCell>
+              <TableHead>{t('projects.pm')}</TableHead>
+              <TableHead className="text-end">{t('common.actions')}</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {projects.map((project) => (
+              <TableRow key={project.id}>
+                <TableCell className="max-w-56 min-w-40 whitespace-normal">
+                  <div className="space-y-1">
+                    <p className="font-medium">
+                      {project.description ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Link
+                              className="hover:underline"
+                              to={buildProjectPath(project)}
+                            >
+                              {project.title}
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            sideOffset={6}
+                            className="max-w-xs text-start"
+                          >
+                            {project.description.length > 120
+                              ? `${project.description.slice(0, 120)}…`
+                              : project.description}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Link
+                          className="hover:underline"
+                          to={buildProjectPath(project)}
+                        >
+                          {project.title}
+                        </Link>
+                      )}
+                    </p>
+                    {project.status === 'rejected' &&
+                    project.rejection_reason ? (
+                      <p className="line-clamp-2 text-sm text-destructive">
+                        {t('projects.rejectedPrefix')}{' '}
+                        {project.rejection_reason}
+                      </p>
+                    ) : null}
+                  </div>
+                </TableCell>
+                {isDirector ? (
+                  <TableCell>
+                    {project.factories
+                      ? formatFactoryLabel(project.factories)
+                      : notAvailable}
+                  </TableCell>
+                ) : null}
+                <TableCell>
+                  <ProjectStatusBadge status={project.status} />
+                </TableCell>
+                <TableCell>
+                  {getProjectPriorityLabel(t, project.priority, notAvailable)}
+                </TableCell>
+                <TableCell>
+                  {formatLocalizedBudget(
+                    project.budget,
+                    project.currency,
+                    locale,
+                    notAvailable,
+                  )}
+                </TableCell>
+                <TableCell>{formatBudgetUsed(project)}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{formatFundingStatus(project)}</Badge>
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                  {formatProjectSchedule(project, locale, t, notAvailable)}
+                </TableCell>
+                {isDirector ? (
+                  <TableCell>
+                    {project.proposer?.full_name ?? notAvailable}
+                  </TableCell>
+                ) : null}
+                <TableCell>
+                  {project.assigned_pm?.full_name ?? notAvailable}
+                </TableCell>
+                <TableCell className="text-end">
+                  {renderProjectActions(project)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TooltipProvider>
     </PaginatedListPage>
   )
 }

@@ -908,9 +908,8 @@ export const en = {
     tabs: {
       overview: 'Overview',
       finance: 'Finance & operations',
-      wbs: 'WBS',
+      wbs: 'WBS & timeline',
       kanban: 'Kanban',
-      timeline: 'Timeline',
       activity: 'Activity',
     },
     phaseUpdated: 'Phase updated',
@@ -927,10 +926,11 @@ export const en = {
   wbs: {
     title: 'Work breakdown structure',
     fmManageDescription:
-      'Design phases with weights that total 100% and budgets that match the project. The project manager prepares tasks under each phase.',
+      'Design phases with weights that total 100% and budgets that match the project. The timeline above updates as phase dates are set. The project manager prepares tasks under each phase.',
     pmManageDescription:
       'Prepare weighted tasks under each phase. Status changes on the Kanban start after execution begins.',
-    viewDescription: 'View phases and tasks for this project.',
+    viewDescription:
+      'View phases, tasks, and the project timeline for this project.',
     weightSummary: 'Phase weights: {{total}}% / 100%',
     weightRemaining: '{{remaining}}% remaining',
     weightInvalid: 'Phase weights must total exactly 100%.',
@@ -1040,14 +1040,20 @@ export const en = {
   timeline: {
     title: 'Timeline',
     emptyDescription:
-      'Add phases with start and end dates to see the timeline.',
+      'Add phases with start and end dates to see them on the timeline.',
+    emptyTrackHint:
+      'Project dates are set. Bars appear here as soon as you add phases with dates.',
     noProjectSchedule:
-      'Start project execution to generate the schedule, or add a duration to the proposal.',
+      'Set the default project start and end dates to draw the timeline.',
+    setScheduleAction: 'Set project schedule',
     description:
       'Gantt-style view of phase schedules against the project window.',
     noPhases: 'No phases with dates to display.',
     today: 'Today',
     days: 'days',
+    phaseColumn: 'Phase',
+    legend: 'Status',
+    actualProgress: 'Actual progress {{value}}',
   },
   durationUnit: {
     day: '{{count}} days',
