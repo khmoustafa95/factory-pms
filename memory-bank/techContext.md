@@ -5,7 +5,7 @@
 | Layer        | Choice                                                          |
 | ------------ | --------------------------------------------------------------- |
 | App          | Vite 8 + React 19 + TypeScript                                  |
-| Styling      | Tailwind CSS v4 + shadcn/ui (radix-nova) + Geist font           |
+| Styling      | Tailwind CSS v4 + shadcn/ui (radix-nova) + Geist (LTR) + itfQomraArabic (RTL, `public/fonts`) |
 | Routing      | react-router-dom v7                                             |
 | Server state | `@tanstack/react-query`                                         |
 | Forms        | `react-hook-form` + `zod` + `@hookform/resolvers`               |

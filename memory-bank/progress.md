@@ -85,6 +85,12 @@
 
 ## Changelog
 
+### 2026-09-09 (Arabic font: itfQomraArabic)
+
+- Wired local `public/fonts/itfQomraArabic-{Light,Regular,Bold}.otf` with `@font-face` (weights 300/400/700).
+- RTL (`html[dir=rtl]`) uses itfQomraArabic; `--font-sans` falls back to it after Geist; removed Noto Sans Arabic package.
+- `npm run verify` passed.
+
 ### 2026-09-08 (Timeline visual polish)
 
 - Redesigned embedded Gantt: left phase column + right track, month/day ticks, vertical grid, status legend, today marker with label, bar duration labels.

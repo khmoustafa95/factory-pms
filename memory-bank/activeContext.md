@@ -25,6 +25,7 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-09] Arabic UI font: local `itfQomraArabic` (Light/Regular/Bold `.otf` in `public/fonts`) via `@font-face`; RTL body prefers it; removed `@fontsource-variable/noto-sans-arabic`. Geist remains for LTR. `npm run verify` passed.
 - [2026-09-08] Timeline bars show actual phase progress (`calculatePhaseProgress` from tasks): fill overlay + % label on each bar; tasks passed via `tasksByPhase`. `npm run verify` passed.
 - [2026-09-08] Professional timeline polish: split-pane Gantt (phase labels + track), month ticks/grid, status legend, today pill marker, duration chips on bars. `npm run verify` passed.
 - [2026-09-08] Merged project detail Timeline into WBS tab (`ProjectTimeline` embedded above phase cards). Status-colored phase bars; empty states for missing schedule / empty track; `?tab=timeline` aliases to `wbs`. Projects list drops inline description (title + ~120-char tooltip). `npm run verify` passed.
