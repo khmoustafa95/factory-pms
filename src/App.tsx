@@ -57,11 +57,7 @@ export default function App() {
             <Route
               element={
                 <RoleRoute
-                  allowedRoles={[
-                    'company_director',
-                    'factory_manager',
-                    'project_manager',
-                  ]}
+                  allowedRoles={['company_director', 'factory_manager']}
                 />
               }
             >
@@ -79,13 +75,12 @@ export default function App() {
             <Route
               element={
                 <RoleRoute
-                  allowedRoles={['company_director', 'factory_manager']}
+                  allowedRoles={['company_director']}
+                  requireControl
                 />
               }
             >
               <Route path="accounts" element={<AccountsPage />} />
-            </Route>
-            <Route element={<RoleRoute allowedRoles={['company_director']} />}>
               <Route path="factories" element={<FactoriesPage />} />
             </Route>
             <Route path="settings" element={<SettingsPage />} />

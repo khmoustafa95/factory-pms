@@ -50,6 +50,10 @@ const DB_CONSTRAINT_MATCHERS: ErrorMatcher[] = [
 /** Maps raw Postgres RAISE EXCEPTION text from transition_project_status to i18n keys. */
 const RPC_ERROR_MATCHERS: ErrorMatcher[] = [
   {
+    pattern: /view-only account/i,
+    key: 'common.viewOnly',
+  },
+  {
     pattern: /project wbs is not ready/i,
     key: 'projects.rpcErrors.wbsNotReady',
   },

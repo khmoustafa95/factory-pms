@@ -22,7 +22,7 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useCommandProjectSearch } from '@/hooks/useProjects'
 import { buildProjectPath } from '@/lib/project-routes'
-import { isFactoryManager } from '@/lib/roles'
+import { canControl, isFactoryManager } from '@/lib/roles'
 import type { AppNavItem } from '@/lib/nav'
 
 interface CommandPaletteProps {
@@ -33,7 +33,8 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
   const { t, dir } = useTranslation()
   const { profile } = useAuth()
   const navigate = useNavigate()
-  const canCreateProposal = isFactoryManager(profile?.role)
+  const canCreateProposal =
+    isFactoryManager(profile?.role) && canControl(profile)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const debouncedQuery = useDebouncedValue(query, 250)

@@ -45,7 +45,6 @@ import {
   buildFactoryFilterOptions,
   getActiveInactiveFilterOptions,
 } from '@/lib/list-filters'
-import { isFactoryManager } from '@/lib/roles'
 import { toastMutationError } from '@/lib/mutation-error'
 import type { AccountDialogFormValues } from '@/lib/validations/account'
 import type { UserRole } from '@/types/database'
@@ -53,12 +52,10 @@ import type { UserRole } from '@/types/database'
 export function AccountsPage() {
   const { t } = useTranslation()
   const { profile } = useAuth()
-  const isFm = isFactoryManager(profile?.role)
   const managedRoles = useMemo(
-    () => getManagedRoles(profile?.role),
-    [profile?.role],
+    () => getManagedRoles(profile),
+    [profile],
   )
-  const lockFactoryId = isFm ? (profile?.factory_id ?? null) : null
 
   const listState = useListQueryState({
     role: 'all',
@@ -71,10 +68,8 @@ export function AccountsPage() {
     pageSize: listState.pageSize,
     search: listState.debouncedSearch,
     role: listState.filters.role as
-      'all' | 'company_director' | 'factory_manager' | 'project_manager',
-    factoryId: isFm
-      ? (profile?.factory_id ?? 'all')
-      : listState.filters.factoryId,
+      'all' | 'company_director' | 'factory_manager',
+    factoryId: listState.filters.factoryId,
     status: listState.filters.status as 'all' | 'active' | 'inactive',
   })
   const accounts = data?.items ?? []
@@ -134,6 +129,7 @@ export function AccountsPage() {
           role: values.role,
           factory_id: values.factory_id,
           is_active: values.is_active,
+          can_control: values.can_control,
         },
       })
       toast.success(t('accounts.updated'))
@@ -171,15 +167,13 @@ export function AccountsPage() {
     },
   ]
 
-  if (!isFm) {
-    filters.push({
-      id: 'account-factory-filter',
-      label: t('common.factory'),
-      value: listState.filters.factoryId,
-      onChange: (value) => listState.setFilter('factoryId', value),
-      options: buildFactoryFilterOptions(factories, t('list.allFactories')),
-    })
-  }
+  filters.push({
+    id: 'account-factory-filter',
+    label: t('common.factory'),
+    value: listState.filters.factoryId,
+    onChange: (value) => listState.setFilter('factoryId', value),
+    options: buildFactoryFilterOptions(factories, t('list.allFactories')),
+  })
 
   filters.push({
     id: 'account-status-filter',
@@ -194,11 +188,7 @@ export function AccountsPage() {
       header={
         <PageHeader
           title={t('accounts.title')}
-          description={
-            isFm
-              ? t('accounts.descriptionFactoryManager')
-              : t('accounts.description')
-          }
+          description={t('accounts.description')}
           actions={
             <Button onClick={openCreate}>
               <Plus className="size-4" />
@@ -228,10 +218,7 @@ export function AccountsPage() {
       }
       getKey={(account) => account.id}
       renderMobileCard={(account) => {
-        const canManage = canManageAccountRole(
-          profile?.role,
-          account.role as UserRole,
-        )
+        const canManage = canManageAccountRole(profile, account.role)
         return (
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-2">
@@ -250,6 +237,14 @@ export function AccountsPage() {
                   {t('accounts.role')}:{' '}
                 </span>
                 {getRoleLabel(t, account.role as UserRole)}
+              </p>
+              <p>
+                <span className="font-medium text-foreground">
+                  {t('accounts.access')}:{' '}
+                </span>
+                {account.can_control
+                  ? t('accounts.controlAccess')
+                  : t('accounts.statsAccess')}
               </p>
               <p>
                 <span className="font-medium text-foreground">
@@ -297,7 +292,6 @@ export function AccountsPage() {
             onOpenChange={setDialogOpen}
             account={editingAccount}
             allowedRoles={managedRoles}
-            lockFactoryId={lockFactoryId}
             onCreate={handleCreate}
             onUpdate={handleUpdate}
             isSubmitting={createAccount.isPending || updateAccount.isPending}
@@ -359,6 +353,7 @@ export function AccountsPage() {
             <TableHead>{t('common.name')}</TableHead>
             <TableHead>{t('common.email')}</TableHead>
             <TableHead>{t('accounts.role')}</TableHead>
+            <TableHead>{t('accounts.access')}</TableHead>
             <TableHead>{t('common.factory')}</TableHead>
             <TableHead>{t('common.status')}</TableHead>
             <TableHead className="text-end">{t('common.actions')}</TableHead>
@@ -366,10 +361,7 @@ export function AccountsPage() {
         </TableHeader>
         <TableBody>
           {accounts.map((account) => {
-            const canManage = canManageAccountRole(
-              profile?.role,
-              account.role as UserRole,
-            )
+            const canManage = canManageAccountRole(profile, account.role)
             return (
               <TableRow key={account.id}>
                 <TableCell className="font-medium">
@@ -378,6 +370,11 @@ export function AccountsPage() {
                 <TableCell>{account.email}</TableCell>
                 <TableCell>
                   {getRoleLabel(t, account.role as UserRole)}
+                </TableCell>
+                <TableCell>
+                  {account.can_control
+                    ? t('accounts.controlAccess')
+                    : t('accounts.statsAccess')}
                 </TableCell>
                 <TableCell>
                   {account.factories

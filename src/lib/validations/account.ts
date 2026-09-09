@@ -1,14 +1,24 @@
 import { z } from 'zod'
 import type { ValidationTranslator } from '@/lib/validations/types'
-import type { UserRole } from '@/types/database'
+
+const ACCOUNT_ROLES = ['company_director', 'factory_manager'] as const
+
+export type ManagedAccountRole = (typeof ACCOUNT_ROLES)[number]
+
+export function isManagedAccountRole(
+  role: string | undefined,
+): role is ManagedAccountRole {
+  return role === 'company_director' || role === 'factory_manager'
+}
 
 export function createAccountFormSchema(t: ValidationTranslator) {
   return z
     .object({
       full_name: z.string().trim().min(2, t('validation.nameMin')),
-      role: z.enum(['company_director', 'factory_manager', 'project_manager']),
+      role: z.enum(ACCOUNT_ROLES),
       factory_id: z.string().uuid().nullable(),
       is_active: z.boolean(),
+      can_control: z.boolean(),
     })
     .superRefine((values, ctx) => {
       if (values.role !== 'company_director' && !values.factory_id) {
@@ -42,17 +52,18 @@ export function createAccountDialogSchema(
       email:
         mode === 'create' ? z.email(t('validation.emailInvalid')) : z.string(),
       full_name: z.string().trim().min(2, t('validation.nameMin')),
-      role: z.enum(['company_director', 'factory_manager', 'project_manager']),
+      role: z.enum(ACCOUNT_ROLES),
       factory_id: z.string().uuid().nullable(),
       is_active: z.boolean(),
+      can_control: z.boolean(),
     })
     .superRefine((values, ctx) => {
       if (values.role === 'company_director') {
-        if (mode === 'create') {
+        if (values.factory_id) {
           ctx.addIssue({
             code: 'custom',
-            message: t('validation.factoryRequired'),
-            path: ['role'],
+            message: t('validation.directorNoFactory'),
+            path: ['factory_id'],
           })
         }
         return
@@ -71,9 +82,10 @@ export function createAccountDialogSchema(
 export type AccountDialogFormValues = {
   email: string
   full_name: string
-  role: UserRole
+  role: ManagedAccountRole
   factory_id: string | null
   is_active: boolean
+  can_control: boolean
 }
 
 export type AccountCreateFormValues = AccountDialogFormValues

@@ -6,13 +6,14 @@ const corsHeaders: Record<string, string> = {
     'authorization, x-client-info, apikey, content-type',
 }
 
-type UserRole = 'company_director' | 'factory_manager' | 'project_manager'
+type UserRole = 'company_director' | 'factory_manager'
 
 interface ActorProfile {
   id: string
   role: UserRole
   factory_id: string | null
   is_active: boolean
+  can_control: boolean
 }
 
 interface CreateBody {
@@ -22,6 +23,7 @@ interface CreateBody {
   role: UserRole
   factory_id: string | null
   is_active?: boolean
+  can_control?: boolean
 }
 
 interface ResetBody {
@@ -50,26 +52,19 @@ function canProvisionRole(
   targetRole: UserRole,
   targetFactoryId: string | null,
 ): boolean {
-  if (!actor.is_active) {
+  if (!actor.is_active || !actor.can_control) {
     return false
   }
 
-  if (actor.role === 'company_director') {
-    return (
-      (targetRole === 'factory_manager' || targetRole === 'project_manager') &&
-      targetFactoryId !== null
-    )
+  if (actor.role !== 'company_director') {
+    return false
   }
 
-  if (actor.role === 'factory_manager') {
-    return (
-      targetRole === 'project_manager' &&
-      targetFactoryId !== null &&
-      targetFactoryId === actor.factory_id
-    )
+  if (targetRole === 'company_director') {
+    return targetFactoryId === null
   }
 
-  return false
+  return targetRole === 'factory_manager' && targetFactoryId !== null
 }
 
 Deno.serve(async (req) => {
@@ -120,7 +115,7 @@ Deno.serve(async (req) => {
 
   const { data: actor, error: actorError } = await admin
     .from('profiles')
-    .select('id, role, factory_id, is_active')
+    .select('id, role, factory_id, is_active, can_control')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -145,14 +140,15 @@ Deno.serve(async (req) => {
     const email = body.email?.trim().toLowerCase()
     const fullName = body.full_name?.trim()
     const role = body.role
+    const canControl = body.can_control !== false
     let factoryId = body.factory_id
 
     if (!email || !fullName || !role) {
       return jsonResponse({ error: 'Missing required fields' }, 400)
     }
 
-    if (actorProfile.role === 'factory_manager') {
-      factoryId = actorProfile.factory_id
+    if (role === 'company_director') {
+      factoryId = null
     }
 
     if (!canProvisionRole(actorProfile, role, factoryId)) {
@@ -177,10 +173,12 @@ Deno.serve(async (req) => {
           user_role: role,
           role,
           factory_id: factoryId,
+          can_control: canControl,
         },
         app_metadata: {
           user_role: role,
           factory_id: factoryId,
+          can_control: canControl,
         },
       })
 
@@ -196,19 +194,23 @@ Deno.serve(async (req) => {
       app_metadata: {
         user_role: role,
         factory_id: factoryId,
+        can_control: canControl,
       },
     })
 
-    if (body.is_active === false) {
-      const { error: deactivateError } = await admin
+    if (body.is_active === false || canControl === false) {
+      const { error: profileError } = await admin
         .from('profiles')
-        .update({ is_active: false })
+        .update({
+          is_active: body.is_active !== false,
+          can_control: canControl,
+        })
         .eq('id', created.user.id)
 
-      if (deactivateError) {
+      if (profileError) {
         return jsonResponse(
           {
-            error: `User created but failed to set inactive: ${deactivateError.message}`,
+            error: `User created but failed to set profile flags: ${profileError.message}`,
           },
           500,
         )
@@ -230,7 +232,7 @@ Deno.serve(async (req) => {
 
     const { data: target, error: targetError } = await admin
       .from('profiles')
-      .select('id, role, factory_id, is_active')
+      .select('id, role, factory_id, is_active, can_control')
       .eq('id', targetUserId)
       .maybeSingle()
 

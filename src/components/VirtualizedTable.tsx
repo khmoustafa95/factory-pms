@@ -50,7 +50,7 @@ export function VirtualizedTable({
     <div
       ref={parentRef}
       className={cn(
-        'relative w-full overflow-auto rounded-xl border border-border/60',
+        'relative min-h-0 w-full overflow-auto rounded-xl border border-border/60',
         maxHeightClassName,
         className,
       )}

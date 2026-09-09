@@ -25,7 +25,6 @@ import {
 import { ProjectRejectDialog } from '@/components/projects/ProjectRejectDialog'
 import { ProjectPauseDialog } from '@/components/projects/ProjectPauseDialog'
 import { ProjectPlanningChecklist } from '@/components/projects/ProjectPlanningChecklist'
-import { ProjectReassignPmDialog } from '@/components/projects/ProjectReassignPmDialog'
 import { ProjectScheduleDialog } from '@/components/projects/ProjectScheduleDialog'
 import { ProjectStartExecutionDialog } from '@/components/projects/ProjectStartExecutionDialog'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
@@ -58,7 +57,6 @@ import {
   useApproveProject,
   useCompleteConsultation,
   useCompleteProjectExecution,
-  useFactoryProjectManagers,
   usePauseProjectExecution,
   useRejectProject,
   useResumeProjectExecution,
@@ -69,7 +67,6 @@ import {
 } from '@/hooks/useProjects'
 import {
   useProjectChangeRequests,
-  useReassignProjectPm,
   useRequestProjectChange,
   useRequestProjectCompletion,
   useReviewProjectChange,
@@ -84,7 +81,11 @@ import {
   useUpdateTask,
   type TaskListItem,
 } from '@/hooks/useTasks'
-import { formatLocalizedBudget, formatLocalizedDate, getProjectPriorityLabel } from '@/lib/i18n-format'
+import {
+  formatLocalizedBudget,
+  formatLocalizedDate,
+  getProjectPriorityLabel,
+} from '@/lib/i18n-format'
 import { todayDateOnly } from '@/lib/date-only'
 import { formatProjectSchedule } from '@/lib/project-schedule'
 import { getProjectScheduleBounds } from '@/lib/duration'
@@ -112,9 +113,8 @@ import {
   canRequestProjectChange,
   isProposalReviewStatus,
 } from '@/lib/project-status'
-import { isFactoryManager } from '@/lib/roles'
+import { isFactoryManager, canControl } from '@/lib/roles'
 import type { ChangeRequestFormValues } from '@/lib/validations/governance'
-import type { ReassignPmFormValues } from '@/lib/validations/governance'
 import type { ConsultationOpinionsFormValues } from '@/lib/validations/project'
 import type { ProjectScheduleFormValues } from '@/lib/validations/project'
 import type {
@@ -127,7 +127,6 @@ import {
   canManagePhases,
   canManageTasks,
   canExecuteTasks,
-  canReassignProjectPm,
   canRequestCompletion,
   canStartExecution,
   getExecutionReadiness,
@@ -238,13 +237,9 @@ export function ProjectDetailPage() {
   const requestCompletion = useRequestProjectCompletion()
   const requestChange = useRequestProjectChange(projectId)
   const reviewChange = useReviewProjectChange(projectId)
-  const reassignPm = useReassignProjectPm()
   const { data: changeRequests = [] } = useProjectChangeRequests(
     projectId,
     Boolean(projectId) && showWbs,
-  )
-  const { data: factoryManagers = [] } = useFactoryProjectManagers(
-    project?.factory_id,
   )
 
   const [phaseDialogOpen, setPhaseDialogOpen] = useState(false)
@@ -260,7 +255,6 @@ export function ProjectDetailPage() {
   const [startDialogOpen, setStartDialogOpen] = useState(false)
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false)
   const [changeDialogOpen, setChangeDialogOpen] = useState(false)
-  const [reassignDialogOpen, setReassignDialogOpen] = useState(false)
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
   const { close, handleConfirm, state: confirmState } = useConfirmAction()
   const [activeTab, setActiveTab] = useProjectDetailTab(showFinance)
@@ -316,18 +310,17 @@ export function ProjectDetailPage() {
   const canEditDetails =
     isFactoryManager(profile?.role) &&
     Boolean(profile?.factory_id) &&
+    canControl(profile) &&
     project !== undefined &&
     canEditProjectDetails(project.status)
-  const canReassignPm = project ? canReassignProjectPm(project, profile) : false
   const scheduleSet = Boolean(
     project?.proposed_start_date && project?.proposed_end_date,
   )
-  const canSetSchedule = Boolean(
-    canPhases && project?.status === 'approved',
-  )
+  const canSetSchedule = Boolean(canPhases && project?.status === 'approved')
   const phasesReady = Boolean(
     scheduleSet &&
-      !(executionReadiness?.reasons.some(
+    !(
+      executionReadiness?.reasons.some(
         (reason) =>
           reason === 'no_phases' ||
           reason === 'weights_incomplete' ||
@@ -335,12 +328,13 @@ export function ProjectDetailPage() {
           reason === 'missing_dates' ||
           reason === 'dates_outside_project' ||
           reason === 'phase_budget_exceeds_project',
-      ) ?? false),
+      ) ?? false
+    ),
   )
   const canRequestChange =
     project !== undefined &&
     canRequestProjectChange(project.status) &&
-    (canReassignPm || canPhases || canTasks)
+    (canPhases || canTasks)
   const canReviewAsDirector = project
     ? canApproveAsDirector(project, profile)
     : false
@@ -554,28 +548,6 @@ export function ProjectDetailPage() {
     }
   }
 
-  const handleReassignPm = async (values: ReassignPmFormValues) => {
-    if (!project) {
-      return
-    }
-
-    try {
-      await reassignPm.mutateAsync({
-        id: project.id,
-        pmId: values.assigned_pm_id,
-        reason: values.reason,
-      })
-      toast.success(
-        project.assigned_pm_id
-          ? t('projects.reassignPm.updated')
-          : t('projects.reassignPm.assigned'),
-      )
-    } catch (submitError) {
-      toastMutationError(submitError, t('projects.reassignPm.failed'), t)
-      throw submitError
-    }
-  }
-
   const handleSetSchedule = async (values: ProjectScheduleFormValues) => {
     if (!project) {
       return
@@ -702,7 +674,7 @@ export function ProjectDetailPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
       <QueryState
         isLoading={isProjectLoading}
         error={projectError}
@@ -710,9 +682,11 @@ export function ProjectDetailPage() {
         errorMessage={t('projectDetail.loadFailed')}
         onRetry={() => void refetchProject()}
         isRetrying={isProjectFetching}
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
         {project ? (
           <PageHeader
+            className="shrink-0"
             leading={
               <Button
                 asChild
@@ -827,14 +801,6 @@ export function ProjectDetailPage() {
                     onClick: () => setScheduleDialogOpen(true),
                   },
                   {
-                    id: 'reassign-pm',
-                    label: project.assigned_pm_id
-                      ? t('projects.reassignPm.action')
-                      : t('projects.reassignPm.assignAction'),
-                    hidden: !canReassignPm,
-                    onClick: () => setReassignDialogOpen(true),
-                  },
-                  {
                     id: 'change-request',
                     label: t('projects.changeRequest.action'),
                     hidden: !canRequestChange,
@@ -914,13 +880,6 @@ export function ProjectDetailPage() {
                       })}
                     </span>
                   ) : null}
-                  {project.assigned_pm ? (
-                    <span>
-                      {t('projectDetail.pmLabel', {
-                        name: project.assigned_pm.full_name,
-                      })}
-                    </span>
-                  ) : null}
                   {project.announcement_date ? (
                     <span>
                       {t('projects.announcementDate')}:{' '}
@@ -941,7 +900,8 @@ export function ProjectDetailPage() {
                   ) : null}
                   {project.research_opinion ? (
                     <span>
-                      {t('projects.researchOpinion')}: {project.research_opinion}
+                      {t('projects.researchOpinion')}:{' '}
+                      {project.research_opinion}
                     </span>
                   ) : null}
                   {project.board_opinion ? (
@@ -954,271 +914,284 @@ export function ProjectDetailPage() {
             }
           />
         ) : null}
-      </QueryState>
 
-      {project && projectId && isProposalMode ? (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('projects.proposalSummary')}</CardTitle>
-              <CardDescription>{t('projects.formDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('common.budget')}
-                </span>
-                <span className="font-medium">
-                  {formatLocalizedBudget(
-                    project.budget,
-                    project.currency,
-                    locale,
-                    notAvailable,
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('common.timeline')}
-                </span>
-                <span className="font-medium">
-                  {formatProjectSchedule(project, locale, t, notAvailable)}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.announcementDate')}
-                </span>
-                <span className="font-medium">
-                  {formatLocalizedDate(
-                    project.announcement_date,
-                    locale,
-                    notAvailable,
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.announcingEntity')}
-                </span>
-                <span className="font-medium">
-                  {project.announcing_entity || notAvailable}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.priority')}
-                </span>
-                <span className="font-medium">
-                  {getProjectPriorityLabel(
-                    t,
-                    project.priority,
-                    notAvailable,
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.researchOpinion')}
-                </span>
-                <span className="font-medium whitespace-pre-wrap text-end">
-                  {project.research_opinion || notAvailable}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.boardOpinion')}
-                </span>
-                <span className="font-medium whitespace-pre-wrap text-end">
-                  {project.board_opinion || notAvailable}
-                </span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">
-                  {t('projects.pm')}
-                </span>
-                <span className="font-medium">
-                  {project.assigned_pm?.full_name ?? notAvailable}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+        {project && projectId && isProposalMode ? (
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('projects.proposalSummary')}</CardTitle>
+                  <CardDescription>
+                    {t('projects.formDescription')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('common.budget')}
+                    </span>
+                    <span className="font-medium">
+                      {formatLocalizedBudget(
+                        project.budget,
+                        project.currency,
+                        locale,
+                        notAvailable,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('common.timeline')}
+                    </span>
+                    <span className="font-medium">
+                      {formatProjectSchedule(project, locale, t, notAvailable)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('projects.announcementDate')}
+                    </span>
+                    <span className="font-medium">
+                      {formatLocalizedDate(
+                        project.announcement_date,
+                        locale,
+                        notAvailable,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('projects.announcingEntity')}
+                    </span>
+                    <span className="font-medium">
+                      {project.announcing_entity || notAvailable}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('projects.priority')}
+                    </span>
+                    <span className="font-medium">
+                      {getProjectPriorityLabel(
+                        t,
+                        project.priority,
+                        notAvailable,
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('projects.researchOpinion')}
+                    </span>
+                    <span className="font-medium whitespace-pre-wrap text-end">
+                      {project.research_opinion || notAvailable}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">
+                      {t('projects.boardOpinion')}
+                    </span>
+                    <span className="font-medium whitespace-pre-wrap text-end">
+                      {project.board_opinion || notAvailable}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <ProjectAttachmentsPanel
-            projectId={projectId}
-            canManage={canManageAttachments}
-          />
-
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('projects.proposalDiscussion')}</CardTitle>
-                <CardDescription>
-                  {t('projects.proposalDiscussionDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!canCommentOnProposal ? (
-                  <p className="text-sm text-muted-foreground">
-                    {t('projects.discussionParticipantsOnly')}
-                  </p>
-                ) : null}
-                <CommentThread
-                  entityType="project"
-                  entityId={projectId}
-                  projectId={projectId}
-                  title=""
-                  canComment={canCommentOnProposal}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : null}
-
-      {project && projectId && showWbs ? (
-        <QueryState
-          isLoading={isWbsLoading}
-          error={wbsError}
-          loadingMessage={t('common.loading')}
-          errorMessage={t('projectDetail.loadFailed')}
-          onRetry={refetchWbs}
-          isRetrying={isWbsFetching}
-        >
-          <Tabs
-            value={activeTab}
-            onValueChange={(value) => setActiveTab(value as typeof activeTab)}
-            dir={dir}
-          >
-            <ScrollableTabsList>
-              <TabsTrigger value="overview">
-                {t('projectDetail.tabs.overview')}
-              </TabsTrigger>
-              {showFinance ? (
-                <TabsTrigger value="finance">
-                  {t('projectDetail.tabs.finance')}
-                </TabsTrigger>
-              ) : null}
-              <TabsTrigger value="wbs">
-                {t('projectDetail.tabs.wbs')}
-              </TabsTrigger>
-              <TabsTrigger value="kanban">
-                {t('projectDetail.tabs.kanban')}
-              </TabsTrigger>
-              <TabsTrigger value="activity">
-                {t('projectDetail.tabs.activity')}
-              </TabsTrigger>
-              <TabsTrigger value="attachments">
-                {t('projects.attachments.title')}
-              </TabsTrigger>
-            </ScrollableTabsList>
-
-            <TabsContent value="overview" className="mt-4 space-y-4">
-              {project.status === 'approved' ? (
-                <ProjectPlanningChecklist
-                  pmAssigned={Boolean(project.assigned_pm_id)}
-                  scheduleSet={scheduleSet}
-                  phasesReady={phasesReady}
-                  tasksPrepared={tasks.length > 0}
-                  canAssignPm={canReassignPm}
-                  canSetSchedule={canSetSchedule}
-                  canManagePhases={canPhases}
-                  canManageTasks={canTasks}
-                  canStart={canStart}
-                  onAssignPm={() => setReassignDialogOpen(true)}
-                  onSetSchedule={() => setScheduleDialogOpen(true)}
-                  onGoToWbs={() => setActiveTab('wbs')}
-                  onStart={() => setStartDialogOpen(true)}
-                />
-              ) : null}
-              <ProjectChangeRequestsPanel
-                requests={changeRequests}
-                currency={project.currency}
-                canReview={canConfirmClose}
-                onReview={async (requestId, approve, reason) => {
-                  await reviewChange.mutateAsync({
-                    requestId,
-                    approve,
-                    reason,
-                  })
-                }}
-                isReviewing={reviewChange.isPending}
-              />
-              <ProjectProgressOverview
-                phases={phases}
-                tasks={tasks}
-                snapshot={financialSnapshot}
-              />
-            </TabsContent>
-
-            {showFinance ? (
-              <TabsContent value="finance" className="mt-4">
-                <ProjectFinancePanel
-                  projectId={projectId}
-                  currency={project.currency}
-                  canManageFunding={canManageFunding}
-                  canManageOperations={canManageOperations}
-                  phases={phases}
-                />
-              </TabsContent>
-            ) : null}
-
-            <TabsContent value="wbs" className="mt-4">
-              <ProjectWbsTab
-                project={project}
-                phases={phases}
-                tasksByPhase={tasksByPhase}
-                canManagePhases={canPhases}
-                canManageTasks={canTasks}
-                canSetSchedule={canSetSchedule}
-                isPlanning={project.status === 'approved'}
-                remainingWeight={remainingWeight}
-                totalWeight={totalWeight}
-                weightsValid={weightsValid}
-                remainingBudget={remainingBudget}
-                totalBudget={totalBudget}
-                budgetValid={budgetValid}
-                projectBudget={project.budget}
-                onSetSchedule={() => setScheduleDialogOpen(true)}
-                onCreatePhase={openCreatePhase}
-                onEditPhase={openEditPhase}
-                onDeletePhase={handleDeletePhase}
-                onCreateTask={openCreateTask}
-                onEditTask={openEditTask}
-                onDeleteTask={handleDeleteTask}
-              />
-            </TabsContent>
-
-            <TabsContent value="kanban" className="mt-4 space-y-3">
-              {project.status === 'approved' ? (
-                <StatusMessage variant="info">
-                  {t('wbs.kanbanPlanningHint')}
-                </StatusMessage>
-              ) : null}
-              <TaskKanbanBoard
-                projectId={projectId}
-                phases={phases}
-                tasks={tasks}
-                canManage={canExecute}
-              />
-            </TabsContent>
-
-            <TabsContent value="activity" className="mt-4">
-              <ProjectActivityTab
-                projectId={projectId}
-                canComment={canCommentOnExecution}
-              />
-            </TabsContent>
-
-            <TabsContent value="attachments" className="mt-4">
               <ProjectAttachmentsPanel
                 projectId={projectId}
                 canManage={canManageAttachments}
               />
-            </TabsContent>
-          </Tabs>
-        </QueryState>
-      ) : null}
+
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('projects.proposalDiscussion')}</CardTitle>
+                    <CardDescription>
+                      {t('projects.proposalDiscussionDescription')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {!canCommentOnProposal ? (
+                      <p className="text-sm text-muted-foreground">
+                        {t('projects.discussionParticipantsOnly')}
+                      </p>
+                    ) : null}
+                    <CommentThread
+                      entityType="project"
+                      entityId={projectId}
+                      projectId={projectId}
+                      title=""
+                      canComment={canCommentOnProposal}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {project && projectId && showWbs ? (
+          <QueryState
+            isLoading={isWbsLoading}
+            error={wbsError}
+            loadingMessage={t('common.loading')}
+            errorMessage={t('projectDetail.loadFailed')}
+            onRetry={refetchWbs}
+            isRetrying={isWbsFetching}
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+          >
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) => setActiveTab(value as typeof activeTab)}
+              dir={dir}
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <ScrollableTabsList>
+                <TabsTrigger value="overview">
+                  {t('projectDetail.tabs.overview')}
+                </TabsTrigger>
+                {showFinance ? (
+                  <TabsTrigger value="finance">
+                    {t('projectDetail.tabs.finance')}
+                  </TabsTrigger>
+                ) : null}
+                <TabsTrigger value="wbs">
+                  {t('projectDetail.tabs.wbs')}
+                </TabsTrigger>
+                <TabsTrigger value="kanban">
+                  {t('projectDetail.tabs.kanban')}
+                </TabsTrigger>
+                <TabsTrigger value="activity">
+                  {t('projectDetail.tabs.activity')}
+                </TabsTrigger>
+                <TabsTrigger value="attachments">
+                  {t('projects.attachments.title')}
+                </TabsTrigger>
+              </ScrollableTabsList>
+
+              <TabsContent
+                value="overview"
+                className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto"
+              >
+                {project.status === 'approved' ? (
+                  <ProjectPlanningChecklist
+                    scheduleSet={scheduleSet}
+                    phasesReady={phasesReady}
+                    tasksPrepared={tasks.length > 0}
+                    canSetSchedule={canSetSchedule}
+                    canManagePhases={canPhases}
+                    canManageTasks={canTasks}
+                    canStart={canStart}
+                    onSetSchedule={() => setScheduleDialogOpen(true)}
+                    onGoToWbs={() => setActiveTab('wbs')}
+                    onStart={() => setStartDialogOpen(true)}
+                  />
+                ) : null}
+                <ProjectChangeRequestsPanel
+                  requests={changeRequests}
+                  currency={project.currency}
+                  canReview={canConfirmClose}
+                  onReview={async (requestId, approve, reason) => {
+                    await reviewChange.mutateAsync({
+                      requestId,
+                      approve,
+                      reason,
+                    })
+                  }}
+                  isReviewing={reviewChange.isPending}
+                />
+                <ProjectProgressOverview
+                  phases={phases}
+                  tasks={tasks}
+                  snapshot={financialSnapshot}
+                />
+              </TabsContent>
+
+              {showFinance ? (
+                <TabsContent
+                  value="finance"
+                  className="mt-4 min-h-0 flex-1 overflow-y-auto"
+                >
+                  <ProjectFinancePanel
+                    projectId={projectId}
+                    currency={project.currency}
+                    canManageFunding={canManageFunding}
+                    canManageOperations={canManageOperations}
+                    phases={phases}
+                  />
+                </TabsContent>
+              ) : null}
+
+              <TabsContent
+                value="wbs"
+                className="mt-4 min-h-0 flex-1 overflow-y-auto"
+              >
+                <ProjectWbsTab
+                  project={project}
+                  phases={phases}
+                  tasksByPhase={tasksByPhase}
+                  canManagePhases={canPhases}
+                  canManageTasks={canTasks}
+                  canSetSchedule={canSetSchedule}
+                  isPlanning={project.status === 'approved'}
+                  remainingWeight={remainingWeight}
+                  totalWeight={totalWeight}
+                  weightsValid={weightsValid}
+                  remainingBudget={remainingBudget}
+                  totalBudget={totalBudget}
+                  budgetValid={budgetValid}
+                  projectBudget={project.budget}
+                  onSetSchedule={() => setScheduleDialogOpen(true)}
+                  onCreatePhase={openCreatePhase}
+                  onEditPhase={openEditPhase}
+                  onDeletePhase={handleDeletePhase}
+                  onCreateTask={openCreateTask}
+                  onEditTask={openEditTask}
+                  onDeleteTask={handleDeleteTask}
+                />
+              </TabsContent>
+
+              <TabsContent
+                value="kanban"
+                className="mt-4 flex min-h-0 flex-1 flex-col gap-3 overflow-hidden"
+              >
+                {project.status === 'approved' ? (
+                  <StatusMessage variant="info" className="shrink-0">
+                    {t('wbs.kanbanPlanningHint')}
+                  </StatusMessage>
+                ) : null}
+                <TaskKanbanBoard
+                  projectId={projectId}
+                  phases={phases}
+                  tasks={tasks}
+                  canManage={canExecute}
+                />
+              </TabsContent>
+
+              <TabsContent
+                value="activity"
+                className="mt-4 min-h-0 flex-1 overflow-y-auto"
+              >
+                <ProjectActivityTab
+                  projectId={projectId}
+                  canComment={canCommentOnExecution}
+                />
+              </TabsContent>
+
+              <TabsContent
+                value="attachments"
+                className="mt-4 min-h-0 flex-1 overflow-y-auto"
+              >
+                <ProjectAttachmentsPanel
+                  projectId={projectId}
+                  canManage={canManageAttachments}
+                />
+              </TabsContent>
+            </Tabs>
+          </QueryState>
+        ) : null}
+      </QueryState>
 
       {project && canEditDetails ? (
         <ProjectFormDialog
@@ -1253,7 +1226,6 @@ export function ProjectDetailPage() {
           open={approveDialogOpen}
           onOpenChange={setApproveDialogOpen}
           project={project}
-          pmName={project.assigned_pm?.full_name ?? t('common.unassigned')}
           attachmentCount={proposalAttachments.length}
           onConfirm={handleApprove}
           isSubmitting={approveProject.isPending}
@@ -1265,7 +1237,6 @@ export function ProjectDetailPage() {
           open={startDialogOpen}
           onOpenChange={setStartDialogOpen}
           project={project}
-          pmName={project.assigned_pm?.full_name ?? t('common.unassigned')}
           fundingReceived={Number(financialSnapshot?.funding_received ?? 0)}
           taskCount={tasks.length}
           readinessReasons={executionReadiness?.reasons ?? []}
@@ -1314,17 +1285,6 @@ export function ProjectDetailPage() {
           currentEnd={project.proposed_end_date}
           onSubmit={handleSetSchedule}
           isSubmitting={setProjectSchedule.isPending}
-        />
-      ) : null}
-
-      {canReassignPm && project ? (
-        <ProjectReassignPmDialog
-          open={reassignDialogOpen}
-          onOpenChange={setReassignDialogOpen}
-          currentPmId={project.assigned_pm_id}
-          managers={factoryManagers}
-          onSubmit={handleReassignPm}
-          isSubmitting={reassignPm.isPending}
         />
       ) : null}
 

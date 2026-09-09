@@ -8,8 +8,8 @@ interface ResponsiveTableProps {
 
 export function ResponsiveTable({ children, className }: ResponsiveTableProps) {
   return (
-    <div className={cn('app-panel overflow-hidden', className)}>
-      <div className="overflow-x-auto">
+    <div className={cn('app-panel min-h-0 overflow-hidden', className)}>
+      <div data-slot="table-scroll" className="h-full min-h-0 overflow-auto">
         <div className="min-w-160">{children}</div>
       </div>
     </div>

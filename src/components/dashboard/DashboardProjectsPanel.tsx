@@ -320,8 +320,11 @@ export function DashboardProjectsPanel({
   }
 
   return (
-    <div ref={sectionRef} className="space-y-3 border-t border-border/60 pt-6">
-      <div>
+    <div
+      ref={sectionRef}
+      className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden"
+    >
+      <div className="shrink-0">
         <h2 className="text-base font-medium">{t('dashboard.exploreTitle')}</h2>
         <p className="text-sm text-muted-foreground">
           {t('dashboard.exploreDescription')}
@@ -335,9 +338,10 @@ export function DashboardProjectsPanel({
         errorMessage={t('dashboard.loadFailed')}
         onRetry={onRetry}
         isRetrying={isFetching}
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
-        <Card>
-          <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <CardHeader className="flex shrink-0 flex-row flex-wrap items-start justify-between gap-3 space-y-0">
             <div className="space-y-1.5">
               <CardTitle>{t('dashboard.projectDetailsTitle')}</CardTitle>
               <CardDescription>
@@ -354,152 +358,155 @@ export function DashboardProjectsPanel({
               {t('list.exportExcel')}
             </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <ActiveFilterChips
-              chips={filterChips}
-              onClearAll={hasActiveFilters ? onClearFilters : undefined}
-            />
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+            <div className="shrink-0 space-y-4">
+              <ActiveFilterChips
+                chips={filterChips}
+                onClearAll={hasActiveFilters ? onClearFilters : undefined}
+              />
 
-            <ListToolbar
-              search={projectSearch}
-              onSearchChange={setProjectSearch}
-              searchPlaceholder={t('dashboard.projectDetailsSearch')}
-              hasActiveFilters={hasActiveFilters}
-              onClear={onClearFilters}
-              filters={[
-                {
-                  id: 'dashboard-project-status-filter',
-                  label: t('common.status'),
-                  value: statusFilter,
-                  onChange: (value) => {
-                    setAttentionDrill(null)
-                    setStatusFilter(value as 'all' | ProjectStatus)
+              <ListToolbar
+                search={projectSearch}
+                onSearchChange={setProjectSearch}
+                searchPlaceholder={t('dashboard.projectDetailsSearch')}
+                hasActiveFilters={hasActiveFilters}
+                onClear={onClearFilters}
+                filters={[
+                  {
+                    id: 'dashboard-project-status-filter',
+                    label: t('common.status'),
+                    value: statusFilter,
+                    onChange: (value) => {
+                      setAttentionDrill(null)
+                      setStatusFilter(value as 'all' | ProjectStatus)
+                    },
+                    options: [
+                      { value: 'all', label: t('list.allStatuses') },
+                      ...PROJECT_STATUS_FILTERS.map((status) => ({
+                        value: status,
+                        label: getProjectStatusLabel(t, status),
+                      })),
+                    ],
                   },
-                  options: [
-                    { value: 'all', label: t('list.allStatuses') },
-                    ...PROJECT_STATUS_FILTERS.map((status) => ({
-                      value: status,
-                      label: getProjectStatusLabel(t, status),
-                    })),
-                  ],
-                },
-                {
-                  id: 'dashboard-project-progress-filter',
-                  label: t('dashboard.filterProgressRange'),
-                  value: progressFilter,
-                  onChange: (value) => {
-                    setAttentionDrill(null)
-                    setProgressFilter(value as ProgressFilter)
+                  {
+                    id: 'dashboard-project-progress-filter',
+                    label: t('dashboard.filterProgressRange'),
+                    value: progressFilter,
+                    onChange: (value) => {
+                      setAttentionDrill(null)
+                      setProgressFilter(value as ProgressFilter)
+                    },
+                    options: [
+                      { value: 'all', label: t('list.all') },
+                      { value: '0-24', label: '0-24%' },
+                      { value: '25-49', label: '25-49%' },
+                      { value: '50-74', label: '50-74%' },
+                      { value: '75-99', label: '75-99%' },
+                      { value: '100', label: '100%' },
+                    ],
                   },
-                  options: [
-                    { value: 'all', label: t('list.all') },
-                    { value: '0-24', label: '0-24%' },
-                    { value: '25-49', label: '25-49%' },
-                    { value: '50-74', label: '50-74%' },
-                    { value: '75-99', label: '75-99%' },
-                    { value: '100', label: '100%' },
-                  ],
-                },
-                {
-                  id: 'dashboard-project-blocked-filter',
-                  label: t('dashboard.filterBlockedState'),
-                  value: blockedFilter,
-                  onChange: (value) => {
-                    setAttentionDrill(null)
-                    setBlockedFilter(value as BlockedFilter)
-                  },
-                  options: [
-                    { value: 'all', label: t('list.all') },
-                    {
-                      value: 'blocked',
-                      label: t('dashboard.filterBlockedOnly'),
+                  {
+                    id: 'dashboard-project-blocked-filter',
+                    label: t('dashboard.filterBlockedState'),
+                    value: blockedFilter,
+                    onChange: (value) => {
+                      setAttentionDrill(null)
+                      setBlockedFilter(value as BlockedFilter)
                     },
-                    {
-                      value: 'not_blocked',
-                      label: t('dashboard.filterNotBlockedOnly'),
-                    },
-                  ],
-                },
-                {
-                  id: 'dashboard-project-overdue-filter',
-                  label: t('dashboard.filterOverdueState'),
-                  value: overdueFilter,
-                  onChange: (value) => {
-                    setAttentionDrill(null)
-                    setOverdueFilter(value as OverdueFilter)
-                  },
-                  options: [
-                    { value: 'all', label: t('list.all') },
-                    {
-                      value: 'overdue',
-                      label: t('dashboard.filterOverdueOnly'),
-                    },
-                  ],
-                },
-                {
-                  id: 'dashboard-project-phase-filter',
-                  label: t('dashboard.filterPhaseIssues'),
-                  value: phaseIssueFilter,
-                  onChange: (value) => {
-                    setAttentionDrill(null)
-                    setPhaseIssueFilter(value as PhaseIssueFilter)
-                  },
-                  options: [
-                    { value: 'all', label: t('list.all') },
-                    {
-                      value: 'phase_issues',
-                      label: t('dashboard.filterPhaseIssuesOnly'),
-                    },
-                  ],
-                },
-                {
-                  id: 'dashboard-project-task-activity-filter',
-                  label: t('dashboard.filterTaskActivity'),
-                  value: taskActivityFilter,
-                  onChange: (value) => {
-                    setAttentionDrill(null)
-                    setTaskActivityFilter(value as TaskActivityFilter)
-                  },
-                  options: [
-                    { value: 'all', label: t('list.all') },
-                    {
-                      value: 'in_progress',
-                      label: t('dashboard.filterHasInProgressTasks'),
-                    },
-                    {
-                      value: 'done',
-                      label: t('dashboard.filterHasDoneTasks'),
-                    },
-                    {
-                      value: 'todo',
-                      label: t('dashboard.filterHasTodoTasks'),
-                    },
-                    {
-                      value: 'blocked',
-                      label: t('dashboard.filterHasBlockedTasks'),
-                    },
-                  ],
-                },
-                ...(isDirector
-                  ? [
+                    options: [
+                      { value: 'all', label: t('list.all') },
                       {
-                        id: 'dashboard-project-factory-filter',
-                        label: t('common.factory'),
-                        value: factoryFilter,
-                        onChange: (value: string) => {
-                          setAttentionDrill(null)
-                          setFactoryFilter(value)
-                        },
-                        options: factoryFilterOptions,
+                        value: 'blocked',
+                        label: t('dashboard.filterBlockedOnly'),
                       },
-                    ]
-                  : []),
-              ]}
-            />
+                      {
+                        value: 'not_blocked',
+                        label: t('dashboard.filterNotBlockedOnly'),
+                      },
+                    ],
+                  },
+                  {
+                    id: 'dashboard-project-overdue-filter',
+                    label: t('dashboard.filterOverdueState'),
+                    value: overdueFilter,
+                    onChange: (value) => {
+                      setAttentionDrill(null)
+                      setOverdueFilter(value as OverdueFilter)
+                    },
+                    options: [
+                      { value: 'all', label: t('list.all') },
+                      {
+                        value: 'overdue',
+                        label: t('dashboard.filterOverdueOnly'),
+                      },
+                    ],
+                  },
+                  {
+                    id: 'dashboard-project-phase-filter',
+                    label: t('dashboard.filterPhaseIssues'),
+                    value: phaseIssueFilter,
+                    onChange: (value) => {
+                      setAttentionDrill(null)
+                      setPhaseIssueFilter(value as PhaseIssueFilter)
+                    },
+                    options: [
+                      { value: 'all', label: t('list.all') },
+                      {
+                        value: 'phase_issues',
+                        label: t('dashboard.filterPhaseIssuesOnly'),
+                      },
+                    ],
+                  },
+                  {
+                    id: 'dashboard-project-task-activity-filter',
+                    label: t('dashboard.filterTaskActivity'),
+                    value: taskActivityFilter,
+                    onChange: (value) => {
+                      setAttentionDrill(null)
+                      setTaskActivityFilter(value as TaskActivityFilter)
+                    },
+                    options: [
+                      { value: 'all', label: t('list.all') },
+                      {
+                        value: 'in_progress',
+                        label: t('dashboard.filterHasInProgressTasks'),
+                      },
+                      {
+                        value: 'done',
+                        label: t('dashboard.filterHasDoneTasks'),
+                      },
+                      {
+                        value: 'todo',
+                        label: t('dashboard.filterHasTodoTasks'),
+                      },
+                      {
+                        value: 'blocked',
+                        label: t('dashboard.filterHasBlockedTasks'),
+                      },
+                    ],
+                  },
+                  ...(isDirector
+                    ? [
+                        {
+                          id: 'dashboard-project-factory-filter',
+                          label: t('common.factory'),
+                          value: factoryFilter,
+                          onChange: (value: string) => {
+                            setAttentionDrill(null)
+                            setFactoryFilter(value)
+                          },
+                          options: factoryFilterOptions,
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </div>
 
             <VirtualizedTable
               rowCount={filteredProjects.length}
               colSpan={columnCount}
+              maxHeightClassName="min-h-0 flex-1"
               header={
                 <TableRow>
                   <TableHead>{t('common.title')}</TableHead>

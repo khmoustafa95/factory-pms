@@ -330,6 +330,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          can_control: boolean
           created_at: string
           email: string
           factory_id: string | null
@@ -340,6 +341,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          can_control?: boolean
           created_at?: string
           email: string
           factory_id?: string | null
@@ -350,6 +352,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          can_control?: boolean
           created_at?: string
           email?: string
           factory_id?: string | null
@@ -1251,6 +1254,7 @@ export type Database = {
           project_id: string
         }[]
       }
+      auth_can_control: { Args: never; Returns: boolean }
       is_assigned_pm: { Args: { p_project_id: string }; Returns: boolean }
       is_auth_active: { Args: never; Returns: boolean }
       is_company_director: { Args: never; Returns: boolean }
@@ -1304,42 +1308,6 @@ export type Database = {
       recalculate_project_progress: {
         Args: { p_project_id: string }
         Returns: undefined
-      }
-      reassign_project_pm: {
-        Args: { p_pm_id: string; p_project_id: string; p_reason: string }
-        Returns: {
-          actual_end_date: string | null
-          actual_start_date: string | null
-          approved_at: string | null
-          approved_by: string | null
-          assigned_pm_id: string | null
-          budget: number | null
-          code: string
-          completion_requested_at: string | null
-          completion_requested_by: string | null
-          created_at: string
-          currency: string
-          description: string | null
-          factory_id: string
-          id: string
-          progress_percent: number
-          proposed_by: string | null
-          proposed_duration_unit:
-            Database['public']['Enums']['duration_unit'] | null
-          proposed_duration_value: number | null
-          proposed_end_date: string | null
-          proposed_start_date: string | null
-          rejection_reason: string | null
-          status: Database['public']['Enums']['project_status']
-          title: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: '*'
-          to: 'projects'
-          isOneToOne: true
-          isSetofReturn: false
-        }
       }
       request_project_change: {
         Args: {

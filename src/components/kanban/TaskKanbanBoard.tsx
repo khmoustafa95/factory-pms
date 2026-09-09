@@ -180,104 +180,109 @@ export function TaskKanbanBoard({
 
   return (
     <>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={kanbanCollisionDetection}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveTask(null)}
-        accessibility={{
-          screenReaderInstructions: {
-            draggable: t('a11y.kanbanDragInstructions'),
-          },
-          announcements: {
-            onDragStart: ({ active }) => {
-              if (!isKanbanTaskDragData(active.data.current)) {
-                return undefined
-              }
-              return t('a11y.kanbanDragStart', {
-                title: active.data.current.task.title,
-              })
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={kanbanCollisionDetection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={() => setActiveTask(null)}
+          accessibility={{
+            screenReaderInstructions: {
+              draggable: t('a11y.kanbanDragInstructions'),
             },
-            onDragOver: ({ active, over }) => {
-              if (!over || !isKanbanTaskDragData(active.data.current)) {
-                return undefined
-              }
-              const status = getDroppableStatus(over)
-              if (!status) {
-                return undefined
-              }
-              return t('a11y.kanbanDragOver', {
-                title: active.data.current.task.title,
-                status: getTaskStatusLabel(t, status),
-              })
-            },
-            onDragEnd: ({ active, over }) => {
-              if (!isKanbanTaskDragData(active.data.current)) {
-                return undefined
-              }
-              const title = active.data.current.task.title
-              if (!over) {
-                return t('a11y.kanbanDragCancel', {
+            announcements: {
+              onDragStart: ({ active }) => {
+                if (!isKanbanTaskDragData(active.data.current)) {
+                  return undefined
+                }
+                return t('a11y.kanbanDragStart', {
+                  title: active.data.current.task.title,
+                })
+              },
+              onDragOver: ({ active, over }) => {
+                if (!over || !isKanbanTaskDragData(active.data.current)) {
+                  return undefined
+                }
+                const status = getDroppableStatus(over)
+                if (!status) {
+                  return undefined
+                }
+                return t('a11y.kanbanDragOver', {
+                  title: active.data.current.task.title,
+                  status: getTaskStatusLabel(t, status),
+                })
+              },
+              onDragEnd: ({ active, over }) => {
+                if (!isKanbanTaskDragData(active.data.current)) {
+                  return undefined
+                }
+                const title = active.data.current.task.title
+                if (!over) {
+                  return t('a11y.kanbanDragCancel', {
+                    title,
+                    status: getTaskStatusLabel(
+                      t,
+                      active.data.current.task.status,
+                    ),
+                  })
+                }
+                const status = getDroppableStatus(over)
+                if (!status) {
+                  return undefined
+                }
+                return t('a11y.kanbanDragEnd', {
                   title,
+                  status: getTaskStatusLabel(t, status),
+                })
+              },
+              onDragCancel: ({ active }) => {
+                if (!isKanbanTaskDragData(active.data.current)) {
+                  return undefined
+                }
+                return t('a11y.kanbanDragCancel', {
+                  title: active.data.current.task.title,
                   status: getTaskStatusLabel(
                     t,
                     active.data.current.task.status,
                   ),
                 })
-              }
-              const status = getDroppableStatus(over)
-              if (!status) {
-                return undefined
-              }
-              return t('a11y.kanbanDragEnd', {
-                title,
-                status: getTaskStatusLabel(t, status),
-              })
+              },
             },
-            onDragCancel: ({ active }) => {
-              if (!isKanbanTaskDragData(active.data.current)) {
-                return undefined
-              }
-              return t('a11y.kanbanDragCancel', {
-                title: active.data.current.task.title,
-                status: getTaskStatusLabel(t, active.data.current.task.status),
-              })
-            },
-          },
-        }}
-      >
-        <StaggerGroup
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-4"
-          staggerMs={80}
-          role="list"
-          aria-label={t('projectDetail.tabs.kanban')}
+          }}
         >
-          {TASK_STATUS_OPTIONS.map((status) => (
-            <KanbanColumn
-              key={status}
-              status={status}
-              tasks={tasksByStatus[status]}
-              phaseNameById={phaseNameById}
-              canManage={canManage}
-              isPending={updateStatus.isPending}
-              onStatusChange={(task, nextStatus) => {
-                void changeStatus(task, nextStatus)
-              }}
-            />
-          ))}
-        </StaggerGroup>
-        <DragOverlay>
-          {activeTask ? (
-            <KanbanTaskCardOverlay
-              task={activeTask}
-              phaseName={
-                phaseNameById.get(activeTask.phase_id) ?? t('common.phase')
-              }
-            />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          <StaggerGroup
+            className="flex min-h-0 flex-1 snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden pb-2 md:grid md:h-full md:min-h-0 md:grid-cols-2 md:auto-rows-fr md:overflow-hidden md:pb-0 xl:grid-cols-4"
+            staggerMs={80}
+            role="list"
+            aria-label={t('projectDetail.tabs.kanban')}
+          >
+            {TASK_STATUS_OPTIONS.map((status) => (
+              <KanbanColumn
+                key={status}
+                status={status}
+                tasks={tasksByStatus[status]}
+                phaseNameById={phaseNameById}
+                canManage={canManage}
+                isPending={updateStatus.isPending}
+                onStatusChange={(task, nextStatus) => {
+                  void changeStatus(task, nextStatus)
+                }}
+              />
+            ))}
+          </StaggerGroup>
+          <DragOverlay>
+            {activeTask ? (
+              <KanbanTaskCardOverlay
+                task={activeTask}
+                phaseName={
+                  phaseNameById.get(activeTask.phase_id) ?? t('common.phase')
+                }
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
 
       <Dialog
         open={Boolean(blockedTask)}

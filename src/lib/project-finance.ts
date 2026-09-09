@@ -1,9 +1,10 @@
 import type { Profile, Project, ProjectStatus } from '@/types/database'
-import {
-  isCompanyDirector,
-  isFactoryManager,
-  isProjectManager,
-} from '@/lib/roles'
+import { canControl, isCompanyDirector, isFactoryManager } from '@/lib/roles'
+
+type RoleProfile = Pick<
+  Profile,
+  'id' | 'role' | 'factory_id' | 'can_control'
+> | null | undefined
 
 const POST_APPROVAL_WRITE_STATUSES: ProjectStatus[] = [
   'approved',
@@ -12,17 +13,21 @@ const POST_APPROVAL_WRITE_STATUSES: ProjectStatus[] = [
 ]
 
 export function canViewProjectFinance(
-  _project: Pick<Project, 'id' | 'status' | 'assigned_pm_id' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  _project: Pick<Project, 'id' | 'status' | 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
   return Boolean(profile)
 }
 
 export function canManageProjectFunding(
   project: Pick<Project, 'status' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile || !POST_APPROVAL_WRITE_STATUSES.includes(project.status)) {
+  if (
+    !profile ||
+    !canControl(profile) ||
+    !POST_APPROVAL_WRITE_STATUSES.includes(project.status)
+  ) {
     return false
   }
 
@@ -38,28 +43,28 @@ export function canManageProjectFunding(
 }
 
 export function canManageProjectOperations(
-  project: Pick<Project, 'status' | 'assigned_pm_id' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile || !POST_APPROVAL_WRITE_STATUSES.includes(project.status)) {
+  if (
+    !profile ||
+    !canControl(profile) ||
+    !POST_APPROVAL_WRITE_STATUSES.includes(project.status)
+  ) {
     return false
   }
 
-  if (
+  return (
     isFactoryManager(profile.role) &&
     profile.factory_id != null &&
     profile.factory_id === project.factory_id
-  ) {
-    return true
-  }
-
-  return isProjectManager(profile.role) && project.assigned_pm_id === profile.id
+  )
 }
 
 /** @deprecated Prefer canManageProjectFunding / canManageProjectOperations */
 export function canManageProjectFinance(
-  project: Pick<Project, 'status' | 'assigned_pm_id' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
   return (
     canManageProjectFunding(project, profile) ||

@@ -1,5 +1,10 @@
 import type { Profile, Project, ProjectStatus } from '@/types/database'
-import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
+import { canControl, isCompanyDirector, isFactoryManager } from '@/lib/roles'
+
+type RoleProfile = Pick<
+  Profile,
+  'id' | 'role' | 'factory_id' | 'can_control'
+> | null | undefined
 
 /** Proposal workflow: drafts and rejected proposals can be rewritten/resubmitted. */
 export const PROPOSAL_EDITABLE_STATUSES: ProjectStatus[] = ['draft', 'rejected']
@@ -48,9 +53,9 @@ export function isProposalReviewStatus(status: ProjectStatus): boolean {
 /** Company director may approve or reject a proposed project. */
 export function canApproveAsDirector(
   project: Pick<Project, 'status'>,
-  profile: Pick<Profile, 'role'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile || !isCompanyDirector(profile.role)) {
+  if (!profile || !canControl(profile) || !isCompanyDirector(profile.role)) {
     return false
   }
 
@@ -60,9 +65,9 @@ export function canApproveAsDirector(
 /** Director may edit research/board opinions while in consultation. */
 export function canEditConsultationOpinions(
   project: Pick<Project, 'status'>,
-  profile: Pick<Profile, 'role'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile || !isCompanyDirector(profile.role)) {
+  if (!profile || !canControl(profile) || !isCompanyDirector(profile.role)) {
     return false
   }
 
@@ -72,31 +77,29 @@ export function canEditConsultationOpinions(
 /** Director may complete consultation → proposed when opinions are present (UI). */
 export function canCompleteConsultation(
   project: Pick<Project, 'status'>,
-  profile: Pick<Profile, 'role'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
   return canEditConsultationOpinions(project, profile)
 }
 
 /**
- * Proposal discussion is between company director and factory manager.
- * (Assigned PM may view the proposal but does not participate in this thread.)
+ * Proposal discussion is between company director and factory manager
+ * accounts that can control.
  */
-export function canDiscussProposal(
-  profile: Pick<Profile, 'role'> | null | undefined,
-): boolean {
-  if (!profile) {
+export function canDiscussProposal(profile: RoleProfile): boolean {
+  if (!profile || !canControl(profile)) {
     return false
   }
 
   return isCompanyDirector(profile.role) || isFactoryManager(profile.role)
 }
 
-/** Comments on execution (including completed) for anyone who can open the project. */
+/** Comments on execution (including completed) for controlling accounts. */
 export function canCommentOnProject(
   status: ProjectStatus,
-  profile: Pick<Profile, 'role'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile) {
+  if (!profile || !canControl(profile)) {
     return false
   }
 
@@ -104,14 +107,19 @@ export function canCommentOnProject(
     return canDiscussProposal(profile)
   }
 
-  return true
+  return isCompanyDirector(profile.role) || isFactoryManager(profile.role)
 }
 
 export function canManageProjectAttachments(
   status: ProjectStatus,
-  profile: Pick<Profile, 'role' | 'factory_id'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile || !isFactoryManager(profile.role) || !profile.factory_id) {
+  if (
+    !profile ||
+    !canControl(profile) ||
+    !isFactoryManager(profile.role) ||
+    !profile.factory_id
+  ) {
     return false
   }
 

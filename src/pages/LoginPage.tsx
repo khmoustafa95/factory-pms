@@ -99,7 +99,7 @@ export function LoginPage() {
   })
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6">
+    <div className="relative flex min-h-full items-center justify-center overflow-y-auto bg-background px-4 py-12 sm:px-6">
       <div className="absolute inset-e-4 top-4 flex items-center gap-2 sm:inset-e-6 sm:top-6">
         <LocaleToggle />
         <ThemeToggle />

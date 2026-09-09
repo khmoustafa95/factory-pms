@@ -1,11 +1,12 @@
 import type { Profile, Project, ProjectStatus, Phase } from '@/types/database'
-import {
-  isCompanyDirector,
-  isFactoryManager,
-  isProjectManager,
-} from '@/lib/roles'
+import { canControl, isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import { getPhaseDurationDays } from '@/lib/duration'
 import { getProjectScheduleBounds } from '@/lib/duration'
+
+type RoleProfile = Pick<
+  Profile,
+  'id' | 'role' | 'factory_id' | 'can_control'
+> | null | undefined
 
 export const WBS_VIEW_STATUSES: ProjectStatus[] = [
   'approved',
@@ -34,34 +35,24 @@ export function canViewWbs(status: ProjectStatus): boolean {
   return WBS_VIEW_STATUSES.includes(status)
 }
 
-function isAssignedProjectManager(
-  project: Pick<Project, 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+function isControllingFactoryManager(
+  project: Pick<Project, 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
   return (
     Boolean(profile) &&
-    isProjectManager(profile?.role) &&
-    project.assigned_pm_id === profile?.id
+    canControl(profile) &&
+    isFactoryManager(profile?.role) &&
+    profile?.factory_id != null &&
+    profile.factory_id === project.factory_id
   )
-}
-
-function canAccessProjectWbs(
-  project: Pick<Project, 'status' | 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
-  statuses: ProjectStatus[],
-): boolean {
-  if (!profile || !statuses.includes(project.status)) {
-    return false
-  }
-
-  return isAssignedProjectManager(project, profile)
 }
 
 export function canGovernExecution(
   project: Pick<Project, 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
-  if (!profile) {
+  if (!profile || !canControl(profile)) {
     return false
   }
 
@@ -69,102 +60,76 @@ export function canGovernExecution(
     return true
   }
 
-  return (
-    isFactoryManager(profile.role) &&
-    profile.factory_id != null &&
-    profile.factory_id === project.factory_id
-  )
+  return isControllingFactoryManager(project, profile)
 }
 
-export function canConfirmCompletion(
-  profile: Pick<Profile, 'role'> | null | undefined,
-): boolean {
-  return Boolean(profile && isCompanyDirector(profile.role))
+export function canConfirmCompletion(profile: RoleProfile): boolean {
+  return Boolean(
+    profile && canControl(profile) && isCompanyDirector(profile.role),
+  )
 }
 
 export function canRequestCompletion(
   project: Pick<Project, 'status' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
   if (!profile || !['in_progress', 'paused'].includes(project.status)) {
     return false
   }
 
-  return (
-    isFactoryManager(profile.role) &&
-    profile.factory_id != null &&
-    profile.factory_id === project.factory_id
-  )
+  return isControllingFactoryManager(project, profile)
 }
 
 /** @deprecated Prefer canManagePhases / canManageTasks */
 export function canManageWbs(
-  project: Pick<Project, 'status' | 'assigned_pm_id' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
   return canManagePhases(project, profile) || canManageTasks(project, profile)
 }
 
 export function canManagePhases(
   project: Pick<Project, 'status' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
   if (!profile || !PHASE_MANAGE_STATUSES.includes(project.status)) {
     return false
   }
 
-  return (
-    isFactoryManager(profile.role) &&
-    profile.factory_id != null &&
-    profile.factory_id === project.factory_id
-  )
+  return isControllingFactoryManager(project, profile)
 }
 
 export function canManageTasks(
-  project: Pick<Project, 'status' | 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
-  return canAccessProjectWbs(project, profile, TASK_MANAGE_STATUSES)
+  if (!profile || !TASK_MANAGE_STATUSES.includes(project.status)) {
+    return false
+  }
+
+  return isControllingFactoryManager(project, profile)
 }
 
 export function canExecuteTasks(
-  project: Pick<Project, 'status' | 'assigned_pm_id'>,
-  profile: Pick<Profile, 'id' | 'role'> | null | undefined,
+  project: Pick<Project, 'status' | 'factory_id'>,
+  profile: RoleProfile,
 ): boolean {
-  return canAccessProjectWbs(project, profile, TASK_EXECUTE_STATUSES)
+  if (!profile || !TASK_EXECUTE_STATUSES.includes(project.status)) {
+    return false
+  }
+
+  return isControllingFactoryManager(project, profile)
 }
 
 export function canStartExecution(
   project: Pick<Project, 'status' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
+  profile: RoleProfile,
 ): boolean {
   if (!profile || project.status !== 'approved') {
     return false
   }
 
-  return (
-    isFactoryManager(profile.role) &&
-    profile.factory_id != null &&
-    profile.factory_id === project.factory_id
-  )
-}
-
-export function canReassignProjectPm(
-  project: Pick<Project, 'status' | 'factory_id'>,
-  profile: Pick<Profile, 'id' | 'role' | 'factory_id'> | null | undefined,
-): boolean {
-  if (
-    !profile ||
-    !['approved', 'in_progress', 'paused'].includes(project.status)
-  ) {
-    return false
-  }
-
-  return (
-    isFactoryManager(profile.role) &&
-    profile.factory_id != null &&
-    profile.factory_id === project.factory_id
-  )
+  return isControllingFactoryManager(project, profile)
 }
 
 export function sumPhaseWeights(
@@ -231,7 +196,6 @@ export type ExecutionReadinessReason =
   | 'phase_budget_exceeds_project'
   | 'missing_project_budget'
   | 'missing_project_schedule'
-  | 'missing_assigned_pm'
 
 export interface ExecutionReadiness {
   ready: boolean
@@ -249,7 +213,6 @@ export function getExecutionReadiness(
     | 'proposed_duration_unit'
     | 'actual_start_date'
     | 'actual_end_date'
-    | 'assigned_pm_id'
   >,
   phases: Array<
     Pick<
@@ -262,10 +225,6 @@ export function getExecutionReadiness(
 
   if (project.status !== 'approved') {
     reasons.push('not_approved')
-  }
-
-  if (!project.assigned_pm_id) {
-    reasons.push('missing_assigned_pm')
   }
 
   if (project.budget == null || Number(project.budget) <= 0) {

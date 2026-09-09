@@ -139,13 +139,11 @@ export function useCreateAccount() {
         role: values.role,
         factory_id: values.factory_id,
         is_active: values.is_active,
+        can_control: values.can_control,
       })
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.accounts })
-      await queryClient.invalidateQueries({
-        queryKey: ['factory-project-managers'],
-      })
     },
   })
 }
@@ -181,6 +179,7 @@ export function useUpdateAccount() {
           factory_id:
             values.role === 'company_director' ? null : values.factory_id,
           is_active: values.is_active,
+          can_control: values.can_control,
         })
         .eq('id', id)
         .select('*')

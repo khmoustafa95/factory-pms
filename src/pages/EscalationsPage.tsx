@@ -27,7 +27,7 @@ import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import type { EscalationsPageParams } from '@/lib/list-query-params'
 import { toastMutationError } from '@/lib/mutation-error'
 import { buildProjectPath } from '@/lib/project-routes'
-import { isCompanyDirector } from '@/lib/roles'
+import { canControl, isCompanyDirector } from '@/lib/roles'
 import { canGovernExecution } from '@/lib/wbs'
 import {
   formatEscalationBody,
@@ -142,9 +142,15 @@ export function EscalationsPage() {
           {t('escalations.acknowledge')}
         </Button>
       ) : null}
-      <Button size="sm" variant="outline" onClick={() => setSelectedTask(task)}>
-        {t('common.escalate')}
-      </Button>
+      {canControl(profile) ? (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setSelectedTask(task)}
+        >
+          {t('common.escalate')}
+        </Button>
+      ) : null}
     </div>
   )
 

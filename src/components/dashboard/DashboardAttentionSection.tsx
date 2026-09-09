@@ -38,7 +38,6 @@ type DashboardAttentionSectionProps = {
   insights: DashboardInsights
   isDirector: boolean
   isManager: boolean
-  isPm: boolean
   attentionDrill: AttentionDrill
   statusFilter: 'all' | ProjectStatus
   blockedFilter: BlockedFilter
@@ -56,7 +55,6 @@ export function DashboardAttentionSection({
   insights,
   isDirector,
   isManager,
-  isPm,
   attentionDrill,
   statusFilter,
   blockedFilter,
@@ -174,7 +172,7 @@ export function DashboardAttentionSection({
               onClick={() => onAttentionDrill('draft')}
             />
           ) : null}
-          {isManager || isPm ? (
+          {isManager ? (
             <DashboardKpiCard
               label={t('dashboard.inProgressProjects')}
               value={inProgressCount}

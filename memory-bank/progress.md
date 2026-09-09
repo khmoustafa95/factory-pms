@@ -2,6 +2,7 @@
 
 ## Done
 
+- [x] Simplified RBAC: two roles + `can_control`; no project-manager accounts/UI; FM owns phases and tasks
 - [x] Merged WBS + timeline tab (phase Gantt above WBS cards); projects list description UX (tooltip, no row bloat)
 - [x] Consultation status between draft and proposed (director opinions required before propose)
 - [x] Proposal duration in months; calendar start/end after approval before phases/start
@@ -49,7 +50,8 @@
 - [x] Env scripts: Vite modes (local/staging/production) + Supabase local CLI scripts
 - [x] i18n: Arabic + English, RTL, locale persistence, translated UI copy
 - [x] Theme: light / dark / system toggle with next-themes
-- [x] Responsive layout: mobile nav drawer, scrollable tables/tabs, semantic tokens
+- [x] List/dashboard/detail/settings freeze chrome; only data regions scroll
+
 - [x] Localized Zod validation messages (ar/en)
 - [x] AdaptiveList mobile card view for list pages
 - [x] Route-level code splitting (React.lazy)
@@ -84,6 +86,32 @@
 - Product PRD lives in Notion; keep Memory Bank in sync when scope changes
 
 ## Changelog
+
+### 2026-09-09 (Freeze chrome on dashboard, detail, settings)
+
+- Same fill layout as list pages: page title (and tab list / explore filters) stay fixed; only the data pane scrolls.
+- Dashboard: KPIs capped (`max-h-[min(42vh,28rem)]`); explore toolbar fixed; virtualized table fills remaining height.
+- Project detail: header + tabs fixed; tab body scrolls. Kanban fills the tab; cards scroll inside columns.
+- Settings: header + tabs fixed; tab body scrolls. List pages were already covered by `PaginatedListPage`.
+- `npm run verify` passed.
+
+### 2026-09-09 (List table scroll, not page scroll)
+
+- App shell is viewport-height (`h-svh overflow-hidden`). List pages (`PaginatedListPage`) keep title, filters, and pagination fixed; only table rows (or mobile cards) scroll.
+
+### 2026-09-09 (Director login: grant auth_can_control)
+
+- Sign-in authenticated against Auth, then failed on `profiles` SELECT: `42501 permission denied for function auth_can_control`.
+- Cause: write policies are `FOR ALL` (includes SELECT) and call `auth_can_control()`; EXECUTE had been revoked from `authenticated`.
+- Migration `20260909120000_grant_auth_can_control.sql` applied locally. Director profile read confirmed via PostgREST.
+
+### 2026-09-09 (Simplify roles: drop PM + can_control)
+
+- `profiles.can_control` (default true) and `auth_can_control()`; write RLS/RPCs require the flag. Existing `project_manager` rows convert to `factory_manager` with control. Enum value kept; `assigned_pm_id` unused (not dropped).
+- Controlling factory manager owns phases, tasks, Kanban, ops finance, start/pause, completion request. Controlling director owns approve/reject, consultation, funding, accounts, factories, settings, pause/complete.
+- Viewers: dashboard + lists + detail in role scope; own name in settings; no comments, acknowledge, Excel import, or org admin pages.
+- `manage-account` creates `company_director` / `factory_manager` with `can_control`; only a controlling director may provision. Seed: `director@`, `director.viewer@`, `fm.damascus@`, `fm.damascus.viewer@`, `fm.aleppo@`.
+- Removed PM assign dialog/checklist/start requirement. Migration `20260909110000_simplify_roles_can_control.sql`. `npm run verify` passed; WBS/permission unit tests passed.
 
 ### 2026-09-09 (Arabic font: itfQomraArabic)
 

@@ -29,7 +29,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
+import { canControl, isCompanyDirector } from '@/lib/roles'
+import { canManageAccounts } from '@/lib/account-permissions'
 import { getRoleLabel } from '@/lib/i18n-format'
 import { getAppNavItems, type AppNavItem } from '@/lib/nav'
 
@@ -190,7 +191,7 @@ function AppSidebarToggle() {
 
 function AppTopBar({ navItems }: { navItems: AppNavItem[] }) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/90 px-3 backdrop-blur supports-backdrop-filter:bg-background/75 sm:px-4">
+    <header className="z-20 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/90 px-3 backdrop-blur supports-backdrop-filter:bg-background/75 sm:px-4">
       <AppSidebarToggle />
       <Separator orientation="vertical" className="hidden h-4 sm:block" />
       <span className="min-w-0 flex-1 truncate text-sm font-medium text-muted-foreground md:hidden">
@@ -211,12 +212,12 @@ export function AppLayout() {
   const { t, dir } = useTranslation()
   const isFetching = useIsFetching() > 0
   const isDirector = isCompanyDirector(profile?.role)
-  const canManageAccounts = isDirector || isFactoryManager(profile?.role)
+  const showOrgAdmin = isDirector && canControl(profile)
 
   const navItems = getAppNavItems({
     t,
-    isDirector,
-    canManageAccounts,
+    isDirector: showOrgAdmin,
+    canManageAccounts: canManageAccounts(profile),
   })
 
   return (
@@ -239,9 +240,9 @@ export function AppLayout() {
             id="main-content"
             tabIndex={-1}
             aria-label={t('a11y.mainContent')}
-            className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 text-start sm:px-6 lg:px-8"
+            className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col overflow-hidden px-4 py-6 text-start sm:px-6 lg:px-8"
           >
-            <PageTransition>
+            <PageTransition className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               <Outlet />
             </PageTransition>
           </div>

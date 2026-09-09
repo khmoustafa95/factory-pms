@@ -5,9 +5,13 @@ import type { UserRole } from '@/types/database'
 
 interface RoleRouteProps {
   allowedRoles: UserRole[]
+  requireControl?: boolean
 }
 
-export function RoleRoute({ allowedRoles }: RoleRouteProps) {
+export function RoleRoute({
+  allowedRoles,
+  requireControl = false,
+}: RoleRouteProps) {
   const { profile, isLoading } = useAuth()
   const { t } = useTranslation()
 
@@ -19,7 +23,11 @@ export function RoleRoute({ allowedRoles }: RoleRouteProps) {
     )
   }
 
-  if (!profile || !allowedRoles.includes(profile.role)) {
+  if (
+    !profile ||
+    !allowedRoles.includes(profile.role) ||
+    (requireControl && !profile.can_control)
+  ) {
     return <Navigate to="/" replace />
   }
 

@@ -44,17 +44,17 @@ export function KanbanColumn({
       role="listitem"
       style={style}
       className={cn(
-        'w-[min(100%,18rem)] shrink-0 snap-start bg-muted md:w-auto md:shrink',
+        'flex h-full min-h-0 w-[min(100%,18rem)] shrink-0 snap-start flex-col overflow-hidden bg-muted md:w-auto md:min-h-0 md:shrink',
         isOver && 'bg-primary/5 ring-2 ring-inset ring-primary',
         className,
       )}
     >
-      <CardHeader className="pb-3">
+      <CardHeader className="shrink-0 pb-3">
         <CardTitle className="text-sm font-medium">
           {getTaskStatusLabel(t, status)} ({tasks.length})
         </CardTitle>
       </CardHeader>
-      <CardContent className="min-h-32 space-y-3">
+      <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {tasks.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {canManage && isOver

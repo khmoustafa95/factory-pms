@@ -16,13 +16,12 @@ npm run supabase:reset
 npx supabase db reset --linked
 ```
 
-| البريد                   | الدور       | المصنع     |
-| ------------------------ | ----------- | ---------- |
-| `director@demo.local`    | مدير الشركة | —          |
-| `fm.damascus@demo.local` | مدير مصنع   | دمشق (DMS) |
-| `fm.aleppo@demo.local`   | مدير مصنع   | حلب (ALP)  |
-| `pm.ahmed@demo.local`    | مدير مشروع  | دمشق (DMS) |
-| `pm.sara@demo.local`     | مدير مشروع  | دمشق (DMS) |
-| `pm.khalid@demo.local`   | مدير مشروع  | حلب (ALP)  |
+| البريد | الدور | الصلاحية | المصنع |
+| --- | --- | --- | --- |
+| `director@demo.local` | مدير الشركة | تحكم | — |
+| `director.viewer@demo.local` | مدير الشركة | إحصائيات فقط | — |
+| `fm.damascus@demo.local` | مدير مصنع | تحكم | دمشق (DMS) |
+| `fm.damascus.viewer@demo.local` | مدير مصنع | إحصائيات فقط | دمشق (DMS) |
+| `fm.aleppo@demo.local` | مدير مصنع | تحكم | حلب (ALP) |
 
 الـ seed يحقن الحسابات + مصنعين نشطين فقط (بدون مشاريع/مراحل/مهام).

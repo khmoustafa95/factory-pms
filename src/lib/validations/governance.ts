@@ -52,18 +52,6 @@ export function createChangeRequestSchema(t: ValidationTranslator) {
     })
 }
 
-export function createReassignPmSchema(
-  t: ValidationTranslator,
-  requireReason = true,
-) {
-  return z.object({
-    assigned_pm_id: z.string().uuid(t('validation.assignedPmRequired')),
-    reason: requireReason
-      ? z.string().trim().min(3, t('validation.reassignReasonMin'))
-      : z.string().trim(),
-  })
-}
-
 export function createChangeReviewSchema(t: ValidationTranslator) {
   return z.object({
     review_reason: z.string().trim().min(3, t('validation.rejectionReasonMin')),
@@ -72,9 +60,6 @@ export function createChangeReviewSchema(t: ValidationTranslator) {
 
 export type ChangeRequestFormValues = z.infer<
   ReturnType<typeof createChangeRequestSchema>
->
-export type ReassignPmFormValues = z.infer<
-  ReturnType<typeof createReassignPmSchema>
 >
 export type ChangeReviewFormValues = z.infer<
   ReturnType<typeof createChangeReviewSchema>

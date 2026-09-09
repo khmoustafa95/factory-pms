@@ -80,5 +80,5 @@ export function QueryState({
     )
   }
 
-  return <div className="motion-fade-in">{children}</div>
+  return <div className={cn('motion-fade-in', className)}>{children}</div>
 }

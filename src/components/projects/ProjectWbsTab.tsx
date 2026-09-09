@@ -111,11 +111,9 @@ export function ProjectWbsTab({
               {t('wbs.title')}
             </CardTitle>
             <CardDescription>
-              {canManagePhases
+              {canManagePhases || canManageTasks
                 ? t('wbs.fmManageDescription')
-                : canManageTasks
-                  ? t('wbs.pmManageDescription')
-                  : t('wbs.viewDescription')}
+                : t('wbs.viewDescription')}
             </CardDescription>
           </div>
           {canManagePhases ? (
@@ -358,10 +356,8 @@ export function ProjectWbsTab({
                       {phaseTasks.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
                           {isPlanning && canManageTasks
-                            ? t('wbs.noTasksPmPlanning')
-                            : isPlanning && canManagePhases
-                              ? t('wbs.noTasksFmPlanning')
-                              : t('wbs.noTasks')}
+                            ? t('wbs.noTasksFmPlanning')
+                            : t('wbs.noTasks')}
                         </p>
                       ) : (
                         <ResponsiveTable>

@@ -31,7 +31,9 @@ import { useValidationSchema } from '@/hooks/useValidationSchema'
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import {
   createAccountDialogSchema,
+  isManagedAccountRole,
   type AccountDialogFormValues,
+  type ManagedAccountRole,
 } from '@/lib/validations/account'
 import type { UserRole } from '@/types/database'
 
@@ -45,8 +47,9 @@ interface AccountFormDialogProps {
     role: UserRole
     factory_id: string | null
     is_active: boolean
+    can_control: boolean
   } | null
-  allowedRoles: UserRole[]
+  allowedRoles: ManagedAccountRole[]
   lockFactoryId?: string | null
   onCreate: (values: AccountDialogFormValues) => Promise<void>
   onUpdate: (values: AccountDialogFormValues) => Promise<void>
@@ -66,7 +69,12 @@ export function AccountFormDialog({
   const { t } = useTranslation()
   const { data: factories = [] } = useFactories()
   const isCreate = account === null
-  const defaultRole = allowedRoles[0] ?? 'project_manager'
+  const defaultRole: ManagedAccountRole = isManagedAccountRole(allowedRoles[0])
+    ? allowedRoles[0]
+    : 'factory_manager'
+  const accountRole: ManagedAccountRole = isManagedAccountRole(account?.role)
+    ? account.role
+    : defaultRole
 
   const schema = useValidationSchema(
     (translator) =>
@@ -84,13 +92,15 @@ export function AccountFormDialog({
         role: defaultRole,
         factory_id: lockFactoryId ?? null,
         is_active: true,
+        can_control: true,
       },
       getValues: () => ({
         email: account?.email ?? '',
         full_name: account?.full_name ?? '',
-        role: account?.role ?? defaultRole,
+        role: accountRole,
         factory_id: account?.factory_id ?? lockFactoryId ?? null,
         is_active: account?.is_active ?? true,
+        can_control: account?.can_control ?? true,
       }),
       resetDependencies: [account, lockFactoryId, defaultRole, isCreate],
     })
@@ -104,13 +114,22 @@ export function AccountFormDialog({
     name: 'factory_id',
   })
   const isActive = useWatch({ control: form.control, name: 'is_active' })
+  const canControlAccount = useWatch({
+    control: form.control,
+    name: 'can_control',
+  })
   const factoryLocked = Boolean(lockFactoryId)
+  const isDirectorRole = selectedRole === 'company_director'
 
   useEffect(() => {
+    if (isDirectorRole) {
+      form.setValue('factory_id', null)
+      return
+    }
     if (lockFactoryId) {
       form.setValue('factory_id', lockFactoryId)
     }
-  }, [form, lockFactoryId])
+  }, [form, isDirectorRole, lockFactoryId])
 
   useEffect(() => {
     if (
@@ -177,8 +196,11 @@ export function AccountFormDialog({
                 <Select
                   value={selectedRole}
                   onValueChange={(value) => {
-                    if (allowedRoles.includes(value as UserRole)) {
-                      form.setValue('role', value as UserRole)
+                    if (
+                      isManagedAccountRole(value) &&
+                      allowedRoles.includes(value)
+                    ) {
+                      form.setValue('role', value)
                     }
                   }}
                   disabled={!isCreate && allowedRoles.length <= 1}
@@ -198,26 +220,45 @@ export function AccountFormDialog({
 
               <div className="space-y-2">
                 <Label>{t('common.factory')}</Label>
-                <Select
-                  value={selectedFactoryId ?? undefined}
-                  onValueChange={(value) => form.setValue('factory_id', value)}
-                  disabled={factoryLocked}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {factories
-                      .filter((factory) => factory.is_active)
-                      .map((factory) => (
-                        <SelectItem key={factory.id} value={factory.id}>
-                          {formatFactoryLabel(factory)}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <FormFieldError error={form.formState.errors.factory_id} />
+                {isDirectorRole ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t('accounts.directorNoFactory')}
+                  </p>
+                ) : (
+                  <>
+                    <Select
+                      value={selectedFactoryId ?? undefined}
+                      onValueChange={(value) =>
+                        form.setValue('factory_id', value)
+                      }
+                      disabled={factoryLocked}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {factories
+                          .filter((factory) => factory.is_active)
+                          .map((factory) => (
+                            <SelectItem key={factory.id} value={factory.id}>
+                              {formatFactoryLabel(factory)}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormFieldError error={form.formState.errors.factory_id} />
+                  </>
+                )}
               </div>
+
+              <FormCheckboxField
+                id="account-control"
+                label={t('accounts.canControl')}
+                checked={canControlAccount}
+                onCheckedChange={(checked) =>
+                  form.setValue('can_control', checked)
+                }
+              />
 
               <FormCheckboxField
                 id="account-active"

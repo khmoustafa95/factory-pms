@@ -17,7 +17,7 @@ export function ScrollableTabsList({
   return (
     <div
       className={cn(
-        'relative -mx-1 px-1',
+        'relative -mx-1 shrink-0 px-1',
         dir === 'rtl'
           ? 'mask-[linear-gradient(to_left,black_90%,transparent)]'
           : 'mask-[linear-gradient(to_right,black_90%,transparent)]',

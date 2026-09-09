@@ -4,6 +4,7 @@ export const en = {
     save: 'Save',
     cancel: 'Cancel',
     close: 'Close',
+    viewOnly: 'This account can view statistics only.',
     edit: 'Edit',
     delete: 'Delete',
     add: 'Add',
@@ -281,7 +282,7 @@ export const en = {
     noProfile: 'Your profile is not set up yet. Contact your company director.',
     loadingSession: 'Loading session…',
     needAccount:
-      'Need an account? Ask your company director or factory manager to create one from the Accounts screen.',
+      'Need an account? Ask your company director to create one from the Accounts screen.',
     supabaseNotConfigured:
       'Supabase is not configured. Copy .env.example to .env.local and add your project keys.',
     accessDenied: 'Access denied',
@@ -296,12 +297,11 @@ export const en = {
       copyEmail: 'Copy email',
       copied: '{{label}} copied',
       copyFailed: 'Unable to copy to clipboard',
-      directorNote: 'Full access across all factories',
-      fmDamascusNote: 'Damascus factory manager',
-      fmAleppoNote: 'Aleppo factory manager',
-      pmAhmedNote: 'Damascus project manager',
-      pmSaraNote: 'Damascus project manager',
-      pmKhalidNote: 'Aleppo project manager',
+      directorNote: 'Full control across all factories',
+      directorViewerNote: 'Company-wide statistics only',
+      fmDamascusNote: 'Damascus factory manager with control',
+      fmDamascusViewerNote: 'Damascus factory statistics only',
+      fmAleppoNote: 'Aleppo factory manager with control',
       loginOnlyHint:
         'Trial accounts appear only on this sign-in page. Sign out to return here.',
       stagingSetupHint:
@@ -408,9 +408,11 @@ export const en = {
   projects: {
     title: 'Projects',
     managerDescription:
-      'Create project proposals with supporting files, discuss them with the company director, and assign a project manager for execution after approval.',
+      'Create project proposals with supporting files, discuss them with the company director, then plan phases and tasks after approval.',
     directorDescription:
       'Discuss submitted proposals with factory managers, then approve or reject them.',
+    viewerDescription:
+      'View dashboards and project statistics. This account cannot change data.',
     pmDescription:
       'View projects assigned to you. Proposal discussion and approval are handled by the company director.',
     loading: 'Loading projects…',
@@ -457,6 +459,8 @@ export const en = {
       'You do not have permission to change execution status for this project.',
     executionHintFactoryScope:
       'This project is outside your factory scope, so execution actions are unavailable.',
+    executionHintViewOnly:
+      'This account can view statistics only and cannot change execution status.',
     executionHintPmNotAssigned:
       'This project has no assigned project manager yet.',
     executionHintPmOtherAssignee:
@@ -466,17 +470,17 @@ export const en = {
     startDialog: {
       title: 'Start execution',
       description:
-        'Confirm phase readiness and assigned PM. Missing tasks and incomplete funding are warnings, not blockers.',
+        'Confirm phase readiness. Missing tasks and incomplete funding are warnings, not blockers.',
       fundingReceived: 'Funding received',
       fundingWarning:
         'Funding received is below the approved budget. You can still start execution.',
       noTasksWarning:
-        'The project manager has not prepared tasks yet. You can still start execution.',
+        'No tasks have been prepared yet. You can still start execution.',
     },
     planning: {
-      title: 'Planning handoff',
+      title: 'Planning checklist',
       description:
-        'After approval, the factory manager assigns a project manager, sets the calendar, and designs phases. The assigned PM prepares tasks. Then the factory manager starts execution.',
+        'After approval, the factory manager sets the calendar, designs phases, adds tasks, then starts execution.',
       stepPm: 'Assign project manager',
       stepSchedule: 'Set project schedule',
       stepPhases: 'Design phases',
@@ -492,9 +496,10 @@ export const en = {
       scheduleHintFm:
         'Set start and end dates using the approved duration in months.',
       phasesHintFm: 'Split the approved budget and schedule into phases.',
+      tasksHintFm: 'Add tasks under each phase before work begins.',
       tasksHintPm: 'Add tasks under each phase before work begins.',
       startHintFm:
-        'Start when a project manager is assigned and the phase plan is ready. Missing tasks are a warning only.',
+        'Start when the phase plan is ready. Missing tasks are a warning only.',
       ctaAssignPm: 'Assign PM',
       ctaSetSchedule: 'Set schedule',
       ctaAddPhase: 'Add phases',
@@ -926,7 +931,7 @@ export const en = {
   wbs: {
     title: 'Work breakdown structure',
     fmManageDescription:
-      'Design phases with weights that total 100% and budgets that match the project. The timeline above updates as phase dates are set. The project manager prepares tasks under each phase.',
+      'Design phases with weights that total 100% and budgets that match the project. Add tasks under each phase, then start execution when the plan is ready.',
     pmManageDescription:
       'Prepare weighted tasks under each phase. Status changes on the Kanban start after execution begins.',
     viewDescription:
@@ -957,8 +962,7 @@ export const en = {
     tasks: 'Tasks',
     noTasks: 'No tasks in this phase.',
     noTasksPmPlanning: 'Prepare tasks in this phase before execution starts.',
-    noTasksFmPlanning:
-      'Waiting for the project manager to prepare tasks in this phase.',
+    noTasksFmPlanning: 'Prepare tasks in this phase before execution starts.',
     kanbanPlanningHint:
       'Kanban is for execution. Prepare tasks in the WBS tab; status changes unlock after start.',
     editPhase: 'Edit phase',
@@ -1183,9 +1187,9 @@ export const en = {
   accounts: {
     title: 'Accounts',
     description:
-      'Create factory managers and project managers, update their details, and generate new passwords.',
+      'Create company and factory managers, choose whether they can control or only view statistics, and generate new passwords.',
     descriptionFactoryManager:
-      'Create and manage project manager accounts for your factory. Generating a new password signs them out everywhere.',
+      'Company directors create company and factory manager accounts. Generating a new password signs them out everywhere.',
     loading: 'Loading accounts…',
     loadFailed: 'Failed to load accounts',
     empty: 'No accounts yet. Create the first account to get started.',
@@ -1200,6 +1204,11 @@ export const en = {
       'A temporary password will be generated. Share it securely with the user.',
     fullName: 'Full name',
     role: 'Role',
+    access: 'Access',
+    controlAccess: 'Control',
+    statsAccess: 'Statistics only',
+    canControl: 'Can control (uncheck for statistics only)',
+    directorNoFactory: 'Company directors are not tied to a factory.',
     activeAccount: 'Active account',
     resetPassword: 'New password',
     resetPasswordTitle: 'Generate new password?',

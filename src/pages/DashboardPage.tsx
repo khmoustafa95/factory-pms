@@ -19,11 +19,7 @@ import {
 import { formatFactoryLabel, getRoleLabel } from '@/lib/i18n-format'
 import { buildFactoryFilterOptions } from '@/lib/list-filters'
 import { buildProjectPath } from '@/lib/project-routes'
-import {
-  isCompanyDirector,
-  isFactoryManager,
-  isProjectManager,
-} from '@/lib/roles'
+import { isCompanyDirector, isFactoryManager } from '@/lib/roles'
 import type { ProjectStatus } from '@/types/database'
 
 export function DashboardPage() {
@@ -32,7 +28,6 @@ export function DashboardPage() {
   const roleLabel = profile ? getRoleLabel(t, profile.role) : t('common.user')
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
-  const isPm = isProjectManager(profile?.role)
   const projectDetailsRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -298,16 +293,18 @@ export function DashboardPage() {
     projectPathById.get(projectId) ?? null
 
   return (
-    <section className="space-y-6">
-      <PageHeader
-        title={t('dashboard.title')}
-        description={t('dashboard.welcome', {
-          name: profile
-            ? t('dashboard.welcomeName', { name: profile.full_name })
-            : '',
-          role: roleLabel,
-        })}
-      />
+    <section className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+      <div className="shrink-0">
+        <PageHeader
+          title={t('dashboard.title')}
+          description={t('dashboard.welcome', {
+            name: profile
+              ? t('dashboard.welcomeName', { name: profile.full_name })
+              : '',
+            role: roleLabel,
+          })}
+        />
+      </div>
 
       <QueryState
         isLoading={isLoading || isInsightsLoading}
@@ -319,6 +316,7 @@ export function DashboardPage() {
           void refetchInsights()
         }}
         isRetrying={isFetching || isInsightsFetching}
+        className="max-h-[min(42vh,28rem)] shrink-0 overflow-y-auto"
       >
         {stats && insights ? (
           <DashboardAttentionSection
@@ -326,7 +324,6 @@ export function DashboardPage() {
             insights={insights}
             isDirector={isDirector}
             isManager={isManager}
-            isPm={isPm}
             attentionDrill={attentionDrill}
             statusFilter={statusFilter}
             blockedFilter={blockedFilter}

@@ -14,7 +14,7 @@ Give company leadership real-time visibility into factory projects (progress, bu
 
 ## Scope (in)
 
-- Web SPA for three roles: Company Director, Factory Manager, Project Manager
+- Web SPA for two roles (Company Director, Factory Manager) plus `can_control` (write vs statistics-only)
 - Supabase Auth, Postgres, RLS, Realtime
 - Proposal → approval → planning → execution → escalation workflows
 - Role-scoped dashboards and comments on project / phase / task

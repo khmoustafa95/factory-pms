@@ -2,6 +2,8 @@
 
 Append-only. Format: `YYYY-MM-DD — Summary — Rationale / implications`
 
+- 2026-09-09 — Two roles (`company_director`, `factory_manager`) plus boolean `profiles.can_control` instead of four enum values or a project-manager role. Scope stays on the role (company vs factory); write vs statistics-only stays on the flag. Keep the technical name `company_director` (Arabic UI already says مدير الشركة). Keep Postgres enum value `project_manager` and column `assigned_pm_id` unused — dropping an enum value or rebuilding every RPC is costlier than converting leftover accounts. Factory managers with control own both phases and tasks; start execution no longer requires an assigned PM.
+
 - 2026-09-08 — Project timeline lives inside the WBS tab as a schedule strip + phase-level Gantt (custom CSS, not Bryntum/DHTMLX). Card-based WBS does not justify a full split-pane grid; drag-reschedule stays out of scope. Legacy `?tab=timeline` maps to `wbs`. Projects list omits long descriptions from rows (scan metadata; detail page holds full text; optional title tooltip excerpt).
 
 - 2026-09-08 — Proposal lifecycle inserts `consultation` between draft and proposed. Factory managers still submit (no opinions); company directors record research/board opinions only in consultation, then move to proposed for approve/reject. Explains why drafts were never approvable: directors could read drafts (import RLS) but `canApproveAsDirector` stays `proposed`-only.

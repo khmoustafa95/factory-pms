@@ -2,16 +2,15 @@
 
 ## Current focus
 
+RBAC experiment: two roles (`company_director`, `factory_manager`) plus `profiles.can_control`. The project-manager role is no longer offered; leftover PM accounts convert to factory managers. Controlling factory managers own phases **and** tasks (including Kanban). Viewers (`can_control = false`) see dashboards/lists/detail in their role scope and may only edit their own name.
+
 WBS and timeline are one project-detail tab: schedule strip + phase Gantt above the existing phase/task cards. Projects list no longer embeds long descriptions in rows (title + optional tooltip excerpt; full text on detail).
 
 Director project import creates rows in **`consultation`** (not draft) so directors can see and complete opinions immediately. Existing matched rows still update without changing status. Factory managers submit drafts into consultation as before.
 
 Consultation sits between draft and proposed: factory managers submit into `consultation`; company directors record research/board opinions and complete consultation → `proposed`; approve/reject remain on `proposed` only.
 
-Proposal duration is entered in **months** at submit time. Calendar start/end dates are set after approval (factory manager) before phases and start execution. PM assignment remains after approval.
-
-
-WBS role handoff after approval: factory manager designs phases and starts execution; assigned project manager prepares tasks (`todo`) then executes on Kanban. `approved` is the planning stage — no new status enum.
+Proposal duration is entered in **months** at submit time. Calendar start/end dates are set after approval (factory manager) before phases and start execution. Start no longer requires `assigned_pm_id` (column unused in UI).
 
 Projects list search: PostgREST `or()` cannot parse dotted embed columns (`factories.name`). Search now matches project title/description/code plus factory ids from a separate factories query.
 
@@ -25,6 +24,9 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Recent changes
 
+- [2026-09-09] Freeze-chrome layout extended beyond lists: dashboard (title + explore filters + table body), project detail (header + tabs; Kanban columns scroll internally), settings (header + tabs). List pages already used `PaginatedListPage`.
+- [2026-09-09] List pages keep title/filters/pagination fixed; only the table (or mobile cards) scrolls. App shell is `h-svh overflow-hidden`; `PaginatedListPage` fills remaining height.
+- [2026-09-09] Simplified roles: drop PM from the app; `profiles.can_control` + `auth_can_control()`; controlling FM owns tasks/Kanban; start execution no longer needs `assigned_pm_id`. Seed: director control + director viewer + 2 FM control + 1 FM viewer. Accounts/factories routes require controlling company director. Migration `20260909110000_simplify_roles_can_control.sql`. `npm run verify` passed.
 - [2026-09-09] Arabic UI font: local `itfQomraArabic` (Light/Regular/Bold `.otf` in `public/fonts`) via `@font-face`; RTL body prefers it; removed `@fontsource-variable/noto-sans-arabic`. Geist remains for LTR. `npm run verify` passed.
 - [2026-09-08] Timeline bars show actual phase progress (`calculatePhaseProgress` from tasks): fill overlay + % label on each bar; tasks passed via `tasksByPhase`. `npm run verify` passed.
 - [2026-09-08] Professional timeline polish: split-pane Gantt (phase labels + track), month ticks/grid, status legend, today pill marker, duration chips on bars. `npm run verify` passed.
@@ -63,10 +65,10 @@ Review artifact: `docs/user-stories.md` (Arabic) lists current implemented user 
 
 ## Next steps (concrete)
 
-1. Smoke consultation flow: FM submit → director opinions + complete → proposed → approve/reject
-2. Follow `docs/on-prem-production.md` on the Windows host: power/Docker caps/firewall, then production secrets (not demo JWT), then LAN users only
-3. Choose VPN (Tailscale vs WireGuard) before creating accounts at unlinked remote sites
-4. Apply consultation + duration + PM-after-approval migrations when a non-dev database is created — on-prem production uses a clean migration apply, not `db reset`
+1. Retry director login (`director@demo.local` / `demo123456`) after `20260909120000` grant
+2. Smoke consultation flow: FM submit → director opinions + complete → proposed → approve/reject
+3. Follow `docs/on-prem-production.md` on the Windows host: power/Docker caps/firewall, then production secrets (not demo JWT), then LAN users only
+4. Choose VPN (Tailscale vs WireGuard) before creating accounts at unlinked remote sites
 5. Optional: Realtime invalidate on finance tables; procurement ↔ raw-material task link
 6. Scorecard Phase 2: Playwright smoke, RLS snapshot tests, demo seed with sample funding/procurement
 7. Optional: reuse `src/lib/import/` for accounts Excel import with the same template + upsert contract

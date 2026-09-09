@@ -19,7 +19,6 @@ interface ProjectStartExecutionDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   project: Project
-  pmName: string
   fundingReceived: number
   taskCount: number
   readinessReasons: ExecutionReadinessReason[]
@@ -31,7 +30,6 @@ export function ProjectStartExecutionDialog({
   open,
   onOpenChange,
   project,
-  pmName,
   fundingReceived,
   taskCount,
   readinessReasons,
@@ -63,9 +61,6 @@ export function ProjectStartExecutionDialog({
         <DialogBody className="space-y-3 text-sm">
           <div className="app-panel space-y-2 p-3">
             <p className="font-medium">{project.title}</p>
-            <p className="text-muted-foreground">
-              {t('projects.approveDialog.assignedPm')}: {pmName}
-            </p>
             <p className="text-muted-foreground">
               {t('common.budget')}:{' '}
               {formatLocalizedBudget(

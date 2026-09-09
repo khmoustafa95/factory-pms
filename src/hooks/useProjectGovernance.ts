@@ -144,38 +144,6 @@ export function useReviewProjectChange(projectId: string | undefined) {
   })
 }
 
-export function useReassignProjectPm() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({
-      id,
-      pmId,
-      reason,
-    }: {
-      id: string
-      pmId: string
-      reason: string
-    }) => {
-      const supabase = getSupabase()
-      const { data, error } = await supabase.rpc('reassign_project_pm', {
-        p_project_id: id,
-        p_pm_id: pmId,
-        p_reason: reason,
-      })
-
-      if (error) {
-        throw error
-      }
-
-      return data
-    },
-    onSuccess: async (data) => {
-      await invalidateProject(queryClient, data.id)
-    },
-  })
-}
-
 export function useAcknowledgeTaskEscalation() {
   const queryClient = useQueryClient()
 

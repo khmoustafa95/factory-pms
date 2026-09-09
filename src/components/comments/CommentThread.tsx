@@ -41,8 +41,7 @@ interface CommentThreadProps {
 function parseUserRole(role: string | undefined): UserRole | undefined {
   if (
     role === 'company_director' ||
-    role === 'factory_manager' ||
-    role === 'project_manager'
+    role === 'factory_manager'
   ) {
     return role
   }

@@ -4,6 +4,10 @@ Append-only. Format: `YYYY-MM-DD — Lesson`
 
 ## Entries
 
+- 2026-09-09 — Helpers used inside RLS (`auth_can_control()`, `is_auth_active()`, …) must stay `GRANT EXECUTE` to `authenticated`. Revoking them does not “hide” the function: Postgres still evaluates `FOR ALL` policies on SELECT, and a 42501 aborts the whole query (director sign-in could not load `profiles`).
+
+- 2026-09-09 — Dropping a Postgres enum value (`project_manager`) or `assigned_pm_id` forces rewriting historical RLS/RPC migrations. For an experiment, convert leftover rows, stop creating the role, and leave the unused column/enum value in place. Scope (company vs factory) belongs on the role; write vs statistics belongs on a boolean, not four enum labels.
+
 - 2026-09-07 — Director catalog import of projects requires expanding table RLS beyond “non-draft”. `can_access_project` already allowed directors, but table SELECT was still non-draft-only, and INSERT was factory-manager-only — upsert would 403 or hide the new row.
 - 2026-09-07 — `exceljs` Node entry hangs or times out under Vitest/jsdom (`writeBuffer` / streams). Keep factory import unit tests on `string[][]` + CSV; alias Vite to `exceljs/dist/exceljs.min.js` for the SPA. Do not round-trip xlsx in unit tests.
 

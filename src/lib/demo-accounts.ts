@@ -6,34 +6,28 @@ export const DEMO_ACCOUNTS = [
     notesKey: 'auth.demoAccounts.directorNote',
   },
   {
+    email: 'director.viewer@demo.local',
+    roleKey: 'roles.company_director',
+    factory: '—',
+    notesKey: 'auth.demoAccounts.directorViewerNote',
+  },
+  {
     email: 'fm.damascus@demo.local',
     roleKey: 'roles.factory_manager',
     factory: 'DMS',
     notesKey: 'auth.demoAccounts.fmDamascusNote',
   },
   {
+    email: 'fm.damascus.viewer@demo.local',
+    roleKey: 'roles.factory_manager',
+    factory: 'DMS',
+    notesKey: 'auth.demoAccounts.fmDamascusViewerNote',
+  },
+  {
     email: 'fm.aleppo@demo.local',
     roleKey: 'roles.factory_manager',
     factory: 'ALP',
     notesKey: 'auth.demoAccounts.fmAleppoNote',
-  },
-  {
-    email: 'pm.ahmed@demo.local',
-    roleKey: 'roles.project_manager',
-    factory: 'DMS',
-    notesKey: 'auth.demoAccounts.pmAhmedNote',
-  },
-  {
-    email: 'pm.sara@demo.local',
-    roleKey: 'roles.project_manager',
-    factory: 'DMS',
-    notesKey: 'auth.demoAccounts.pmSaraNote',
-  },
-  {
-    email: 'pm.khalid@demo.local',
-    roleKey: 'roles.project_manager',
-    factory: 'ALP',
-    notesKey: 'auth.demoAccounts.pmKhalidNote',
   },
 ] as const
 

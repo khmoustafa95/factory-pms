@@ -11,32 +11,26 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import { cn } from '@/lib/utils'
 
 interface ProjectPlanningChecklistProps {
-  pmAssigned: boolean
   scheduleSet: boolean
   phasesReady: boolean
   tasksPrepared: boolean
-  canAssignPm: boolean
   canSetSchedule: boolean
   canManagePhases: boolean
   canManageTasks: boolean
   canStart: boolean
-  onAssignPm: () => void
   onSetSchedule: () => void
   onGoToWbs: () => void
   onStart: () => void
 }
 
 export function ProjectPlanningChecklist({
-  pmAssigned,
   scheduleSet,
   phasesReady,
   tasksPrepared,
-  canAssignPm,
   canSetSchedule,
   canManagePhases,
   canManageTasks,
   canStart,
-  onAssignPm,
   onSetSchedule,
   onGoToWbs,
   onStart,
@@ -44,23 +38,6 @@ export function ProjectPlanningChecklist({
   const { t } = useTranslation()
 
   const steps = [
-    {
-      id: 'pm',
-      done: pmAssigned,
-      title: t('projects.planning.stepPm'),
-      hint: pmAssigned
-        ? t('projects.planning.done')
-        : canAssignPm
-          ? t('projects.planning.pmHintFm')
-          : t('projects.planning.waitingFm'),
-      action:
-        !pmAssigned && canAssignPm
-          ? {
-              label: t('projects.planning.ctaAssignPm'),
-              onClick: onAssignPm,
-            }
-          : null,
-    },
     {
       id: 'schedule',
       done: scheduleSet,
@@ -101,19 +78,16 @@ export function ProjectPlanningChecklist({
       id: 'tasks',
       done: tasksPrepared,
       title: t('projects.planning.stepTasks'),
-      hint: !pmAssigned
-        ? t('projects.planning.waitingPmAssign')
-        : !scheduleSet
-          ? t('projects.planning.waitingSchedule')
-          : !phasesReady
-            ? t('projects.planning.waitingFm')
-            : tasksPrepared
-              ? t('projects.planning.done')
-              : canManageTasks
-                ? t('projects.planning.tasksHintPm')
-                : t('projects.planning.waitingPm'),
+      hint: !scheduleSet
+        ? t('projects.planning.waitingSchedule')
+        : !phasesReady
+          ? t('projects.planning.waitingFm')
+          : tasksPrepared
+            ? t('projects.planning.done')
+            : canManageTasks
+              ? t('projects.planning.tasksHintFm')
+              : t('projects.planning.waitingFm'),
       action:
-        pmAssigned &&
         scheduleSet &&
         phasesReady &&
         !tasksPrepared &&
@@ -129,7 +103,7 @@ export function ProjectPlanningChecklist({
       done: false,
       title: t('projects.planning.stepStart'),
       hint:
-        pmAssigned && scheduleSet && phasesReady
+        scheduleSet && phasesReady
           ? canStart
             ? t('projects.planning.startHintFm')
             : t('projects.planning.waitingFm')

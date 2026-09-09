@@ -46,9 +46,9 @@ export function PaginatedListPage<T>({
   footer,
 }: PaginatedListPageProps<T>) {
   return (
-    <section className="space-y-6">
-      {header}
-      {toolbar}
+    <section className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+      <div className="shrink-0">{header}</div>
+      <div className="shrink-0">{toolbar}</div>
 
       <QueryState
         isLoading={query.isLoading}
@@ -57,23 +57,27 @@ export function PaginatedListPage<T>({
         errorMessage={query.errorMessage}
         onRetry={query.onRetry}
         isRetrying={query.isRetrying}
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
         <AdaptiveList
           items={items}
           emptyMessage={emptyMessage}
           getKey={getKey}
           renderMobileCard={renderMobileCard}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
         >
           {children}
         </AdaptiveList>
 
-        <ListPagination
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
+        <div className="shrink-0">
+          <ListPagination
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
+        </div>
       </QueryState>
 
       {footer}

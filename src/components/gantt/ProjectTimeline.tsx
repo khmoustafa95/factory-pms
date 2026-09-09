@@ -28,10 +28,7 @@ import { useTranslation } from '@/contexts/LocaleContext'
 import type { ProjectDetail } from '@/hooks/useProject'
 import { formatLocalizedDate, getPhaseStatusLabel } from '@/lib/i18n-format'
 import { getProjectScheduleBounds } from '@/lib/duration'
-import {
-  calculatePhaseProgress,
-  formatProgress,
-} from '@/lib/progress'
+import { calculatePhaseProgress, formatProgress } from '@/lib/progress'
 import { cn } from '@/lib/utils'
 import type { Phase, PhaseStatus, Task } from '@/types/database'
 
@@ -39,7 +36,10 @@ interface ProjectTimelineProps {
   project: ProjectDetail
   phases: Phase[]
   /** Tasks grouped by phase — used for actual progress on bars. */
-  tasksByPhase?: Map<string, Array<Pick<Task, 'weight_percent' | 'progress_percent'>>>
+  tasksByPhase?: Map<
+    string,
+    Array<Pick<Task, 'weight_percent' | 'progress_percent'>>
+  >
   canSetSchedule?: boolean
   onSetSchedule?: () => void
   embedded?: boolean
@@ -148,10 +148,7 @@ function buildTimeTicks(
   }
 
   const ticks: TimeTick[] = monthStarts.map((month) => {
-    const offset = Math.max(
-      differenceInCalendarDays(month, rangeStart),
-      0,
-    )
+    const offset = Math.max(differenceInCalendarDays(month, rangeStart), 0)
     return {
       key: month.toISOString(),
       label: format(month, totalDays > 370 ? 'MMM yy' : 'MMM', {
@@ -230,11 +227,12 @@ export function ProjectTimeline({
     (phase) => phase.start_date && phase.end_date,
   )
 
-  const description = !schedule.start || !schedule.end
-    ? t('timeline.noProjectSchedule')
-    : phasesWithDates.length === 0
-      ? t('timeline.emptyDescription')
-      : t('timeline.description')
+  const description =
+    !schedule.start || !schedule.end
+      ? t('timeline.noProjectSchedule')
+      : phasesWithDates.length === 0
+        ? t('timeline.emptyDescription')
+        : t('timeline.description')
 
   const titleBlock = (
     <div className="space-y-1">
@@ -307,7 +305,10 @@ export function ProjectTimeline({
             {totalDays} {t('timeline.days')}
           </Badge>
           {todayInRange ? (
-            <Badge variant="outline" className="border-destructive/40 font-normal text-destructive">
+            <Badge
+              variant="outline"
+              className="border-destructive/40 font-normal text-destructive"
+            >
               {t('timeline.today')}: {formatLocalizedDate(today, locale)}
             </Badge>
           ) : null}

@@ -33,7 +33,7 @@ export function AdaptiveList<T>({
 
   return (
     <div className={className}>
-      <div className="space-y-3 md:hidden">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto md:hidden">
         {items.map((item, index) => (
           <article
             key={getKey(item)}
@@ -45,7 +45,9 @@ export function AdaptiveList<T>({
         ))}
       </div>
 
-      <ResponsiveTable className="hidden md:block">{children}</ResponsiveTable>
+      <ResponsiveTable className="hidden min-h-0 flex-1 md:flex md:flex-col">
+        {children}
+      </ResponsiveTable>
     </div>
   )
 }

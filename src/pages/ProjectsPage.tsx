@@ -89,11 +89,7 @@ import {
   canViewWbs,
   getExecutionReadiness,
 } from '@/lib/wbs'
-import {
-  isCompanyDirector,
-  isFactoryManager,
-  isProjectManager,
-} from '@/lib/roles'
+import { isCompanyDirector, isFactoryManager, canControl } from '@/lib/roles'
 import type { ProjectFormSubmitPayload } from '@/components/projects/ProjectFormDialog'
 import type { Project, ProjectStatus } from '@/types/database'
 
@@ -159,7 +155,10 @@ export function ProjectsPage() {
 
   const isDirector = isCompanyDirector(profile?.role)
   const isManager = isFactoryManager(profile?.role)
-  const canManageProposals = isManager && Boolean(profile?.factory_id)
+  const hasControl = canControl(profile)
+  const canManageProposals =
+    isManager && hasControl && Boolean(profile?.factory_id)
+  const canImportProjects = isDirector && hasControl
   const shouldOpenCreateFromUrl =
     searchParams.get('action') === 'new' && canManageProposals
   const isCreateDialogOpen = dialogOpen || shouldOpenCreateFromUrl
@@ -577,8 +576,8 @@ export function ProjectsPage() {
       return t('projects.executionHintNoAccess')
     }
 
-    if (isProjectManager(profile.role)) {
-      return t('projects.executionHintPmCannotGovern')
+    if (!hasControl) {
+      return t('projects.executionHintViewOnly')
     }
 
     if (
@@ -731,9 +730,9 @@ export function ProjectsPage() {
           description={
             canManageProposals
               ? t('projects.managerDescription')
-              : isDirector
+              : isDirector && hasControl
                 ? t('projects.directorDescription')
-                : t('projects.pmDescription')
+                : t('projects.viewerDescription')
           }
           actions={
             <PageHeaderActions
@@ -770,7 +769,7 @@ export function ProjectsPage() {
                       {t('common.import')}
                     </>
                   ),
-                  hidden: !isDirector,
+                  hidden: !canImportProjects,
                   onClick: () => setImportOpen(true),
                 },
               ]}
@@ -889,7 +888,7 @@ export function ProjectsPage() {
       }}
       footer={
         <>
-          {isDirector ? (
+          {canImportProjects ? (
             <ProjectImportDialog
               open={importOpen}
               onOpenChange={setImportOpen}
@@ -945,9 +944,6 @@ export function ProjectsPage() {
                 }
               }}
               project={startingProject}
-              pmName={
-                startingProject.assigned_pm?.full_name ?? t('common.unassigned')
-              }
               fundingReceived={Number(startingProject.funding_received ?? 0)}
               taskCount={startingTasks.length}
               readinessReasons={startingReadiness?.reasons ?? []}
@@ -980,7 +976,6 @@ export function ProjectsPage() {
               {isDirector ? (
                 <TableHead>{t('projects.proposedBy')}</TableHead>
               ) : null}
-              <TableHead>{t('projects.pm')}</TableHead>
               <TableHead className="text-end">{t('common.actions')}</TableHead>
             </TableRow>
           </TableHeader>
@@ -1060,9 +1055,6 @@ export function ProjectsPage() {
                     {project.proposer?.full_name ?? notAvailable}
                   </TableCell>
                 ) : null}
-                <TableCell>
-                  {project.assigned_pm?.full_name ?? notAvailable}
-                </TableCell>
                 <TableCell className="text-end">
                   {renderProjectActions(project)}
                 </TableCell>

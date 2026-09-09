@@ -18,7 +18,6 @@ interface ProjectApproveDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   project: Project
-  pmName: string
   attachmentCount: number
   onConfirm: () => Promise<void>
   isSubmitting: boolean
@@ -28,7 +27,6 @@ export function ProjectApproveDialog({
   open,
   onOpenChange,
   project,
-  pmName,
   attachmentCount,
   onConfirm,
   isSubmitting,
@@ -56,9 +54,6 @@ export function ProjectApproveDialog({
             <p className="font-medium">{project.title}</p>
             <p className="text-muted-foreground">
               {t('common.code')}: {project.code || notAvailable}
-            </p>
-            <p className="text-muted-foreground">
-              {t('projects.approveDialog.assignedPm')}: {pmName}
             </p>
             <p className="text-muted-foreground">
               {t('common.budget')}:{' '}

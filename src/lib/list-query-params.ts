@@ -13,7 +13,7 @@ export type AccountsPageParams = {
   page: number
   pageSize: number
   search: string
-  role: 'all' | 'company_director' | 'factory_manager' | 'project_manager'
+  role: 'all' | 'company_director' | 'factory_manager'
   factoryId: string
   status: ActiveInactiveFilter
 }

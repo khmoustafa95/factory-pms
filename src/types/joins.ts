@@ -31,12 +31,10 @@ export type ProjectListItem = Project &
   Partial<ProjectListFinancials> & {
     factories: FactorySummary | null
     proposer: ProfileSummary | null
-    assigned_pm: ProfileSummary | null
   }
 
 export type ProjectDetail = Project & {
   factories: FactorySummary | null
-  assigned_pm: ProfileSummary | null
 }
 
 export type TaskListItem = Task & {
@@ -64,14 +62,12 @@ export type CommentListItem = Comment & {
 export const PROJECT_LIST_SELECT = `
   *,
   factories (name, code),
-  proposer:profiles!proposed_by (full_name),
-  assigned_pm:profiles!assigned_pm_id (full_name)
+  proposer:profiles!proposed_by (full_name)
 ` as const
 
 export const PROJECT_DETAIL_SELECT = `
   *,
-  factories (name, code),
-  assigned_pm:profiles!assigned_pm_id (full_name)
+  factories (name, code)
 ` as const
 
 export const TASK_LIST_SELECT = `

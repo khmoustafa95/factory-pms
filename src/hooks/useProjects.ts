@@ -15,7 +15,7 @@ import { queryKeys } from '@/lib/query-keys'
 import { joinMappers } from '@/lib/supabase-joins'
 import type { ProjectListItem } from '@/types/joins'
 import { PROJECT_LIST_SELECT } from '@/types/joins'
-import type { Profile, ProjectStatus } from '@/types/database'
+import type { ProjectStatus } from '@/types/database'
 import type { ProjectFormValues } from '@/lib/validations/project'
 import { toProjectPayload } from '@/lib/validations/project'
 
@@ -101,33 +101,6 @@ export function useProjectsPage(params: ProjectsPageParams) {
           return financials ? { ...item, ...financials } : item
         }),
       }
-    },
-  })
-}
-
-export function useFactoryProjectManagers(
-  factoryId: string | null | undefined,
-) {
-  return useQuery({
-    queryKey: queryKeys.factoryProjectManagers(factoryId),
-    enabled: Boolean(factoryId),
-    queryFn: async (): Promise<
-      Pick<Profile, 'id' | 'full_name' | 'email'>[]
-    > => {
-      const supabase = getSupabase()
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
-        .eq('factory_id', factoryId!)
-        .eq('role', 'project_manager')
-        .eq('is_active', true)
-        .order('full_name', { ascending: true })
-
-      if (error) {
-        throw error
-      }
-
-      return data
     },
   })
 }

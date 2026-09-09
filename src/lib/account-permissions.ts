@@ -1,25 +1,32 @@
-import type { UserRole } from '@/types/database'
+import type { Profile, UserRole } from '@/types/database'
+import { canControl, isCompanyDirector } from '@/lib/roles'
+import type { ManagedAccountRole } from '@/lib/validations/account'
+
+const MANAGED_ROLES: ManagedAccountRole[] = [
+  'company_director',
+  'factory_manager',
+]
 
 /** Roles the actor may create or reset passwords for. */
-export function getManagedRoles(actorRole: UserRole | undefined): UserRole[] {
-  if (actorRole === 'company_director') {
-    return ['factory_manager', 'project_manager']
+export function getManagedRoles(
+  actor: Pick<Profile, 'role' | 'can_control'> | null | undefined,
+): ManagedAccountRole[] {
+  if (!actor || !canControl(actor) || !isCompanyDirector(actor.role)) {
+    return []
   }
 
-  if (actorRole === 'factory_manager') {
-    return ['project_manager']
-  }
-
-  return []
+  return MANAGED_ROLES
 }
 
-export function canManageAccounts(actorRole: UserRole | undefined): boolean {
-  return getManagedRoles(actorRole).length > 0
+export function canManageAccounts(
+  actor: Pick<Profile, 'role' | 'can_control'> | null | undefined,
+): boolean {
+  return getManagedRoles(actor).length > 0
 }
 
 export function canManageAccountRole(
-  actorRole: UserRole | undefined,
+  actor: Pick<Profile, 'role' | 'can_control'> | null | undefined,
   targetRole: UserRole,
 ): boolean {
-  return getManagedRoles(actorRole).includes(targetRole)
+  return getManagedRoles(actor).some((role) => role === targetRole)
 }
